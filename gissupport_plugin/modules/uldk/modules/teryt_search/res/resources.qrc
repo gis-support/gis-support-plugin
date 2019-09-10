@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/csv_import" >
+        <file>info.png</file>
+    </qresource>
+</RCC>

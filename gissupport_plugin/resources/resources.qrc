@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/plugins/gissupport_plugin" >
+        <file>gissupport_logo.jpg</file>
+        <file>info.png</file>
+        <file>uldk/search.png</file>
+        <file>uldk/intersect.png</file>
+    </qresource>
+</RCC>

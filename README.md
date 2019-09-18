@@ -26,3 +26,5 @@ oraz pobieramy zipa z zakładki `release` na GitHubie, którego wrzucamy w zarz�
 * gałąź `hotfix`: wychodzi od `mastera`, commitujemy do niej najważniejsze fixy.
 Po zafixowaniu mergujemy `hotfix` do `mastera` i wykonujemy pozostałe kroki z punktu wyżej
 
+Zastosowanie Gitflow można podejrzeć w repozytorium wtyczki ULDK
+https://github.com/gis-support/wyszukiwarka-gugik-uldk

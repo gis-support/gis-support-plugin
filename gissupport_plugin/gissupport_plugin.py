@@ -21,13 +21,14 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QUrl
+from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices
 from PyQt5.QtWidgets import QAction, QLabel, QSizePolicy
 
 from .resources import resources
 
 import os.path
+import webbrowser
 
 
 PLUGIN_NAME = "Wtyczka GIS Support"
@@ -59,7 +60,7 @@ class GISSupportPlugin:
         self.toolbar.addSeparator
         
         self.first_start = None
-
+        self.dialog = None
         
 
     def tr(self, message):
@@ -74,6 +75,7 @@ class GISSupportPlugin:
         callback,
         enabled_flag=True,
         add_to_menu=True,
+        add_to_topmenu=False,
         add_to_toolbar=True,
         status_tip=None,
         whats_this=None,
@@ -99,13 +101,38 @@ class GISSupportPlugin:
             self.iface.addPluginToMenu(
                 self.menu,
                 action)
+        
+        if add_to_topmenu:
+            self.topMenu.addAction(action)
 
         self.actions.append(action)
 
         return action
 
     def initGui(self):
-  
+
+        self.topMenu = self.iface.mainWindow().menuBar().addMenu(u'&GIS Support')
+        self.topMenu.setObjectName('gisSupportMenu')
+        self.add_action(
+            icon_path=None,
+            text="Klucz GIS Support",
+            add_to_menu=False,
+            add_to_topmenu=True,
+            callback=self.show_key_dialog,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False
+        )
+        self.topMenu.addSeparator()
+        self.add_action(
+            icon_path=':/plugins/gissupport_plugin/gissupport_small.jpg',
+            text="O wtyczce",
+            add_to_menu=False,
+            add_to_topmenu=True,
+            callback=self.open_about,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False
+        )
+
         logo_path = ':/plugins/gissupport_plugin/gissupport_logo.jpg'
         logo_label = QLabel()
         logo_label.setPixmap(QPixmap(logo_path))
@@ -125,6 +152,8 @@ class GISSupportPlugin:
                 self.tr(u'&Wtyczka GIS Support'),
                 action)
             self.iface.removeToolBarIcon(action)
+        self.topMenu.clear()
+        self.topMenu.deleteLater()
 
     def _init_uldk_module(self):
         from .modules.uldk.main import Main
@@ -140,7 +169,8 @@ class GISSupportPlugin:
             main.module_name,
             lambda state: dockwidget.setHidden(not state),
             checkable = True,
-            parent = self.iface.mainWindow() )
+            parent = self.iface.mainWindow() 
+        )
 
         intersect_icon_path = ":/plugins/gissupport_plugin/uldk/intersect.png"
         self.add_action(
@@ -149,6 +179,13 @@ class GISSupportPlugin:
             callback = lambda state : main.module_map_point_search.toggle(not state),
             parent = self.iface.mainWindow(),
             checkable = True
-        )   
+        )
 
+    def show_key_dialog(self):
+        from .modules.uldk.key_dialog import GisSupportPluginDialog
+        self.dialog = GisSupportPluginDialog()
+        self.dialog.show()
+
+    def open_about(self):
+        webbrowser.open('https://gis-support.pl/nowa-wtyczka-gis-support-wyszukiwarka-dzialek-ewidencyjnych-uldk-gugik-beta')
         

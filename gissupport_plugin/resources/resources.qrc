@@ -4,5 +4,6 @@
         <file>info.png</file>
         <file>uldk/search.png</file>
         <file>uldk/intersect.png</file>
+		<file>gissupport_small.jpg</file>
     </qresource>
 </RCC>

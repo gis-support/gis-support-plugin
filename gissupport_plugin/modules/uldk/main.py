@@ -66,8 +66,18 @@ class Main:
             self.dockwidget.tab_import_layer_point_layout)
 
         self.dockwidget.button_wms_kieg.clicked.connect(self.add_wms_kieg)
-        self.project.layersRemoved.connect( lambda layers : self.dockwidget.button_wms_kieg.setEnabled(True) if filter(lambda layer: layer.customProperty("ULDK") == "wms_kieg_layer", layers) else lambda : None)
+        self.project.layersRemoved.connect( 
+            lambda layers : self.dockwidget.button_wms_kieg.setEnabled(True) 
+             if filter(lambda layer: layer.customProperty("ULDK") == "wms_kieg_layer", layers)
+              else lambda : None)
         self.module_wms_kieg_initialized = True
+
+        self.dockwidget.button_wms_lpis.clicked.connect(self.add_wms_lpis)
+        self.project.layersRemoved.connect( 
+            lambda layers : self.dockwidget.button_wms_lpis.setEnabled(True)
+             if filter(lambda layer: layer.customProperty("ULDK") == "wms_lpis_layer", layers)
+              else lambda : None)
+        self.module_wms_lpis_initialized = True
 
     # def add_action(
     #     self,
@@ -179,3 +189,12 @@ class Main:
         self.wms_kieg_layer = layer
         self.project.addMapLayer(self.wms_kieg_layer)
         self.dockwidget.button_wms_kieg.setEnabled(False)
+
+    def add_wms_lpis(self):
+    
+        url = ( "contextualWMSLegend=0&crs=EPSG:4326&dpiMode=7&featureCount=10&format=image/png&layers=dzialki&styles&url=https://lpis.mapawms.pl/geoserver/lpis/wms")
+        layer = QgsRasterLayer(url, "Działki LPIS", "wms")
+        layer.setCustomProperty("ULDK", "wms_lpis_layer")
+        self.wms_lpis_layer = layer
+        self.project.addMapLayer(self.wms_lpis_layer)
+        self.dockwidget.button_wms_lpis.setEnabled(False)

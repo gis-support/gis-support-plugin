@@ -20,7 +20,7 @@ mergujemy `develop` do gałęzi `release`,
 uzupełniamy tam rzeczy takie jak metadane wtyczki, dokumentację (jeśli kiedykolwiek jakaś będzie)
 * gdy chcemy wypuścić wersję mergujemy `release` do `mastera`, tworzymy tag z numerem wersji,
 mergujemy z powrotem `master` do `release`, `release` do `developa`, oraz ewentualnie `developa` do feature branchy.
-Na końcu wypychamy do zdalnego repozytorium `develop`, `release`, `master' i tagi,
+Na końcu wypychamy do zdalnego repozytorium `develop`, `release`, `master` i tagi,
 oraz pobieramy zipa z zakładki `release` na GitHubie, którego wrzucamy w zarządzaczek
 (do tego ewentualne czyszczenie zbędnych plików)
 * gałąź `hotfix`: wychodzi od `mastera`, commitujemy do niej najważniejsze fixy.

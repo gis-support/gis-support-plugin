@@ -195,6 +195,8 @@ class Main:
         url = ( "contextualWMSLegend=0&crs=EPSG:4326&dpiMode=7&featureCount=10&format=image/png&layers=dzialki&styles&url=https://lpis.mapawms.pl/geoserver/lpis/wms")
         layer = QgsRasterLayer(url, "Działki LPIS", "wms")
         layer.setCustomProperty("ULDK", "wms_lpis_layer")
+        layer.setMinimumScale(6000)
+        layer.setScaleBasedVisibility(True)
         self.wms_lpis_layer = layer
         self.project.addMapLayer(self.wms_lpis_layer)
         self.dockwidget.button_wms_lpis.setEnabled(False)

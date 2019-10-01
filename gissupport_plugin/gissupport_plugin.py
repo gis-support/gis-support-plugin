@@ -111,18 +111,7 @@ class GISSupportPlugin:
 
     def initGui(self):
 
-        logo_path = ':/plugins/gissupport_plugin/gissupport_logo.jpg'
-        logo_label = QLabel()
-        logo_label.setPixmap(QPixmap(logo_path))
-        logo_label.setFixedSize(24, 24)
-        logo_label.setScaledContents(True)
-        self.toolbar.addWidget(logo_label)
-        self.toolbar.addSeparator()
-
-        beforeAction = self.get_before_action(self.iface)
-        self.topMenu = QMenu()
-        self.topMenu.setTitle(u'&GIS Support')
-        self.iface.mainWindow().menuBar().insertMenu(beforeAction, self.topMenu)
+        self.topMenu = self.iface.mainWindow().menuBar().addMenu(u'&GIS Support')
 
         self._init_uldk_module()
 
@@ -171,68 +160,26 @@ class GISSupportPlugin:
         self.uldk_toolbar_action = self.add_action(
             dockwidget_icon_path,
             main.module_name,
-            lambda state: self.action_uldk(dockwidget, not state, 'toolbar'),
+            lambda state: dockwidget.setHidden(not state),
             checkable = True,
-            parent = self.iface.mainWindow() 
+            parent = self.iface.mainWindow(),
+            add_to_topmenu=True 
         )
 
         intersect_icon_path = ":/plugins/gissupport_plugin/uldk/intersect.png"
         self.identify_toolbar_action = self.add_action(
             intersect_icon_path,
             text = "Identifykacja ULDK",
-            callback = lambda state: self.action_identify(main, not state, 'toolbar'),
+            callback = lambda state: main.module_map_point_search.toggle(not state),
             parent = self.iface.mainWindow(),
-            checkable = True
-        )
-
-        self.uldk_menu_action = self.add_action(
-            icon_path=":/plugins/gissupport_plugin/uldk/search.png",
-            text="Wyszukiwarka działek ewidencyjnych",
-            callback=lambda state: self.action_uldk(dockwidget, not state, 'menu'),
-            parent=self.iface.mainWindow(),
-            checkable=True,
-            add_to_toolbar=False,
-            add_to_menu=False,
+            checkable = True,
             add_to_topmenu=True
         )
-        self.identify_menu_action = self.add_action(
-            icon_path=":/plugins/gissupport_plugin/uldk/intersect.png",
-            text="Identyfikacja ULDK",
-            callback=lambda state : self.action_identify(main, not state, 'menu'),
-            parent=self.iface.mainWindow(),
-            checkable=True,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            add_to_topmenu=True
-        )
-
-    def action_identify(self, main, state, placement):
-        if placement == 'toolbar':
-            self.identify_menu_action.setChecked(not state)
-        else:
-            self.identify_toolbar_action.setChecked(not state)
-        main.module_map_point_search.toggle(state)
-    
-    def action_uldk(self, dockwidget, state, placement):
-        if placement == 'toolbar':
-            self.uldk_menu_action.setChecked(not state)
-            dockwidget.setHidden(state)
-        else:
-            self.uldk_toolbar_action.setChecked(not state)
-            dockwidget.setHidden(state)
 
     def show_key_dialog(self):
         from .key_dialog import GisSupportPluginDialog
         self.dialog = GisSupportPluginDialog()
         self.dialog.show()
-
-    def get_before_action(self, iface):
-        beforeAction = None
-        actions = iface.mainWindow().menuBar().actions()
-        for action in actions:
-            if action.text() == 'W &internecie':
-                beforeAction = action
-        return beforeAction
 
     def open_about(self):
         webbrowser.open('https://gis-support.pl/nowa-wtyczka-gis-support-wyszukiwarka-dzialek-ewidencyjnych-uldk-gugik-beta')

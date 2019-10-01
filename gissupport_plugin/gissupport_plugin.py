@@ -23,7 +23,7 @@
 """
 from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QUrl
 from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices
-from PyQt5.QtWidgets import QAction, QLabel, QSizePolicy
+from PyQt5.QtWidgets import QAction, QLabel, QSizePolicy, QMenu
 
 from .resources import resources
 
@@ -112,6 +112,10 @@ class GISSupportPlugin:
     def initGui(self):
 
         self.topMenu = self.iface.mainWindow().menuBar().addMenu(u'&GIS Support')
+
+        self._init_uldk_module()
+
+        self.topMenu.addSeparator()
         self.topMenu.setObjectName('gisSupportMenu')
         self.add_action(
             icon_path=None,
@@ -122,7 +126,6 @@ class GISSupportPlugin:
             parent=self.iface.mainWindow(),
             add_to_toolbar=False
         )
-        self.topMenu.addSeparator()
         self.add_action(
             icon_path=':/plugins/gissupport_plugin/gissupport_small.jpg',
             text="O wtyczce",
@@ -133,17 +136,7 @@ class GISSupportPlugin:
             add_to_toolbar=False
         )
 
-        logo_path = ':/plugins/gissupport_plugin/gissupport_logo.jpg'
-        logo_label = QLabel()
-        logo_label.setPixmap(QPixmap(logo_path))
-        logo_label.setFixedSize(24, 24)
-        logo_label.setScaledContents(True)
-        self.toolbar.addWidget(logo_label)
-        self.toolbar.addSeparator()
-
         self.first_start = True
-
-        self._init_uldk_module()
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -164,25 +157,27 @@ class GISSupportPlugin:
         self.iface.addDockWidget(Qt.RightDockWidgetArea, main.dockwidget)
         dockwidget_icon_path = ":/plugins/gissupport_plugin/uldk/search.png"
 
-        self.add_action(
+        self.uldk_toolbar_action = self.add_action(
             dockwidget_icon_path,
             main.module_name,
             lambda state: dockwidget.setHidden(not state),
             checkable = True,
-            parent = self.iface.mainWindow() 
+            parent = self.iface.mainWindow(),
+            add_to_topmenu=True 
         )
 
         intersect_icon_path = ":/plugins/gissupport_plugin/uldk/intersect.png"
-        self.add_action(
+        self.identify_toolbar_action = self.add_action(
             intersect_icon_path,
             text = "Identifykacja ULDK",
-            callback = lambda state : main.module_map_point_search.toggle(not state),
+            callback = lambda state: main.module_map_point_search.toggle(not state),
             parent = self.iface.mainWindow(),
-            checkable = True
+            checkable = True,
+            add_to_topmenu=True
         )
 
     def show_key_dialog(self):
-        from .modules.uldk.key_dialog import GisSupportPluginDialog
+        from .key_dialog import GisSupportPluginDialog
         self.dialog = GisSupportPluginDialog()
         self.dialog.show()
 

@@ -10,7 +10,7 @@
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
 description=Wtyczka GIS Support
-version=0.2
+version=0.5
 author=GIS Support
 email=kamil.kozik@gis-support.pl
 
@@ -23,7 +23,7 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-# changelog=
+changelog= Wyświetlanie WMS LPIS
 
 # Tags are comma separated with spaces allowed
 tags=python

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from .baza_wms_dialog import BazaWMSDialog
 #from .resources import *
-from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView, QAbstractItemView
+from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
 from qgis.core import QgsProject
 import json
 from os import path
@@ -23,8 +23,6 @@ class Main:
         #Initialize table headers
         self.dlg.servicesTableWidget.setHorizontalHeaderLabels(['ID', 'Źródło', 'Nazwa', 'URL'])
         self.dlg.servicesTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.dlg.servicesTableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.dlg.servicesTableWidget.verticalHeader().setVisible(False)
 
         self.updateServicesList()
 

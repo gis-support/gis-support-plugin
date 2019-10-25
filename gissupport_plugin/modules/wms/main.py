@@ -19,7 +19,7 @@ class Main:
         self.project = QgsProject.instance()
         #Load WMS services list from json file
         with open(path.join(path.dirname(__file__), 'services.json')) as servicesJson:
-            self.services = json.load(servicesJson)['services']
+            self.services = json.load(servicesJson)
         #Initialize table headers
         self.dlg.servicesTableWidget.setHorizontalHeaderLabels(['ID', 'Źródło', 'Nazwa', 'URL'])
         self.dlg.servicesTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
@@ -29,9 +29,10 @@ class Main:
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """
         self.dlg.servicesTableWidget.clearContents()
-        for i, wms in enumerate(self.services):
+        for i, wms in enumerate(self.services.items()):
+            id, info = wms
             self.dlg.servicesTableWidget.insertRow(i)
-            self.dlg.servicesTableWidget.setItem(i, 0, QTableWidgetItem(str(wms['id'])))
-            self.dlg.servicesTableWidget.setItem(i, 1, QTableWidgetItem(wms['source']))
-            self.dlg.servicesTableWidget.setItem(i, 2, QTableWidgetItem(wms['name']))
-            self.dlg.servicesTableWidget.setItem(i, 3, QTableWidgetItem(wms['url']))
+            self.dlg.servicesTableWidget.setItem(i, 0, QTableWidgetItem(id))
+            self.dlg.servicesTableWidget.setItem(i, 1, QTableWidgetItem(info['source']))
+            self.dlg.servicesTableWidget.setItem(i, 2, QTableWidgetItem(info['name']))
+            self.dlg.servicesTableWidget.setItem(i, 3, QTableWidgetItem(info['url']))

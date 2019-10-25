@@ -68,9 +68,15 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="descriptionLabel">
-         <property name="text">
-          <string/>
+        <widget class="QPlainTextEdit" name="descriptionTextEdit">
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

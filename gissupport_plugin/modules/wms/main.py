@@ -24,6 +24,9 @@ class Main:
         self.dlg.servicesTableWidget.setHorizontalHeaderLabels(['ID', 'Źródło', 'Nazwa', 'URL'])
         self.dlg.servicesTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
 
+        #Connect slots to signals
+        self.dlg.servicesTableWidget.currentItemChanged.connect(self.showDescription)
+
         self.updateServicesList()
 
     def updateServicesList(self):
@@ -36,3 +39,8 @@ class Main:
             self.dlg.servicesTableWidget.setItem(i, 1, QTableWidgetItem(info['source']))
             self.dlg.servicesTableWidget.setItem(i, 2, QTableWidgetItem(info['name']))
             self.dlg.servicesTableWidget.setItem(i, 3, QTableWidgetItem(info['url']))
+
+    def showDescription(self):
+        curRow = self.dlg.servicesTableWidget.currentRow()
+        curServiceId = self.dlg.servicesTableWidget.item(curRow, 0).text()
+        self.dlg.descriptionTextEdit.setPlainText(self.services[curServiceId]['description'])

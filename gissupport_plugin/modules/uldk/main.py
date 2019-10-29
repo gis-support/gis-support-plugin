@@ -54,6 +54,7 @@ class Main:
             self.teryt_search_result_collector,
             result_collector_factory,
             ResultCollectorMultiple.default_layer_factory)
+        self.module_teryt_search.lpis_bbox_found.connect(self.add_wms_lpis)
 
         result_collector_factory = lambda parent, target_layer: ResultCollectorMultiple(self, target_layer)
         self.module_csv_import = CSVImport(self,
@@ -65,18 +66,12 @@ class Main:
             self,
             self.dockwidget.tab_import_layer_point_layout)
 
+        self.wms_kieg_layer = None
         self.dockwidget.button_wms_kieg.clicked.connect(self.add_wms_kieg)
-        self.project.layersRemoved.connect( 
-            lambda layers : self.dockwidget.button_wms_kieg.setEnabled(True) 
-             if filter(lambda layer: layer.customProperty("ULDK") == "wms_kieg_layer", layers)
-              else lambda : None)
         self.module_wms_kieg_initialized = True
 
+        self.wms_lpis_layer = None
         self.dockwidget.button_wms_lpis.clicked.connect(self.add_wms_lpis)
-        self.project.layersRemoved.connect( 
-            lambda layers : self.dockwidget.button_wms_lpis.setEnabled(True)
-             if filter(lambda layer: layer.customProperty("ULDK") == "wms_lpis_layer", layers)
-              else lambda : None)
         self.module_wms_lpis_initialized = True
 
     # def add_action(
@@ -174,29 +169,49 @@ class Main:
     #             self.module_wms_kieg_initialized = True
         
     def add_wms_kieg(self):
+        
+        if self.wms_kieg_layer is None:
+            url = ("contextualWMSLegend=0&"
+                    "crs=EPSG:2180&"
+                    "dpiMode=7&"
+                    "featureCount=10&"
+                    "format=image/png&"
+                    "layers=dzialki&layers=numery_dzialek&"
+                    "styles=&styles=&"
+                    "version=1.1.1&"
+                    "url=http://integracja.gugik.gov.pl/cgi-bin/KrajowaIntegracjaEwidencjiGruntow")
+            layer = QgsRasterLayer(url, 'Działki ULDK', 'wms')
+            layer.setCustomProperty("ULDK", "wms_kieg_layer")
+            self.wms_kieg_layer = layer
+            self.project.addMapLayer(self.wms_kieg_layer)
+            self.project.layerWillBeRemoved.connect(self.before_wms_kieg_layer_removed)
+            self.dockwidget.button_wms_kieg.setEnabled(False)
+        else:
+            self.canvas.refresh()
 
-        url = ("contextualWMSLegend=0&"
-                "crs=EPSG:2180&"
-                "dpiMode=7&"
-                "featureCount=10&"
-                "format=image/png&"
-                "layers=dzialki&layers=numery_dzialek&"
-                "styles=&styles=&"
-                "version=1.1.1&"
-                "url=http://integracja.gugik.gov.pl/cgi-bin/KrajowaIntegracjaEwidencjiGruntow")
-        layer = QgsRasterLayer(url, 'Działki ULDK', 'wms')
-        layer.setCustomProperty("ULDK", "wms_kieg_layer")
-        self.wms_kieg_layer = layer
-        self.project.addMapLayer(self.wms_kieg_layer)
-        self.dockwidget.button_wms_kieg.setEnabled(False)
+    def before_wms_kieg_layer_removed(self, layer_id):
+        layer = self.project.layerStore().mapLayer(layer_id)
+        if layer.customProperty("ULDK") == "wms_kieg_layer":
+            self.wms_kieg_layer = None
+            self.dockwidget.button_wms_kieg.setEnabled(True)
 
     def add_wms_lpis(self):
-    
-        url = ( "contextualWMSLegend=0&crs=EPSG:4326&dpiMode=7&featureCount=10&format=image/png&layers=dzialki&styles&url=https://lpis.mapawms.pl/geoserver/lpis/wms")
-        layer = QgsRasterLayer(url, "Działki LPIS", "wms")
-        layer.setCustomProperty("ULDK", "wms_lpis_layer")
-        layer.setMinimumScale(6000)
-        layer.setScaleBasedVisibility(True)
-        self.wms_lpis_layer = layer
-        self.project.addMapLayer(self.wms_lpis_layer)
-        self.dockwidget.button_wms_lpis.setEnabled(False)
+        
+        if self.wms_lpis_layer is None:
+            url = ( "contextualWMSLegend=0&crs=EPSG:4326&dpiMode=7&featureCount=10&format=image/png&layers=dzialki&styles&url=https://lpis.mapawms.pl/geoserver/lpis/wms")
+            layer = QgsRasterLayer(url, "Działki LPIS", "wms")
+            layer.setCustomProperty("ULDK", "wms_lpis_layer")
+            layer.setMinimumScale(6000)
+            layer.setScaleBasedVisibility(True)
+            self.wms_lpis_layer = layer
+            self.project.addMapLayer(self.wms_lpis_layer)
+            self.project.layerWillBeRemoved.connect(self.before_wms_lpis_layer_removed)
+            self.dockwidget.button_wms_lpis.setEnabled(False)
+        else:
+            self.canvas.refresh()
+
+    def before_wms_lpis_layer_removed(self, layer_id):
+        layer = self.project.layerStore().mapLayer(layer_id)
+        if layer.customProperty("ULDK") == "wms_lpis_layer":
+            self.wms_lpis_layer = None
+            self.dockwidget.button_wms_lpis.setEnabled(True)

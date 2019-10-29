@@ -14,7 +14,12 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("pow_m2", QVariant.String),
 ]
 
+
+
 class ResultCollector:
+
+    class BadGeometryException(Exception):
+        pass
 
     @classmethod
     def default_layer_factory(cls, name = "Wyniki wyszukiwania ULDK",
@@ -51,7 +56,9 @@ class ResultCollector:
         area = geometry.area()
 
         if not geometry.isGeosValid():
-            return None
+            geometry = geometry.makeValid()
+            if not geometry.isGeosValid():
+                raise cls.BadGeometryException()
 
         feature = QgsFeature()
         feature.setGeometry(geometry)
@@ -81,19 +88,19 @@ class ResultCollectorSingle(ResultCollector):
         self.layer = None
     
     def update(self, uldk_response):
+        feature = self.uldk_response_to_qgs_feature(uldk_response)
+        return self.update_with_feature(feature)
+    
+    def update_with_feature(self, feature):
         if self.layer is None:
             self.__create_layer()
             QgsProject.instance().addMapLayer(self.layer)
-        feature = self.uldk_response_to_qgs_feature(uldk_response)
 
-        if not feature:
-            return None
-
-        added_feature = self.__add_feature(feature)
+        self.__add_feature(feature)
         self.layer.updateExtents()
 
-        return added_feature
-    
+        return feature
+
     def zoom_to_feature(self, feature):
         crs_2180 = QgsCoordinateReferenceSystem()
         crs_2180.createFromSrid(2180)

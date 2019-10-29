@@ -285,7 +285,11 @@ class TerytSearch(QObject):
         else:
             result = uldk_response_rows[0]
             
-            added_feature = self.result_collector.update(result)
+            try:
+                added_feature = self.result_collector.update(result)
+            except self.result_collector.BadGeometryException:
+                self.parent.iface.messageBar().pushCritical("Wtyczka ULDK", f"Działka posiada niepoprawną geometrię")
+                return
             self.result_collector.zoom_to_feature(added_feature)
 
             if self.message_bar_item:

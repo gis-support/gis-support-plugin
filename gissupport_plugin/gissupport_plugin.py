@@ -170,10 +170,13 @@ class GISSupportPlugin:
         self.identify_toolbar_action = self.add_action(
             intersect_icon_path,
             text = "Identifykacja ULDK",
-            callback = lambda state: main.module_map_point_search.toggle(not state),
+            callback = lambda toggle: self.uldk_module.identifyAction.trigger(),
             parent = self.iface.mainWindow(),
             checkable = True,
             add_to_topmenu=True
+        )
+        self.uldk_module.identifyAction.toggled.connect(
+            lambda changed: self.identify_toolbar_action.setChecked(changed)
         )
 
     def show_key_dialog(self):

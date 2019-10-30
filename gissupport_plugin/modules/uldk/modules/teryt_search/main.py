@@ -3,6 +3,7 @@ from urllib.request import urlopen
 
 from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject, QSettings
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtGui import QKeySequence, QPixmap
 from qgis.core import QgsNetworkAccessManager
 from qgis.gui import QgsMessageBarItem
@@ -68,12 +69,18 @@ class TerytSearch(QObject):
     def search_lpis(self):
         teryt = self.ui.lineedit_full_teryt.text()
         key = QSettings().value('gissupport/api/key')
+        if not key:
+            messageBox = QMessageBox.warning(
+                None, 
+                "Wtyczka GIS Support", 
+                "Korzystanie z danych historycznych wymaga uzupełnienia klucza GIS Support. Więcej informacji w menu wtyczki w zakładce <b>Klucz GIS Support</b>."
+            )
+            return
         lpis_response = lpis_api.search(teryt, key)
         if len(lpis_response) == 0:
             self.parent.iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono przybliżonej lokacji działki{teryt}")
         elif len(lpis_response) > 1:
             combobox = self.ui.combobox_sheet
-
             def _zoom_to_lpis_wrapper():
                 self._zoom_to_lpis(combobox.currentData())
                 self.lpis_bbox_found.emit()

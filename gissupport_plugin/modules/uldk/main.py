@@ -48,6 +48,14 @@ class Main:
         self.module_wms_kieg_initialized = False
         self.module_map_point_search = MapPointSearch(self, self.teryt_search_result_collector)
 
+        icon = QIcon(":/plugins/gissupport_plugin/uldk/intersect.png")
+        self.identifyAction = QAction(icon=icon, parent=self.dockwidget)
+        self.identifyAction.setCheckable(True)
+        self.identifyAction.toggled.connect(
+            lambda state: self.module_map_point_search.toggle(not state)
+        )
+        self.dockwidget.btnIdentify.setDefaultAction(self.identifyAction)
+
         result_collector_factory = lambda parent, target_layer: ResultCollectorMultiple(self, target_layer)
         self.module_teryt_search = TerytSearch(self,
             self.dockwidget.tab_teryt_search_layout,

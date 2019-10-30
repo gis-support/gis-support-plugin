@@ -8,6 +8,7 @@ from qgis.core import QgsNetworkAccessManager
 from qgis.gui import QgsMessageBarItem
 
 from ...uldk import api as uldk_api
+from ...uldk import validators
 from ...lpis import api as lpis_api
 from ...lpis.qgis_adapter import extract_lpis_bbox
 
@@ -247,7 +248,7 @@ class TerytSearch(QObject):
 
     def __search_from_sheet(self):
         self.ui.combobox_sheet.setEnabled(False)
-        self.search(self.ui.combobox_sheet.currentData())
+        self.__handle_found([self.ui.combobox_sheet.currentData()])
 
     def _search_lpis_from_sheet(self):
         self.ui.combobox_sheet.setEnabled(False)
@@ -266,6 +267,7 @@ class TerytSearch(QObject):
         self.ui.progress_bar_precinct_unknown.hide()
 
     def __handle_found(self, uldk_response_rows):
+        uldk_response_rows = validators.duplicate_rows(uldk_response_rows)
         if len(uldk_response_rows) > 1:
             try:    
                 self.ui.combobox_sheet.activated.disconnect()
@@ -275,11 +277,10 @@ class TerytSearch(QObject):
             self.ui.combobox_sheet.setEnabled(True)
             self.ui.combobox_sheet.clear()
             for row in uldk_response_rows:
-                row = row.split("|")
-                sheet_name = row[-3]
-                sheet_teryt = row[-1]
+                row_split = row.split("|")
+                sheet_name = row_split[-3]
 
-                self.ui.combobox_sheet.addItem(sheet_name, sheet_teryt)
+                self.ui.combobox_sheet.addItem(sheet_name, row)
             self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
             self.iface.messageBar().pushWidget(self.message_bar_item)
         else:

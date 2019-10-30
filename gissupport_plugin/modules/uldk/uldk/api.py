@@ -64,6 +64,8 @@ class ULDKSearch:
     @limits(calls = 5, period = 3)
     def search(self):
         url = str(self.url)
+        # print(url)
+        # url = "http://127.0.0.1:5000/uldk_dummy"
         try:
             with urlopen(url, timeout=50) as u:
                 content = u.read()
@@ -76,7 +78,10 @@ class ULDKSearch:
             raise e
         except URLError:
             raise RequestException("Brak odpowiedzi")
-        return content_lines[1:-1]
+        content_lines = content_lines[1:]
+        if content.endswith("\n"):
+            content_lines = content_lines[:-1]
+        return content_lines
 
 class ULDKSearchTeryt(ULDKSearch):
     def __init__(self, target, results):

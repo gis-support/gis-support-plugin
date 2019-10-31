@@ -169,7 +169,7 @@ class GISSupportPlugin:
             callback = lambda toggle: self.uldk_module.identifyAction.trigger(),
             parent = self.iface.mainWindow(),
             checkable = True,
-            add_to_topmenu=True
+            add_to_topmenu=False
         )
         self.uldk_module.identifyAction.toggled.connect(
             lambda changed: self.identify_toolbar_action.setChecked(changed)

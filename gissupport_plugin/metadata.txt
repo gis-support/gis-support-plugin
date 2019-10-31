@@ -10,7 +10,7 @@
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
 description=Wtyczka GIS Support
-version=0.6
+version=0.7
 author=GIS Support
 email=kamil.kozik@gis-support.pl
 
@@ -23,7 +23,11 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog= Wyświetlanie WMS LPIS
+changelog= Wyszukiwarka ULDK: wyszukiwanie działek w danych historycznych,
+    dodanie do okna wyszukiwarki narzędzia Identyfikacja ULDK,
+    usunięcie z menu GIS Support narzędzia Identyfikacja ULDK.
+
+    Poprawki w interfejsie wtyczki.
 
 # Tags are comma separated with spaces allowed
 tags=python

@@ -111,6 +111,7 @@ class GISSupportPlugin:
         self.topMenu = self.iface.mainWindow().menuBar().addMenu(u'&GIS Support')
 
         self._init_uldk_module()
+        self._init_gugik_nmt_module(add_separator=True)
 
         self.topMenu.addSeparator()
         self.topMenu.setObjectName('gisSupportMenu')
@@ -142,7 +143,10 @@ class GISSupportPlugin:
         self.topMenu.clear()
         self.topMenu.deleteLater()
 
-    def _init_uldk_module(self):
+    def _init_uldk_module(self, add_separator=False):
+        if add_separator:
+            self.toolbar.addSeparator()
+            self.topMenu.addSeparator()
         from .modules.uldk.main import Main
         from .modules.uldk.modules.map_point_search.main import MapPointSearch
         main = Main(self.iface)
@@ -174,6 +178,25 @@ class GISSupportPlugin:
         self.uldk_module.identifyAction.toggled.connect(
             lambda changed: self.identify_toolbar_action.setChecked(changed)
         )
+
+    def _init_gugik_nmt_module(self, add_separator = False):
+        if add_separator:
+            self.toolbar.addSeparator()
+            self.topMenu.addSeparator()
+        from .modules.gugik_nmt.main import GugikNmt as Main
+        gugik_nmt = Main(self.iface)
+        dockwidget = gugik_nmt.dockwidget
+        dockwidget_icon_path = ":/plugins/gissupport_plugin/gugik_nmt/icon.png"
+        self.iface.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+        self.gugik_nmt_action = self.add_action(
+            dockwidget_icon_path,
+            text = "GUGiK NMT",
+            callback = lambda state: dockwidget.setHidden(not state),
+            checkable=True,
+            parent=self.iface.mainWindow(),
+            add_to_topmenu=True
+        )
+        dockwidget.visibilityChanged.connect(self.gugik_nmt_action.setChecked)
 
     def show_api_key_dialog(self):
         self.api_key_dialog.show()

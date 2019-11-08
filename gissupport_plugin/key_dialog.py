@@ -7,7 +7,8 @@ from PyQt5.QtWidgets import QDialog, QMessageBox
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'key_dialog.ui'))
 
-
+KEY_LEN = 43
+    
 class GisSupportPluginDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         super(GisSupportPluginDialog, self).__init__(parent)
@@ -20,7 +21,7 @@ class GisSupportPluginDialog(QDialog, FORM_CLASS):
 
     def saveKey(self):
         key = self.keyLineEdit.text().strip()
-        if len(key) != 43:
+        if len(key) != KEY_LEN:
             messageBox = QMessageBox.warning(
                 None,
                 "Wtyczka GIS Support",

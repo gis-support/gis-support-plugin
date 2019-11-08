@@ -5,5 +5,7 @@
         <file>uldk/search.png</file>
         <file>uldk/intersect.png</file>
 		<file>gissupport_small.jpg</file>
-    </qresource>
+        <file>gugik_nmt/icon.png</file>
+        <file>gugik_nmt/index.svg</file>
+    </qresource>     
 </RCC>

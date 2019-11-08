@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GugikNmtDockWidgetBase</class>
+ <widget class="QDockWidget" name="GugikNmtDockWidgetBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>408</width>
+    <height>552</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>408</width>
+    <height>552</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Narzędzia GUGiK NMT</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
+    <item>
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Wskazywanie współrzędnych i wysokości punktu&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>WGS 84</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="dsbWgsX">
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::NoButtons</enum>
+          </property>
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="minimum">
+           <double>0.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9999.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="dsbWgsY">
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::NoButtons</enum>
+          </property>
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="maximum">
+           <double>9999.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>PUWG92</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="dbs92X">
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::NoButtons</enum>
+          </property>
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="maximum">
+           <double>999999.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="dbs92Y">
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::NoButtons</enum>
+          </property>
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="maximum">
+           <double>999999.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Wysokość npm</string>
+          </property>
+         </widget>
+        </item>
+        <item alignment="Qt::AlignLeft">
+         <widget class="QDoubleSpinBox" name="dbsHeight">
+          <property name="minimumSize">
+           <size>
+            <width>112</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::NoButtons</enum>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item alignment="Qt::AlignLeft">
+       <widget class="QToolButton" name="tbGetPoint">
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wyznacz wysokość w nowym punkcie&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item alignment="Qt::AlignLeft">
+       <widget class="QToolButton" name="tbCreateTempLyr">
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zapisz punkty jako warstwę tymczasową&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QToolButton" name="tbResetPoints">
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wyczyść punkty&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Rozszerzenie warstwy punktowej o wysokość punktów&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Warstwa punktowa</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QgsMapLayerComboBox" name="cbLayers"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbxSelectedOnly">
+        <property name="text">
+         <string>Tylko zaznaczone</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QCheckBox" name="cbxUpdateField">
+          <property name="text">
+           <string>Aktualizuj kolumne</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cbFields">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QToolButton" name="tbExtendLayer">
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rozpocznij rozszerzanie warstwy&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_7">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Generowanie profilu podłużnego&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <item>
+       <widget class="QToolButton" name="tbMakeLine">
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wyznacz profil&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Długość linii [m]: </string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="dsbLineLength">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::NoButtons</enum>
+        </property>
+        <property name="maximum">
+         <double>100000000.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QToolButton" name="tbShowProfile">
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pokaż profil&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="tbExportCsv">
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zapisz do CSV&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QTableWidget" name="twData">
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::NoSelection</enum>
+      </property>
+      <property name="columnCount">
+       <number>2</number>
+      </property>
+      <attribute name="horizontalHeaderDefaultSectionSize">
+       <number>180</number>
+      </attribute>
+      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="horizontalHeaderStretchLastSection">
+       <bool>true</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>Odległość</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Wysokość npm</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item>
+     <widget class="Line" name="line_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item alignment="Qt::AlignRight">
+     <widget class="QToolButton" name="tbInfos">
+      <property name="text">
+       <string>Informacje</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsMapLayerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>qgsmaplayercombobox.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

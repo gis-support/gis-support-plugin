@@ -26,13 +26,22 @@ class Main:
 
         #Connect slots to signals
         self.dlg.servicesTableWidget.currentItemChanged.connect(self.showDescription)
+        self.dlg.searchTextEdit.textChanged.connect(self.updateServicesList)
 
         self.updateServicesList()
 
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """
         self.dlg.servicesTableWidget.clearContents()
-        for i, wms in enumerate(self.services.items()):
+        servicesList = {}
+        search = self.dlg.searchTextEdit.toPlainText()
+        if search:
+            for id, info in self.services.items():
+                if search.lower() in info['name'].lower():
+                    servicesList.update({ id : info })
+        else:
+            servicesList = self.services
+        for i, wms in enumerate(servicesList.items()):
             id, info = wms
             self.dlg.servicesTableWidget.insertRow(i)
             self.dlg.servicesTableWidget.setItem(i, 0, QTableWidgetItem(id))

@@ -179,4 +179,4 @@ class GISSupportPlugin:
         self.api_key_dialog.show()
 
     def open_about(self):
-        QDesktopServices.openUrl(QUrl('https://gis-support.pl/nowa-wtyczka-gis-support-wyszukiwarka-dzialek-ewidencyjnych-uldk-gugik-beta'))
+        QDesktopServices.openUrl(QUrl("https://gis-support.pl/wtyczka-gis-support"))

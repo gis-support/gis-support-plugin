@@ -2,10 +2,11 @@
 from .baza_wms_dialog import BazaWMSDialog
 #from .resources import *
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
-from qgis.core import QgsProject, QgsRasterLayer
+from qgis.core import QgsProject, QgsRasterLayer, Qgis
 import json
 from os import path
 from owslib.wms import WebMapService
+import requests.exceptions
 
 
 class Main:
@@ -69,6 +70,20 @@ class Main:
             wmsCapabilities = WebMapService(self.curServiceData['url'])
         except AttributeError:
             wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
+        except requests.exceptions.ReadTimeout:
+            self.iface.messageBar().pushMessage(
+                'Baza krajowych usług WMS',
+                'Serwer WMS nie odpowiada. Spróbuj ponownie później.',
+                level=Qgis.Critical
+            )
+            return 1
+        except requests.exceptions.SSLError:
+            self.iface.messageBar().pushMessage(
+                'Baza krajowych usług WMS',
+                'Błąd połączenia z serwerem WMS.',
+                level=Qgis.Critical
+            )
+            return 1
         for nr, layer in enumerate(list(wmsCapabilities.contents)):
             wmsLayer = wmsCapabilities[layer]
             self.dlg.layersTableWidget.insertRow(nr)
@@ -102,4 +117,5 @@ class Main:
                 self.iface.messageBar().pushMessage(
                     'Baza krajowych usług WMS',
                     'Nie udało się wczytać warstwy %s' % self.dlg.layersTableWidget.item(layerId, 2).text(),
-                    level=Qgis.Warning)
+                    level=Qgis.Warning
+                )

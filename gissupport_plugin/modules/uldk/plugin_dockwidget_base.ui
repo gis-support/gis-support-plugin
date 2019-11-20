@@ -161,7 +161,7 @@
            </sizepolicy>
           </property>
           <property name="toolTip">
-           <string>ddddddddddd</string>
+           <string/>
           </property>
           <property name="toolTipDuration">
            <number>0</number>

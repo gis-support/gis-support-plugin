@@ -94,7 +94,7 @@ class Main:
                     "styles=&styles=&"
                     "version=1.1.1&"
                     "url=http://integracja.gugik.gov.pl/cgi-bin/KrajowaIntegracjaEwidencjiGruntow")
-            layer = QgsRasterLayer(url, 'Działki ULDK', 'wms')
+            layer = QgsRasterLayer(url, 'Krajowa Integracja Ewidencji Gruntów', 'wms')
             layer.setCustomProperty("ULDK", "wms_kieg_layer")
             self.wms_kieg_layer = layer
             self.project.addMapLayer(self.wms_kieg_layer)

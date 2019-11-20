@@ -65,7 +65,10 @@ class Main:
     def loadLayers(self):
         self.dlg.layersTableWidget.clearContents()
         defaultCrs = 'EPSG:2180'
-        wmsCapabilities = WebMapService(self.curServiceData['url'])
+        try:
+            wmsCapabilities = WebMapService(self.curServiceData['url'])
+        except AttributeError:
+            wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
         for nr, layer in enumerate(list(wmsCapabilities.contents)):
             wmsLayer = wmsCapabilities[layer]
             self.dlg.layersTableWidget.insertRow(nr)
@@ -93,4 +96,10 @@ class Main:
                 )
             )
             wmsLayer = QgsRasterLayer(url, self.dlg.layersTableWidget.item(layerId, 2).text(), 'wms')
-            QgsProject.instance().addMapLayer(wmsLayer)
+            if wmsLayer.isValid():
+                QgsProject.instance().addMapLayer(wmsLayer)
+            else:
+                self.iface.messageBar().pushMessage(
+                    'Baza krajowych usług WMS',
+                    'Nie udało się wczytać warstwy %s' % self.dlg.layersTableWidget.item(layerId, 2).text(),
+                    level=Qgis.Warning)

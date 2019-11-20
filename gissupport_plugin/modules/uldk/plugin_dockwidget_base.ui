@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Wyszukiwarka działek ewidencyjnych (GUGiK ULDK)</string>
+   <string>Wyszukiwarka działek ewidencyjnych</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -70,7 +70,7 @@
          <x>0</x>
          <y>0</y>
          <width>574</width>
-         <height>618</height>
+         <height>587</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -81,6 +81,15 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>ddddddddddd</string>
+          </property>
+          <property name="toolTipDuration">
+           <number>0</number>
+          </property>
+          <property name="whatsThis">
+           <string/>
           </property>
           <property name="currentIndex">
            <number>0</number>

@@ -5,6 +5,7 @@ from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
 from qgis.core import QgsProject
 import json
 from os import path
+from owslib.wms import WebMapService
 
 
 class Main:
@@ -23,10 +24,13 @@ class Main:
         #Initialize table headers
         self.dlg.servicesTableWidget.setHorizontalHeaderLabels(['ID', 'Źródło', 'Nazwa', 'URL'])
         self.dlg.servicesTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.dlg.layersTableWidget.setHorizontalHeaderLabels(['Nr', 'Nazwa', 'Tytuł', 'Streszczenie'])
+        self.dlg.layersTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
 
         #Connect slots to signals
         self.dlg.servicesTableWidget.currentItemChanged.connect(self.showDescription)
         self.dlg.searchTextEdit.textChanged.connect(self.updateServicesList)
+        self.dlg.getLayersButton.clicked.connect(self.loadLayers)
 
         self.updateServicesList()
 
@@ -52,4 +56,16 @@ class Main:
     def showDescription(self):
         curRow = self.dlg.servicesTableWidget.currentRow()
         curServiceId = self.dlg.servicesTableWidget.item(curRow, 0).text()
-        self.dlg.descriptionTextEdit.setPlainText(self.services[curServiceId]['description'])
+        self.curServiceData = self.services[curServiceId]
+        self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['description'])
+
+    def loadLayers(self):
+        self.dlg.layersTableWidget.clearContents()
+        wmsCapabilities = WebMapService(self.curServiceData['url'])
+        for nr, layer in enumerate(list(wmsCapabilities.contents)):
+            wmsLayer = wmsCapabilities[layer]
+            self.dlg.layersTableWidget.insertRow(nr)
+            self.dlg.layersTableWidget.setItem(nr, 0, QTableWidgetItem(str(nr+1)))
+            self.dlg.layersTableWidget.setItem(nr, 1, QTableWidgetItem(wmsLayer.name))
+            self.dlg.layersTableWidget.setItem(nr, 2, QTableWidgetItem(wmsLayer.title))
+            self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))

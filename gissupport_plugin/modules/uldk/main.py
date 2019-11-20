@@ -82,6 +82,12 @@ class Main:
         self.dockwidget.button_wms_lpis.clicked.connect(self.add_wms_lpis)
         self.module_wms_lpis_initialized = True
         
+        icon_info_path = ':/plugins/plugin/info.png'
+        self.dockwidget.label_info_map_point_search.setPixmap(QPixmap(icon_info_path))
+        self.dockwidget.label_info_map_point_search.setToolTip((
+            "Wybierz narzędzie i kliknij na mapę.\n"
+            "Narzędzie wyszuka działkę, w której zawierają się współrzędne kliknięcia."))
+
     def add_wms_kieg(self):
         
         if self.wms_kieg_layer is None:

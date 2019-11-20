@@ -2,7 +2,7 @@
 from .baza_wms_dialog import BazaWMSDialog
 #from .resources import *
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsRasterLayer
 import json
 from os import path
 from owslib.wms import WebMapService
@@ -24,13 +24,14 @@ class Main:
         #Initialize table headers
         self.dlg.servicesTableWidget.setHorizontalHeaderLabels(['ID', 'Źródło', 'Nazwa', 'URL'])
         self.dlg.servicesTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.dlg.layersTableWidget.setHorizontalHeaderLabels(['Nr', 'Nazwa', 'Tytuł', 'Streszczenie'])
+        self.dlg.layersTableWidget.setHorizontalHeaderLabels(['Nr', 'Nazwa', 'Tytuł', 'Streszczenie', 'Układ współrzędnych'])
         self.dlg.layersTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
 
         #Connect slots to signals
         self.dlg.servicesTableWidget.currentItemChanged.connect(self.showDescription)
         self.dlg.searchTextEdit.textChanged.connect(self.updateServicesList)
         self.dlg.getLayersButton.clicked.connect(self.loadLayers)
+        self.dlg.addLayersButton.clicked.connect(self.addToMap)
 
         self.updateServicesList()
 
@@ -61,6 +62,7 @@ class Main:
 
     def loadLayers(self):
         self.dlg.layersTableWidget.clearContents()
+        defaultCrs = 'EPSG:2180'
         wmsCapabilities = WebMapService(self.curServiceData['url'])
         for nr, layer in enumerate(list(wmsCapabilities.contents)):
             wmsLayer = wmsCapabilities[layer]
@@ -69,3 +71,24 @@ class Main:
             self.dlg.layersTableWidget.setItem(nr, 1, QTableWidgetItem(wmsLayer.name))
             self.dlg.layersTableWidget.setItem(nr, 2, QTableWidgetItem(wmsLayer.title))
             self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))
+            self.dlg.layersTableWidget.setItem(nr, 4, QTableWidgetItem(defaultCrs if defaultCrs in wmsLayer.crsOptions else wmsLayer.crsOptions[0]))
+
+    def addToMap(self):
+        selectedRows = [i.row() for i in self.dlg.layersTableWidget.selectionModel().selectedRows()]
+        for layerId in selectedRows:
+            url = (
+                "contextualWMSLegend=0&"
+                "crs={}&"
+                "dpiMode=7&"
+                "featureCount=10&"
+                "format=image/jpeg&"
+                "layers={}&"
+                "styles=&"
+                "url={}".format(
+                    self.dlg.layersTableWidget.item(layerId, 4).text(),
+                    self.dlg.layersTableWidget.item(layerId, 1).text(),
+                    self.curServiceData['url']
+                )
+            )
+            wmsLayer = QgsRasterLayer(url, self.dlg.layersTableWidget.item(layerId, 2).text(), 'wms')
+            QgsProject.instance().addMapLayer(wmsLayer)

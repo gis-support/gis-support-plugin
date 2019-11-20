@@ -59,7 +59,11 @@ class MapPointSearch(QgsMapToolEmitPoint):
         thread.start()
 
     def __handle_found(self, uldk_response_row):
-        added_feature = self.result_collector.update(uldk_response_row)
+        try:
+            added_feature = self.result_collector.update(uldk_response_row)
+        except self.result_collector.BadGeometryException:
+            self.parent.iface.messageBar().pushCritical(
+                "Wtyczka ULDK",f"Działka posiada niepoprawną geometrię")
         # self.found.emit(added_feature)
 
     def __handle_not_found(self, uldk_point, exception):

@@ -62,7 +62,7 @@ class CSVImport:
             name = layer_name, custom_properties = {"ULDK": layer_name})
 
         self.result_collector = self.result_collector_factory(self.parent, layer)
-        self.uldk_received_rows = []
+        self.features_found = []
         
         teryts = []
         with open(self.file_path) as f:
@@ -133,14 +133,21 @@ class CSVImport:
     
     def __handle_found(self, uldk_response_rows):
         for row in uldk_response_rows:
-            self.uldk_received_rows.append(row)
+            try:
+                feature = self.result_collector.uldk_response_to_qgs_feature(row)
+            except self.result_collector.BadGeometryException as e:
+                e = self.result_collector.BadGeometryException(e.feature, "Niepoprawna geometria")
+                self._handle_bad_geometry(e.feature, e)
+                return
+            self.features_found.append(feature)
             self.found_count += 1
 
     def __handle_not_found(self, teryt, exception):
-        row = self.ui.table_errors.rowCount()
-        self.ui.table_errors.insertRow(row)
-        self.ui.table_errors.setItem(row, 0, QTableWidgetItem(teryt))
-        self.ui.table_errors.setItem(row, 1, QTableWidgetItem(str(exception)))
+        self._add_table_errors_row(teryt, str(exception))
+        self.not_found_count += 1
+
+    def _handle_bad_geometry(self, feature, exception):
+        self._add_table_errors_row(feature.attribute("teryt"), str(exception))
         self.not_found_count += 1
 
     def __progressed(self):
@@ -153,7 +160,7 @@ class CSVImport:
         self.ui.label_not_found_count.setText("Nie znaleziono: {}".format(not_found_count))
 
     def __handle_finished(self):
-        self.__collect_received_rows()
+        self.__collect_received_features()
         form = "obiekt"
         found_count = self.found_count
         if found_count == 1:
@@ -172,12 +179,18 @@ class CSVImport:
         self.__cleanup_after_search()
 
     def __handle_interrupted(self):
-        self.__collect_received_rows()
+        self.__collect_received_features()
         self.__cleanup_after_search()
 
-    def __collect_received_rows(self):
-        if self.uldk_received_rows:
-            self.result_collector.update(self.uldk_received_rows)
+    def __collect_received_features(self):
+        if self.features_found:
+            self.result_collector.update_with_features(self.features_found)
+
+    def _add_table_errors_row(self, teryt, exception_message):
+        row = self.ui.table_errors.rowCount()
+        self.ui.table_errors.insertRow(row)
+        self.ui.table_errors.setItem(row, 0, QTableWidgetItem(teryt))
+        self.ui.table_errors.setItem(row, 1, QTableWidgetItem(exception_message))
 
     def __cleanup_after_search(self):
         self.__set_controls_enabled(True)

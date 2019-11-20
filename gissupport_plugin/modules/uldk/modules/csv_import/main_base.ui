@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>468</width>
-    <height>474</height>
+    <width>921</width>
+    <height>790</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,6 +27,28 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QLabel" name="label_info">
+     <property name="maximumSize">
+      <size>
+       <width>100</width>
+       <height>15</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string/>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Jak to działa?&lt;/b&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QFrame" name="frame_2">
      <property name="maximumSize">
       <size>
@@ -44,7 +66,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Plik</string>
+         <string>Plik CSV</string>
         </property>
        </widget>
       </item>
@@ -86,7 +108,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>Możesz ręcznie wpisać kod TERYT działki</string>
+           <string/>
           </property>
           <property name="text">
            <string>i</string>
@@ -121,8 +143,8 @@
       <item row="4" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Nazwa nowej
-warstwy</string>
+         <string>Nazwa warstwy
+wynikowej</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -236,7 +258,7 @@ warstwy</string>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLabel" name="label_info">
+           <widget class="QLabel" name="label_info_start">
             <property name="maximumSize">
              <size>
               <width>15</width>
@@ -244,7 +266,7 @@ warstwy</string>
              </size>
             </property>
             <property name="toolTip">
-             <string>Możesz ręcznie wpisać kod TERYT działki</string>
+             <string/>
             </property>
             <property name="text">
              <string>i</string>

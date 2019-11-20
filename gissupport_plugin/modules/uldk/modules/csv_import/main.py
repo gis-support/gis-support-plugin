@@ -26,8 +26,8 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
     def initGui(self, target_layout):
         target_layout.layout().addWidget(self)
 
-        self.label_info.setPixmap(QPixmap(self.icon_info_path))
-        self.label_info.setToolTip((
+        self.label_info_start.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_start.setToolTip((
             "Wyszukiwanie wielu obiektów może być czasochłonne. W tym czasie\n"
             "będziesz mógł korzystać z pozostałych funkcjonalności wtyczki,\n"
             "ale mogą one działać wolniej. Wyszukiwanie obiektów działa również\n"
@@ -36,6 +36,10 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
         self.label_info_column.setToolTip((
             "Kolumna zawierająca kody TERYT działek, \n"
             "przykład poprawnego kodu: 141201_1.0001.1867/2"))
+
+        self.label_info.setToolTip((
+            "Narzędzie wyszukuje działki na podstawie listy:\n"
+            "załaduj plik CSV, wskaż kolumnę z TERYT i uruchom wyszukiwanie."))   
 
 class CSVImport:
 

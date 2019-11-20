@@ -38,6 +38,7 @@ class Main:
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """
         self.dlg.servicesTableWidget.clearContents()
+        self.dlg.descriptionTextEdit.clear()
         servicesList = {}
         search = self.dlg.searchTextEdit.toPlainText()
         if search:
@@ -56,9 +57,10 @@ class Main:
 
     def showDescription(self):
         curRow = self.dlg.servicesTableWidget.currentRow()
-        curServiceId = self.dlg.servicesTableWidget.item(curRow, 0).text()
-        self.curServiceData = self.services[curServiceId]
-        self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['description'])
+        if curRow != -1:
+            curServiceId = self.dlg.servicesTableWidget.item(curRow, 0).text()
+            self.curServiceData = self.services[curServiceId]
+            self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['description'])
 
     def loadLayers(self):
         self.dlg.layersTableWidget.clearContents()

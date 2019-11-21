@@ -1,0 +1,20 @@
+{
+    "1": {
+        "source": "geoportal.gov.pl",
+        "name": "Ortofotomapa",
+        "url": "http://mapy.geoportal.gov.pl/wss/service/img/guest/ORTO/MapServer/WMSServer",
+        "description": "Usługa przeglądania (Web Map Service,WMS) umożliwiająca przeglądanie ortofotomap dla obszaru Polski. Dane udostępniane za pomocą tej usługi stanowią ortofotomapę wykonaną ze zdjęć lotniczych. Usługa oferuje wsparcie dla interfejsu WMS 1.3.0."
+    },
+    "2": {
+        "source": "geoportal.gov.pl",
+        "name": "Baza Danych Obiektów Topograficznych BDOT10k",
+        "url": "http://mapy.geoportal.gov.pl/wss/service/pub/guest/kompozycja_BDOT10k_WMS/MapServer/WMSServer",
+        "description": "Usługa przeglądania danych Bazy Danych Obiektów Topograficznych (BDOT10k) dla obszaru Polski. Baza Danych Obiektów Topograficznych jest spójnym pojęciowo w skali kraju systemem gromadzenia, zarządzania i udostępniania danych topograficznych. Usługa oferuje wsparcie dla interfejsu WMS 1.3.0."
+    },
+    "3": {
+        "source": "gdos.gov.pl",
+        "name": "GDOŚ WMS",
+        "url": "https://sdi.gdos.gov.pl/wms",
+        "description": "Usługa WMSów GDOŚ"
+    }
+}

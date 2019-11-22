@@ -110,7 +110,9 @@ class GISSupportPlugin:
 
         self.topMenu = self.iface.mainWindow().menuBar().addMenu(u'&GIS Support')
 
+        #Load plugin modules
         self._init_uldk_module()
+        self._init_wms_module()
 
         self.topMenu.addSeparator()
         self.topMenu.setObjectName('gisSupportMenu')
@@ -177,6 +179,20 @@ class GISSupportPlugin:
 
     def show_api_key_dialog(self):
         self.api_key_dialog.show()
+
+    def _init_wms_module(self):
+        from .modules.wms.main import Main
+        self.wms_module = Main(self.iface)
+        dlg_icon_path = ":/plugins/gissupport_plugin/wms/wms.png"
+
+        self.wms_toolbar_action = self.add_action(
+            dlg_icon_path,
+            self.wms_module.module_name,
+            callback = self.wms_module.dlg.show,
+            checkable = False,
+            parent = self.iface.mainWindow(),
+            add_to_topmenu=True 
+        )
 
     def open_about(self):
         QDesktopServices.openUrl(QUrl("https://gis-support.pl/wtyczka-gis-support"))

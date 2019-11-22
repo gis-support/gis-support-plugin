@@ -1,0 +1,112 @@
+Imports
+
+    >>> from tests.utils import resource_file
+    >>> from owslib.swe.sensor.sml import SensorML
+    >>> from dateutil import parser
+    >>> import pytz
+
+Initialize
+
+    >>> xml = open(resource_file('sml_ndbc_station.xml'), 'rb').read()
+    >>> root = SensorML(xml)
+    >>> system = root.members[0]
+
+    >>> system.description
+    'Station metadata for 41012 - 40NM ENE of St Augustine, FL'
+
+Contacts
+
+    >>> sorted(system.contacts.keys())
+    ['urn:ogc:def:classifiers:OGC:contactType:operator', 'urn:ogc:def:classifiers:OGC:contactType:publisher']
+
+    >>> operators = system.get_contacts_by_role('urn:ogc:def:classifiers:OGC:contactType:operator')
+    >>> operators[0].role
+    'urn:ogc:def:classifiers:OGC:contactType:operator'
+    >>> operators[0].organization
+    'National Data Buoy Center'
+    >>> operators[0].country
+    'US'
+
+    >>> publishers = system.get_contacts_by_role('urn:ogc:def:classifiers:OGC:contactType:publisher')
+    >>> publishers[0].role
+    'urn:ogc:def:classifiers:OGC:contactType:publisher'
+    >>> publishers[0].organization
+    'National Data Buoy Center'
+    >>> publishers[0].country
+    'USA'
+    >>> publishers[0].phone
+    '228-688-2805'
+    >>> publishers[0].address
+    'Bldg. 3205'
+    >>> publishers[0].city
+    'Stennis Space Center'
+    >>> publishers[0].postcode
+    '39529'
+    >>> publishers[0].email
+    'webmaster.ndbc@noaa.gov'
+    >>> publishers[0].region
+    'MS'
+
+Identification
+
+    >>> sorted(system.identifiers.keys())
+    ['Long Name', 'Short Name', 'StationId']
+
+    >>> sid = system.get_identifiers_by_name('StationId')
+    >>> sid[0].name
+    'StationId'
+    >>> sid[0].definition
+    'urn:ioos:def:identifier:NOAA:stationID'
+    >>> sid[0].codeSpace
+    'http://sdf.ndbc.noaa.gov'
+    >>> sid[0].value
+    'urn:ioos:station:wmo:41012'
+
+
+Classifiers
+
+    >>> sorted(system.classifiers.keys())
+    ['Platform Type']
+    >>> classi = system.get_classifiers_by_name('Platform type')
+    >>> classi[0].name
+    'Platform Type'
+    >>> classi[0].definition
+    'urn:ioos:def:classifier:NOAA:platformType'
+    >>> classi[0].codeSpace
+    'http://sdf.ndbc.noaa.gov'
+    >>> classi[0].value
+    'MOORED BUOY'
+
+
+Documents
+
+    >>> system.documentation # doctest: +ELLIPSIS
+    [<owslib.swe.sensor.sml.Documentation ...>]
+
+    >>> doc = system.documentation[0].documents[0]
+    >>> doc.description
+    'Handbook of Automated Data Quality Control Checks and Procedures, National Data Buoy Center, August 2009'
+    >>> doc.format
+    'pdf'
+    >>> doc.url
+    'http://www.ndbc.noaa.gov/NDBCHandbookofAutomatedDataQualityControl2009.pdf'
+
+
+History
+
+    >>> sorted(system.history.keys())
+    ['deployment_start', 'deployment_stop']
+
+    >>> his = system.get_history_by_name('deployment_start')
+    >>> his
+    [<owslib.swe.sensor.sml.Event ...>]
+    >>> len(his)
+    2
+
+    >>> event = his[0]
+    >>> parser.parse(event.date).replace(tzinfo=pytz.utc).isoformat()
+    '2010-01-12T00:00:00+00:00'
+    >>> event.description
+    'Deployment start event'
+    >>> event.documentation[0].url
+    'http://sdftest.ndbc.noaa.gov/sos/server.php?service=SOS&request=DescribeSensor&version=1.0.0&outputformat=text/xml;subtype="sensorML/1.0.1"&procedure=urn:ioos:station:wmo:41012:20100112'

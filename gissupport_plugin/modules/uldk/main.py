@@ -26,7 +26,7 @@ from .uldk.resultcollector import (ResultCollectorMultiple,
 
 
 class Main:
-    module_name = "Wyszukiwarka działek ewidencyjnych (GUGiK ULDK)"    
+    module_name = "Wyszukiwarka działek ewidencyjnych"    
 
     def __init__(self, iface, dockwidget = None):
 

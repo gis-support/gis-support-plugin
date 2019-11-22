@@ -46,8 +46,8 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
 
         self.layer_select.setFilters(QgsMapLayerProxyModel.PointLayer)
 
-        self.label_info.setPixmap(QPixmap(self.icon_info_path))
-        self.label_info.setToolTip((
+        self.label_info_start.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_start.setToolTip((
             "Wyszukiwanie wielu obiektów może być czasochłonne. W tym czasie\n"
             "będziesz mógł korzystać z pozostałych funkcjonalności wtyczki,\n"
             "ale mogą one działać wolniej. Wyszukiwanie obiektów działa również\n"
@@ -56,6 +56,10 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
         self.label_info_skip_duplicates.setToolTip((
             "Gdy zaznaczone, warstwa wynikowa nie będzie zawierać duplikatów\n"
             "działek, na których znalazło się wiele punktów z warstwy wejściowej."))      
+
+        self.label_info.setToolTip((
+            "Narzędzie wyszukuje działki\n"
+            "które mają wspólną geometrię z warstwą punktową wczytaną do QGIS."))   
 
 class PointLayerImport:
 

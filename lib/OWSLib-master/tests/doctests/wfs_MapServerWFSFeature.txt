@@ -1,0 +1,20 @@
+
+Imports
+
+    >>> from owslib.wfs import WebFeatureService
+    
+Test the getfeature method
+
+    >>> wfs = WebFeatureService('http://nsidc.org/cgi-bin/atlas_south?', version='1.0.0')
+    >>> response = wfs.getfeature(typename=['glaciers'], maxfeatures=5)
+    >>> response.read().find('<wfs:FeatureCollection') > 0
+    True
+
+Handle service exception
+
+    >>> from owslib.util import ServiceException
+    >>> try:
+    ...     response = wfs.getfeature(typename=['totally bogus'], maxfeatures=5)
+    ... except ServiceException as e:
+    ...     assert "msWFSGetFeature(): WFS server error. TYPENAME 'totally bogus' doesn't exist in this server.  Please check the capabilities and reformulate your request." in str(e)
+

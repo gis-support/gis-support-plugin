@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QVariant
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsFeature, QgsField,
-                       QgsGeometry, QgsProject, QgsVectorLayer)
+                       QgsFields, QgsGeometry, QgsProject, QgsVectorLayer)
 
 PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("wojewodztwo", QVariant.String),
@@ -19,7 +19,9 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
 class ResultCollector:
 
     class BadGeometryException(Exception):
-        pass
+        def __init__(self, feature: QgsFeature, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.feature = feature
 
     @classmethod
     def default_layer_factory(cls, name = "Wyniki wyszukiwania ULDK",
@@ -52,19 +54,25 @@ class ResultCollector:
         if len(ewkt) == 2:
             geom_wkt = ewkt[1]
 
+        feature = QgsFeature()
+        fields = QgsFields()
+        for field in PLOTS_LAYER_DEFAULT_FIELDS:
+            fields.append(field)
+        feature.setFields(fields)
+
         geometry = QgsGeometry.fromWkt(geom_wkt)
+        feature.setGeometry(geometry)
+
         area = geometry.area()
+        feature.setAttributes(
+            [province, county, municipality, precinct, sheet, plot_id, teryt, area]
+        )
+
 
         if not geometry.isGeosValid():
             geometry = geometry.makeValid()
             if not geometry.isGeosValid():
-                raise cls.BadGeometryException()
-
-        feature = QgsFeature()
-        feature.setGeometry(geometry)
-        feature.setAttributes(
-            [province, county, municipality, precinct, sheet, plot_id, teryt, area]
-            )
+                raise cls.BadGeometryException(feature)
 
         return feature
 
@@ -136,5 +144,10 @@ class ResultCollectorMultiple(ResultCollector):
         self.layer.updateExtents()
         QgsProject.instance().addMapLayer(self.layer)
 
-
-
+    def update_with_features(self, features):
+        self.layer.startEditing()
+        for feature in features:
+            self.layer.dataProvider().addFeature(feature)
+        self.layer.commitChanges()
+        self.layer.updateExtents()
+        QgsProject.instance().addMapLayer(self.layer)

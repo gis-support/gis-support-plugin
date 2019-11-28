@@ -267,7 +267,7 @@ class TerytSearch(QObject):
         self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key_Return))
 
     def __handle_finished_precinct_unknown(self):
-        self.result_collector_precinct_unknown.update(self.plots_found)
+        self.result_collector_precinct_unknown.update_with_features(self.plots_found)
         self.iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
             f"Wyszukiwanie działek: zapisano znalezione działki do warstwy <b>{self.result_collector_precinct_unknown.layer.sourceName()}</b>"))
         self.ui.button_search_uldk.show()
@@ -311,7 +311,12 @@ class TerytSearch(QObject):
         self.parent.iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")
 
     def __handle_found_precinct_unknown(self, uldk_response_rows):
-        self.plots_found += uldk_response_rows
+        for row in uldk_response_rows:
+            try:
+                feature = self.result_collector_precinct_unknown.uldk_response_to_qgs_feature(row)
+            except self.result_collector_precinct_unknown.BadGeometryException:
+                return
+            self.plots_found.append(feature)
 
     def __handle_progress_precinct_unknown(self):
         self.precincts_progressed += 1

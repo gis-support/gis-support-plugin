@@ -26,7 +26,7 @@ from .uldk.resultcollector import (ResultCollectorMultiple,
 
 
 class Main:
-    module_name = "Wyszukiwarka działek ewidencyjnych (GUGiK ULDK)"    
+    module_name = "Wyszukiwarka działek ewidencyjnych"    
 
     def __init__(self, iface, dockwidget = None):
 
@@ -82,6 +82,12 @@ class Main:
         self.dockwidget.button_wms_lpis.clicked.connect(self.add_wms_lpis)
         self.module_wms_lpis_initialized = True
         
+        icon_info_path = ':/plugins/plugin/info.png'
+        self.dockwidget.label_info_map_point_search.setPixmap(QPixmap(icon_info_path))
+        self.dockwidget.label_info_map_point_search.setToolTip((
+            "Wybierz narzędzie i kliknij na mapę.\n"
+            "Narzędzie wyszuka działkę, w której zawierają się współrzędne kliknięcia."))
+
     def add_wms_kieg(self):
         
         if self.wms_kieg_layer is None:
@@ -94,7 +100,7 @@ class Main:
                     "styles=&styles=&"
                     "version=1.1.1&"
                     "url=http://integracja.gugik.gov.pl/cgi-bin/KrajowaIntegracjaEwidencjiGruntow")
-            layer = QgsRasterLayer(url, 'Działki ULDK', 'wms')
+            layer = QgsRasterLayer(url, 'Krajowa Integracja Ewidencji Gruntów', 'wms')
             layer.setCustomProperty("ULDK", "wms_kieg_layer")
             self.wms_kieg_layer = layer
             self.project.addMapLayer(self.wms_kieg_layer)

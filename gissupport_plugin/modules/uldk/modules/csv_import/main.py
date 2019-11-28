@@ -37,9 +37,10 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
             "Kolumna zawierająca kody TERYT działek, \n"
             "przykład poprawnego kodu: 141201_1.0001.1867/2"))
 
-        self.label_info.setToolTip((
+        self.frame_how_it_works.setToolTip((
             "Narzędzie wyszukuje działki na podstawie listy:\n"
             "załaduj plik CSV, wskaż kolumnę z TERYT i uruchom wyszukiwanie."))   
+        self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
 
 class CSVImport:
 

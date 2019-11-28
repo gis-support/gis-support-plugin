@@ -57,9 +57,10 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
             "Gdy zaznaczone, warstwa wynikowa nie będzie zawierać duplikatów\n"
             "działek, na których znalazło się wiele punktów z warstwy wejściowej."))      
 
-        self.label_info.setToolTip((
+        self.frame_how_it_works.setToolTip((
             "Narzędzie wyszukuje działki\n"
             "które mają wspólną geometrię z warstwą punktową wczytaną do QGIS."))   
+        self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
 
 class PointLayerImport:
 

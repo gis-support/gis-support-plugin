@@ -32,6 +32,7 @@ class Main:
         self.dlg.servicesTableWidget.currentItemChanged.connect(self.showDescription)
         self.dlg.searchTextEdit.textChanged.connect(self.updateServicesList)
         self.dlg.getLayersButton.clicked.connect(self.loadLayers)
+        self.dlg.layersTableWidget.itemSelectionChanged.connect(self.enableAddToMap)
         self.dlg.addLayersButton.clicked.connect(self.addToMap)
 
         self.updateServicesList()
@@ -92,6 +93,10 @@ class Main:
             self.dlg.layersTableWidget.setItem(nr, 2, QTableWidgetItem(wmsLayer.title))
             self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))
             self.dlg.layersTableWidget.setItem(nr, 4, QTableWidgetItem(defaultCrs if defaultCrs in wmsLayer.crsOptions else wmsLayer.crsOptions[0]))
+
+    def enableAddToMap(self):
+        layerSelected = True if self.dlg.layersTableWidget.selectionModel().selectedRows() else False
+        self.dlg.addLayersButton.setEnabled(layerSelected)
 
     def addToMap(self):
         selectedRows = [i.row() for i in self.dlg.layersTableWidget.selectionModel().selectedRows()]

@@ -2,12 +2,16 @@ import os
 from urllib.request import urlopen
 
 from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject, QSettings
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtGui import QKeySequence, QPixmap
-from qgis.core import QgsNetworkAccessManager, QgsSettings
+from qgis.core import QgsNetworkAccessManager
 from qgis.gui import QgsMessageBarItem
 
 from ...uldk import api as uldk_api
+from ...uldk import validators
+from ...lpis import api as lpis_api
+from ...lpis.qgis_adapter import extract_lpis_bbox
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
@@ -34,10 +38,13 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
         self.progress_bar_precinct_unknown.hide()
         target_layout.layout().addWidget(self)
 
-class TerytSearch:
+class TerytSearch(QObject):
+
+    lpis_bbox_found = pyqtSignal()
 
     def __init__(self, parent, target_layout, result_collector,
                  result_collector_precinct_unknown_factory, layer_factory):
+        super().__init__()
         self.parent = parent
         self.iface = parent.iface
         self.canvas = self.iface.mapCanvas()
@@ -59,6 +66,53 @@ class TerytSearch:
         else:
             teryt = self.ui.lineedit_full_teryt.text()
             self.__search([teryt])
+
+    def search_lpis(self):
+        teryt = self.ui.lineedit_full_teryt.text()
+        key = QSettings().value('gissupport/api/key')
+        if not key:
+            messageBox = QMessageBox.warning(
+                None, 
+                "Wtyczka GIS Support", 
+                "Korzystanie z danych historycznych wymaga uzupełnienia klucza GIS Support. Więcej informacji w menu wtyczki w zakładce <b>Klucz GIS Support</b>."
+            )
+            return
+        lpis_response = lpis_api.search(teryt, key)
+        if len(lpis_response) == 0:
+            self.parent.iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono przybliżonej lokacji działki{teryt}")
+        elif len(lpis_response) > 1:
+            combobox = self.ui.combobox_sheet
+            def _zoom_to_lpis_wrapper():
+                self._zoom_to_lpis(combobox.currentData())
+                self.lpis_bbox_found.emit()
+                combobox.clear()
+                combobox.setEnabled(False)
+
+            self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
+            self.iface.messageBar().pushWidget(self.message_bar_item)
+            
+            combobox.setEnabled(True)
+            combobox.clear()
+            for row in lpis_response:
+                combobox.addItem(row["arkusz"], row)
+
+            try:
+                combobox.activated.disconnect()
+            except TypeError:
+                pass #w przypadku braku przypiętych slotów rzuca wyjątkiem
+            combobox.activated.connect(_zoom_to_lpis_wrapper)
+        else:
+            self._zoom_to_lpis(lpis_response[0])
+            self.lpis_bbox_found.emit()
+
+    def _zoom_to_lpis(self, lpis_response):
+        teryt = lpis_response["identyfikator"]
+        self.iface.messageBar().pushSuccess("Wtyczka ULDK", f"Znaleziono historyczną lokację działki '{teryt}'")
+        canvas_crs = self.canvas.mapSettings().destinationCrs()
+        lpis_bbox = extract_lpis_bbox(lpis_response, canvas_crs)
+        self.canvas.setExtent(lpis_bbox)
+
+
 
     def __search(self, teryts):
         self.ui.button_search_uldk.setEnabled(False)
@@ -109,6 +163,7 @@ class TerytSearch:
         self.ui.progress_bar_precinct_unknown.show()
         self.__search(plots_teryts)
 
+    @classmethod
     def is_plot_id_valid(cls, plot_id):
 
         if plot_id.endswith(".") or plot_id.startswith("."):
@@ -188,19 +243,23 @@ class TerytSearch:
             self.fill_lineedit_full_teryt
         )
         self.ui.lineedit_full_teryt.textChanged.connect(
-            lambda text: self.ui.button_search_uldk.setEnabled(
+            lambda text: self._search_buttons_set_enabled(
                 self.is_plot_id_valid(text)
             )
         )
         self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key_Return))
-        self.ui.combobox_sheet.activated.connect(self.__search_from_sheet)
         self.ui.button_search_uldk.clicked.connect(self.search)
         self.ui.checkbox_precinct_unknown.stateChanged.connect(self.__on_checkbox_precinct_unknown_switched)
+        self.ui.button_search_lpis.clicked.connect(self.search_lpis)
         self.fill_combobox_province()
 
     def __search_from_sheet(self):
         self.ui.combobox_sheet.setEnabled(False)
-        self.search(self.ui.combobox_sheet.currentData())
+        self.__handle_found([self.ui.combobox_sheet.currentData()])
+
+    def _search_lpis_from_sheet(self):
+        self.ui.combobox_sheet.setEnabled(False)
+        self.search_lpis(self.ui.combobox_sheet.currentData())
 
     def __handle_finished(self):
         self.ui.button_search_uldk.setEnabled(True)
@@ -208,28 +267,37 @@ class TerytSearch:
         self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key_Return))
 
     def __handle_finished_precinct_unknown(self):
-        self.result_collector_precinct_unknown.update(self.plots_found)
+        self.result_collector_precinct_unknown.update_with_features(self.plots_found)
         self.iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
             f"Wyszukiwanie działek: zapisano znalezione działki do warstwy <b>{self.result_collector_precinct_unknown.layer.sourceName()}</b>"))
         self.ui.button_search_uldk.show()
         self.ui.progress_bar_precinct_unknown.hide()
 
     def __handle_found(self, uldk_response_rows):
+        uldk_response_rows = validators.duplicate_rows(uldk_response_rows)
         if len(uldk_response_rows) > 1:
+            try:    
+                self.ui.combobox_sheet.activated.disconnect()
+            except TypeError:
+                pass #w przypadku braku przypiętych slotów rzuca wyjątkiem
+            self.ui.combobox_sheet.activated.connect(self.__search_from_sheet)
             self.ui.combobox_sheet.setEnabled(True)
             self.ui.combobox_sheet.clear()
             for row in uldk_response_rows:
-                row = row.split("|")
-                sheet_name = row[-3]
-                sheet_teryt = row[-1]
+                row_split = row.split("|")
+                sheet_name = row_split[-3]
 
-                self.ui.combobox_sheet.addItem(sheet_name, sheet_teryt)
+                self.ui.combobox_sheet.addItem(sheet_name, row)
             self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
             self.iface.messageBar().pushWidget(self.message_bar_item)
         else:
             result = uldk_response_rows[0]
             
-            added_feature = self.result_collector.update(result)
+            try:
+                added_feature = self.result_collector.update(result)
+            except self.result_collector.BadGeometryException:
+                self.parent.iface.messageBar().pushCritical("Wtyczka ULDK", f"Działka posiada niepoprawną geometrię")
+                return
             self.result_collector.zoom_to_feature(added_feature)
 
             if self.message_bar_item:
@@ -243,7 +311,12 @@ class TerytSearch:
         self.parent.iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")
 
     def __handle_found_precinct_unknown(self, uldk_response_rows):
-        self.plots_found += uldk_response_rows
+        for row in uldk_response_rows:
+            try:
+                feature = self.result_collector_precinct_unknown.uldk_response_to_qgs_feature(row)
+            except self.result_collector_precinct_unknown.BadGeometryException:
+                return
+            self.plots_found.append(feature)
 
     def __handle_progress_precinct_unknown(self):
         self.precincts_progressed += 1
@@ -254,3 +327,7 @@ class TerytSearch:
         self.fill_lineedit_full_teryt()
         self.ui.label_precinct.setEnabled(not new_state)
         self.ui.combobox_precinct.setEnabled(not new_state)
+
+    def _search_buttons_set_enabled(self, new_state):
+        self.ui.button_search_lpis.setEnabled(new_state)
+        self.ui.button_search_uldk.setEnabled(new_state)

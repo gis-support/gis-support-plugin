@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QVariant
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsFeature, QgsField,
-                       QgsGeometry, QgsProject, QgsVectorLayer)
+                       QgsFields, QgsGeometry, QgsProject, QgsVectorLayer)
 
 PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("wojewodztwo", QVariant.String),
@@ -14,7 +14,14 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("pow_m2", QVariant.String),
 ]
 
+
+
 class ResultCollector:
+
+    class BadGeometryException(Exception):
+        def __init__(self, feature: QgsFeature, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.feature = feature
 
     @classmethod
     def default_layer_factory(cls, name = "Wyniki wyszukiwania ULDK",
@@ -47,17 +54,25 @@ class ResultCollector:
         if len(ewkt) == 2:
             geom_wkt = ewkt[1]
 
-        geometry = QgsGeometry.fromWkt(geom_wkt)
-        area = geometry.area()
-
-        if not geometry.isGeosValid():
-            return None
-
         feature = QgsFeature()
+        fields = QgsFields()
+        for field in PLOTS_LAYER_DEFAULT_FIELDS:
+            fields.append(field)
+        feature.setFields(fields)
+
+        geometry = QgsGeometry.fromWkt(geom_wkt)
         feature.setGeometry(geometry)
+
+        area = geometry.area()
         feature.setAttributes(
             [province, county, municipality, precinct, sheet, plot_id, teryt, area]
-            )
+        )
+
+
+        if not geometry.isGeosValid():
+            geometry = geometry.makeValid()
+            if not geometry.isGeosValid():
+                raise cls.BadGeometryException(feature)
 
         return feature
 
@@ -81,19 +96,19 @@ class ResultCollectorSingle(ResultCollector):
         self.layer = None
     
     def update(self, uldk_response):
+        feature = self.uldk_response_to_qgs_feature(uldk_response)
+        return self.update_with_feature(feature)
+    
+    def update_with_feature(self, feature):
         if self.layer is None:
             self.__create_layer()
             QgsProject.instance().addMapLayer(self.layer)
-        feature = self.uldk_response_to_qgs_feature(uldk_response)
 
-        if not feature:
-            return None
-
-        added_feature = self.__add_feature(feature)
+        self.__add_feature(feature)
         self.layer.updateExtents()
 
-        return added_feature
-    
+        return feature
+
     def zoom_to_feature(self, feature):
         crs_2180 = QgsCoordinateReferenceSystem()
         crs_2180.createFromSrid(2180)
@@ -129,5 +144,10 @@ class ResultCollectorMultiple(ResultCollector):
         self.layer.updateExtents()
         QgsProject.instance().addMapLayer(self.layer)
 
-
-
+    def update_with_features(self, features):
+        self.layer.startEditing()
+        for feature in features:
+            self.layer.dataProvider().addFeature(feature)
+        self.layer.commitChanges()
+        self.layer.updateExtents()
+        QgsProject.instance().addMapLayer(self.layer)

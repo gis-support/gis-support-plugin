@@ -19,6 +19,9 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
 CRS_2180 = QgsCoordinateReferenceSystem()
 CRS_2180.createFromSrid(2180)
 
+class BadGeometryException(Exception):
+    pass
+
 def uldk_response_to_qgs_feature(response_row, additional_attributes = []):
     def get_sheet(teryt):
         split = teryt.split(".")
@@ -40,7 +43,9 @@ def uldk_response_to_qgs_feature(response_row, additional_attributes = []):
     area = geometry.area()
 
     if not geometry.isGeosValid():
-        return None
+        geometry = geometry.makeValid()
+        if not geometry.isGeosValid():
+            raise BadGeometryException()
 
     feature = QgsFeature()
     feature.setGeometry(geometry)
@@ -129,7 +134,10 @@ class PointLayerImportWorker(QObject):
                 additional_attributes = []
                 for field in self.additional_output_fields:
                     additional_attributes.append(source_feature[field.name()])
-                found_feature = uldk_response_to_qgs_feature(uldk_response_row, additional_attributes)
+                try:
+                    found_feature = uldk_response_to_qgs_feature(uldk_response_row, additional_attributes)
+                except BadGeometryException:
+                    raise BadGeometryException("Niepoprawna geometria")
                 found_features.append(found_feature)
                 self.layer_found.dataProvider().addFeature(found_feature)
                 self.progressed.emit(True, 0)

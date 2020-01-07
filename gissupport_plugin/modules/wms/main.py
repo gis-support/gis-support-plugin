@@ -10,7 +10,7 @@ import requests.exceptions
 
 
 class Main:
-    module_name = "Baza krajowych usług WMS"
+    module_name = "Baza krajowych usług WMS - wersja beta"
 
     def __init__(self, iface):
 

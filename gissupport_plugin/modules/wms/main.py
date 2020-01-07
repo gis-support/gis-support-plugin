@@ -39,6 +39,7 @@ class Main:
 
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """
+        self.dlg.servicesTableWidget.setRowCount(0)
         self.dlg.servicesTableWidget.clearContents()
         self.dlg.descriptionTextEdit.clear()
         servicesList = {}
@@ -58,6 +59,7 @@ class Main:
             self.dlg.servicesTableWidget.setItem(i, 3, QTableWidgetItem(info['url']))
 
     def showDescription(self):
+        self.dlg.layersTableWidget.setRowCount(0)
         self.dlg.layersTableWidget.clearContents()
         curRow = self.dlg.servicesTableWidget.currentRow()
         if curRow != -1:
@@ -66,6 +68,7 @@ class Main:
             self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['description'])
 
     def loadLayers(self):
+        self.dlg.layersTableWidget.setRowCount(0)
         defaultCrs = 'EPSG:2180'
         try:
             wmsCapabilities = WebMapService(self.curServiceData['url'])

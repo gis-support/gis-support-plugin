@@ -58,6 +58,7 @@ class Main:
             self.dlg.servicesTableWidget.setItem(i, 3, QTableWidgetItem(info['url']))
 
     def showDescription(self):
+        self.dlg.layersTableWidget.clearContents()
         curRow = self.dlg.servicesTableWidget.currentRow()
         if curRow != -1:
             curServiceId = self.dlg.servicesTableWidget.item(curRow, 0).text()
@@ -65,7 +66,6 @@ class Main:
             self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['description'])
 
     def loadLayers(self):
-        self.dlg.layersTableWidget.clearContents()
         defaultCrs = 'EPSG:2180'
         try:
             wmsCapabilities = WebMapService(self.curServiceData['url'])

@@ -32,12 +32,14 @@ class Main:
         self.dlg.servicesTableWidget.currentItemChanged.connect(self.showDescription)
         self.dlg.searchTextEdit.textChanged.connect(self.updateServicesList)
         self.dlg.getLayersButton.clicked.connect(self.loadLayers)
+        self.dlg.layersTableWidget.itemSelectionChanged.connect(self.enableAddToMap)
         self.dlg.addLayersButton.clicked.connect(self.addToMap)
 
         self.updateServicesList()
 
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """
+        self.dlg.servicesTableWidget.setRowCount(0)
         self.dlg.servicesTableWidget.clearContents()
         self.dlg.descriptionTextEdit.clear()
         servicesList = {}
@@ -57,6 +59,8 @@ class Main:
             self.dlg.servicesTableWidget.setItem(i, 3, QTableWidgetItem(info['url']))
 
     def showDescription(self):
+        self.dlg.layersTableWidget.setRowCount(0)
+        self.dlg.layersTableWidget.clearContents()
         curRow = self.dlg.servicesTableWidget.currentRow()
         if curRow != -1:
             curServiceId = self.dlg.servicesTableWidget.item(curRow, 0).text()
@@ -64,7 +68,7 @@ class Main:
             self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['description'])
 
     def loadLayers(self):
-        self.dlg.layersTableWidget.clearContents()
+        self.dlg.layersTableWidget.setRowCount(0)
         defaultCrs = 'EPSG:2180'
         try:
             wmsCapabilities = WebMapService(self.curServiceData['url'])
@@ -92,6 +96,10 @@ class Main:
             self.dlg.layersTableWidget.setItem(nr, 2, QTableWidgetItem(wmsLayer.title))
             self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))
             self.dlg.layersTableWidget.setItem(nr, 4, QTableWidgetItem(defaultCrs if defaultCrs in wmsLayer.crsOptions else wmsLayer.crsOptions[0]))
+
+    def enableAddToMap(self):
+        layerSelected = True if self.dlg.layersTableWidget.selectionModel().selectedRows() else False
+        self.dlg.addLayersButton.setEnabled(layerSelected)
 
     def addToMap(self):
         selectedRows = [i.row() for i in self.dlg.layersTableWidget.selectionModel().selectedRows()]

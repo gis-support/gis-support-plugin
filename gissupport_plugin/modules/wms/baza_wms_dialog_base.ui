@@ -21,12 +21,9 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTextEdit" name="searchTextEdit">
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>25</height>
-      </size>
+    <widget class="QLineEdit" name="searchLineEdit">
+     <property name="maxLength">
+      <number>100</number>
      </property>
      <property name="placeholderText">
       <string>Wyszukaj WMS...</string>

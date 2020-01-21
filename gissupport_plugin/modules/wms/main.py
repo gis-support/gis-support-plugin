@@ -30,7 +30,7 @@ class Main:
 
         #Connect slots to signals
         self.dlg.servicesTableWidget.currentItemChanged.connect(self.showDescription)
-        self.dlg.searchTextEdit.textChanged.connect(self.updateServicesList)
+        self.dlg.searchLineEdit.textChanged.connect(self.updateServicesList)
         self.dlg.getLayersButton.clicked.connect(self.loadLayers)
         self.dlg.layersTableWidget.itemSelectionChanged.connect(self.enableAddToMap)
         self.dlg.addLayersButton.clicked.connect(self.addToMap)
@@ -43,7 +43,7 @@ class Main:
         self.dlg.servicesTableWidget.clearContents()
         self.dlg.descriptionTextEdit.clear()
         servicesList = {}
-        search = self.dlg.searchTextEdit.toPlainText()
+        search = self.dlg.searchLineEdit.text()
         if search:
             for id, info in self.services.items():
                 if search.lower() in info['name'].lower():

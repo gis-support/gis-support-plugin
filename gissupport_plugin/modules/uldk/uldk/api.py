@@ -1,6 +1,8 @@
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError, URLError, 
 from urllib.parse import quote
 from urllib.request import urlopen
+
+from http.client import IncompleteRead
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
@@ -74,6 +76,8 @@ class ULDKSearch:
             status = content_lines[0]
             if status != "0":
                 raise RequestException(status)
+        except IncompleteRead:
+            raise RequestException("Błąd usługi ULDK")
         except HTTPError as e:
             raise e
         except URLError:

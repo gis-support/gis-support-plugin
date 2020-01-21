@@ -41,7 +41,7 @@ class IdentifyTool(QgsMapTool):
 
     def canvasReleaseEvent(self, e):
         geom = QgsGeometry.fromPointXY(e.mapPoint())
-        height = self.parent.getHeight(geom)
+        height = self.parent.getSingleHeight(geom)
         if height:
             self.parent.dbsHeight.setValue(float(height))
             self.tempGeom.addPoint(e.mapPoint())
@@ -114,8 +114,8 @@ class ProfileTool(QgsMapTool):
 
     def canvasReleaseEvent(self, e):
         point = e.snapPoint()
-        if self.task:
-            iface.messageBar().pushMessage('Wtyczka GUGiK NMT:', 'Trwa genrowanie profilu. Aby wygenerować następny poczekaj na pobranie danych', Qgis.Warning)
+        if self.task is not None:
+            self.parent.on_message.emit('Trwa genrowanie profilu. Aby wygenerować następny poczekaj na pobranie danych', Qgis.Warning, 4)
             return
         if e.button() == int(Qt.LeftButton):
             #Dodawanie kolejnych wierzchołków
@@ -140,12 +140,12 @@ class ProfileTool(QgsMapTool):
             #Niepoprawna geometria                    
                 for error in errors:
                     if self.tempGeom.numberOfVertices() > 2:
-                        iface.messageBar().pushMessage('Wtyczka GUGiK NMT:', 'Niepoprawna geometria', Qgis.Critical)
+                        self.parent.on_message.emit('Niepoprawna geometria', Qgis.Critical, 4)
                     self.tempGeom.reset()
                 return
-            self.get_interval()
+            self.getInterval()
 
-    def get_interval(self):
+    def getInterval(self):
         interval, ok = QInputDialog.getDouble(self.parent, 'Podaj interwał', 'Interwał [m]:')
         if not ok:
             self.reset()
@@ -160,15 +160,21 @@ class ProfileTool(QgsMapTool):
         
         meters_len = geom.length()
         if meters_len <= interval:
-            iface.messageBar().pushMessage('Wtyczka GUGiK NMT:', 'Długość linii krótsza lub równa podanemu interwałowi', Qgis.Critical, 5)
+            self.parent.on_message.emit('Długość linii krótsza lub równa podanemu interwałowi', Qgis.Critical, 5)
             self.reset()
             return
-        num_points = meters_len/interval
+        try:
+            num_points = meters_len/interval
+        except ZeroDivisionError:
+            self.parent.on_message.emit('Interwał musi być większy od 0', Qgis.Critical, 4)
+            self.reset()
+            return
         points_on_line = []
         max_interval = 0
         intervals = []
         for i in range(int(num_points)+1):
-            points_on_line.append(geom.interpolate(float(max_interval)))
+            pt = geom.interpolate(float(max_interval)).asPoint()
+            points_on_line.append(f'{pt.y()}%20{pt.x()}')
             intervals.append(max_interval)
             max_interval += interval
         data = {'points':points_on_line, 'intervals':intervals}
@@ -178,25 +184,24 @@ class ProfileTool(QgsMapTool):
     def generateProfileFromPoints(self, task: QgsTask, data):
         points_on_line = data.get('points')
         intervals = data.get('intervals')
+        response = self.parent.getPointsHeights(points_on_line).split(',')
         heights = []
-        total = 100/len(points_on_line)
-        for idx, pt in enumerate(points_on_line):
-            height = self.parent.getHeight(pt, special=True)
+        for r in response:
+            _, height = r.rsplit(' ', 1)
             heights.append(height)
-        try:
-            self.task.setProgress( idx*total )
-        except AttributeError as e:
-            pass
         if heights and intervals:   
             self.fillTable(heights, intervals)
-        self.parent.on_success.emit('Pomyślnie wygenerowano profil')
+        self.parent.on_message.emit('Pomyślnie wygenerowano profil', Qgis.Success, 4)
         self.task = None
 
     def fillTable(self, heights, intervals):
         for idx, interval in enumerate(intervals):
-            self.parent.twData.setRowCount(idx+1)
-            self.parent.twData.setItem(idx, 0, QTableWidgetItem(f'{interval}'))
-            self.parent.twData.setItem(idx, 1, QTableWidgetItem(heights[idx]))
+            try:
+                self.parent.twData.setRowCount(idx+1)
+                self.parent.twData.setItem(idx, 0, QTableWidgetItem(f'{interval}'))
+                self.parent.twData.setItem(idx, 1, QTableWidgetItem(heights[idx]))
+            except:
+                return
 
     def calculateDistance(self, geometry):
         distanceArea = QgsDistanceArea()

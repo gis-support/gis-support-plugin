@@ -24,7 +24,8 @@
 
 import os, csv
 import urllib.request
-from matplotlib import pyplot as plt
+import pyqtgraph as pg
+# from matplotlib import pyplot as plt
 
 from qgis.PyQt import QtGui, uic
 from qgis.PyQt.QtWidgets import QDockWidget, QInputDialog, QFileDialog
@@ -32,7 +33,7 @@ from qgis.PyQt.QtCore import pyqtSignal, QVariant
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import (QgsMapLayerProxyModel, QgsField, Qgis, QgsTask, QgsApplication,
     QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsVectorLayer, 
-    QgsFeature, QgsWkbTypes)
+    QgsFeature, QgsWkbTypes, QgsGeometry)
 from qgis.utils import iface
 
 from ..tools import IdentifyTool, ProfileTool
@@ -45,7 +46,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
-    on_success = pyqtSignal(str)
+    on_message = pyqtSignal(str, object, int)
 
     def __init__(self, parent=None):
         """Constructor."""
@@ -54,7 +55,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
 
         self.registerTools()
         self.setButtonIcons()
-        self.on_success.connect(self.showSuccesMessage)
+        self.on_message.connect(self.showMessage)
 
         self.savedFeats = []
         self.infoDialog = InfoDialog()
@@ -81,6 +82,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         layer = self.cbLayers.currentLayer()
         if not layer:
             return
+        layer_crs = layer.crs().authid()
         if self.cbxUpdateField.isChecked():
             field_id = layer.dataProvider().fields().indexFromName(self.cbFields.currentText())
         elif 'nmt_wys' not in layer.fields().names():
@@ -88,34 +90,33 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         else:
             field_id = layer.dataProvider().fields().indexFromName('nmt_wys')
         if self.cbxSelectedOnly.isChecked():
-            features = layer.selectedFeatures()
+            feats_meta = {self.transformPoint(feat.geometry(), layer_crs):feat.id() 
+                for feat in layer.selectedFeatures()}
         else:
-            features = [f for f in layer.getFeatures()]
-        data = {'features':features, 'field_id':field_id}
+            feats_meta = {self.transformPoint(feat.geometry(), layer_crs):feat.id() 
+                for feat in layer.getFeatures()}
+        data = {'feats_meta':feats_meta, 'field_id':field_id}
         self.task2 = QgsTask.fromFunction('Dodawanie pola z wysokościa...', self.addHeightToFields, data=data)
         QgsApplication.taskManager().addTask(self.task2)
 
     def addHeightToFields(self, task: QgsTask, data):
-        #Iteracja po obiektach i dodanie wartości do pola nmt
-        features = data.get('features')
-        if not features:
-            return
+        """ Dodawanie wysokości dla punktów """
+        feats_meta = data.get('feats_meta')
         layer = self.cbLayers.currentLayer()
+        if not feats_meta:
+            return
         field_id = data.get('field_id')
-        total = 100/len(features)
-        for idx, f in enumerate(features):
-            fid = f.id()
-            geometry = f.geometry()
-            height = self.getHeight(geometry, layer=layer)
-            field = layer.dataProvider().fields().field(field_id)
+        field = layer.dataProvider().fields().field(field_id)
+        response = self.getPointsHeights(feats_meta).split(',')
+        to_change = {}
+        for r in response:
+            coords, height = r.replace(' ', '%20', 1).split(' ')
             if field.type() in [QVariant.LongLong, QVariant.Int]:
                 height = int(float(height))
-            layer.dataProvider().changeAttributeValues({fid:{field_id:height}})
-            try:
-                self.task.setProgress( idx*total )
-            except AttributeError as e:
-                pass
-        self.on_success.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}')
+            to_change[feats_meta.get(coords)] = {field_id:height}
+        layer = self.cbLayers.currentLayer()
+        layer.dataProvider().changeAttributeValues(to_change)
+        self.on_message.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}', Qgis.Success, 4)
         del self.task2
 
     def createNewField(self, layer):
@@ -128,33 +129,52 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         field_id = data_provider.fields().indexFromName('nmt_wys')
         return field_id
 
-    def getHeight(self, geom, layer=None, special=False):
+    def getPointsHeights(self, feats_meta):
+        if isinstance(feats_meta, dict):
+            feats_meta = list(feats_meta.keys())
+        if len(feats_meta) < 150:
+            url = 'https://services.gugik.gov.pl/nmt/?request=GetHByPointList&list=%s'%','.join(feats_meta)
+            try:
+                r = urllib.request.urlopen(url)
+                return r.read().decode()
+            except Exception as e:
+                self.on_message.emit(str(e), Qgis.Critical, 5)
+                return
+        else:
+            chunks = [feats_meta[i:i + 150] for i in range(0, len(feats_meta), 150)]
+            responses = ''
+            for chunk in chunks:
+                url = 'https://services.gugik.gov.pl/nmt/?request=GetHByPointList&list=%s'%','.join(chunk)
+                try:
+                    r = urllib.request.urlopen(url)
+                    responses += f'{r.read().decode()}'
+                except Exception as e:
+                    self.on_message.emit(str(e), Qgis.Critical, 5)
+                    return
+            return responses
+
+    def transformPoint(self, geometry, current_crs, single=False):
+        if current_crs != 'EPSG:2180':
+            ct = QgsCoordinateTransform(
+                QgsCoordinateReferenceSystem(current_crs), 
+                QgsCoordinateReferenceSystem('EPSG:2180'), 
+                QgsProject().instance()
+                )
+            geometry.transform(ct)
+        return f'{geometry.asPoint().y()}%20{geometry.asPoint().x()}'
+
+    def getSingleHeight(self, geom):
         """ Wysłanie zapytania do serwisu GUGiK NMT po wysokość w podanych współrzędnych """
         # http://services.gugik.gov.pl/nmt/?request=GetHbyXY&x=486617&y=637928
         point = geom.asPoint()
-        
-        if special:
-            x, y = point.x(), point.y()
-            try:
-                r = urllib.request.urlopen(f'https://services.gugik.gov.pl/nmt/?request=GetHbyXY&x={x}&y={y}')
-                return r.read().decode()
-            except Exception as e:
-                iface.messageBar().pushMessage('Wtyczka GUGiK NMT:', str(e), Qgis.Critical, 5)
-                return
-        
-        if layer:
-            if layer.crs().authid() != 'EPSG:2180':
-                point = self.coordsTransform(point, 'EPSG:2180', layer=layer)
-        else:
-            if QgsProject.instance().crs().authid() != 'EPSG:2180':
-                point = self.coordsTransform(point, 'EPSG:2180')
-        x, y = point.x(), point.y()
+        if QgsProject.instance().crs().authid() != 'EPSG:2180':
+            point = self.coordsTransform(point, 'EPSG:2180')
+        x, y = point.y(), point.x()
         try:
-            # f'http://services.gugik.gov.pl/nmt/?request=GetHbyXY&x={x}&y={y} 22'
             r = urllib.request.urlopen(f'https://services.gugik.gov.pl/nmt/?request=GetHbyXY&x={x}&y={y}')
             return r.read().decode()
         except Exception as e:
-            iface.messageBar().pushMessage('Wtyczka GUGiK NMT:', str(e), Qgis.Critical, 5)
+            self.on_message.emit(str(e), Qgis.Critical, 5)
             return
 
     def switchFieldsCb(self, state):
@@ -195,7 +215,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
 
     def createTempLayer(self):
         if not self.savedFeats:
-            iface.messageBar().pushMessage('Wtyczka GUGiK NMT:', 'Brak punktów do zapisu', Qgis.Warning, 5)
+            self.on_message.emit('Brak punktów do zapisu', Qgis.Warning, 5)
             return
         text, ok = QInputDialog.getText(self, 'Stwórz warstwę tymczasową', 'Nazwa warstwy:')
         if not ok:
@@ -222,7 +242,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                 pass
         self.tempLayer.dataProvider().addFeatures(features)
         self.tempLayer.updateExtents(True)
-        self.on_success.emit(f'Utworzono warstwę tymczasową: {self.tempLayer.name()}')
+        self.on_message.emit(f'Utworzono warstwę tymczasową: {self.tempLayer.name()}', Qgis.Success, 4)
         self.identifyTool.reset()
         del self.task
 
@@ -240,11 +260,12 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             writer = csv.writer(f, delimiter=';')
             to_write = [['Odległość', 'Wysokość npm']]
             for row in range(rows):
-                dist = self.twData.item(row, 0).text().replace('.', ',') + 'm'
-                val = self.twData.item(row, 1).text().replace('.', ',')
-                to_write.append([dist, val])
+                if self.twData.item(row, 1):
+                    dist = self.twData.item(row, 0).text().replace('.', ',') + 'm'
+                    val = self.twData.item(row, 1).text().replace('.', ',')
+                    to_write.append([dist, val])
             writer.writerows(to_write)
-        self.on_success.emit(f'Wygenerowano plik csv w miejscu: {path}')   
+        self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.Success, 4)   
 
     def generatePlot(self):
         rows = self.twData.rowCount()
@@ -253,16 +274,20 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         dist_list = []
         values = []
         for row in range(rows):
-            dist = self.twData.item(row, 0).text()
-            val = self.twData.item(row, 1).text()
-            dist_list.append(float(dist))
-            values.append(float(val))
-        
-        fig, ax = plt.subplots()
-        ax.set(xlabel='Interwał [m]', ylabel='Wysokość npm',
-            title='Profil podłużny')
-        ax.plot(dist_list, values)
-        plt.show()
+            if self.twData.item(row, 1):
+                dist = self.twData.item(row, 0).text()
+                val = self.twData.item(row, 1).text()
+                dist_list.append(float(dist))
+                values.append(float(val))
+        pg.setConfigOption('background', 'w')
+        pg.setConfigOption('foreground', 'k')
+        pg.plot(
+            x=dist_list,y=values, 
+            labels={'left': 'Wysokość n.p.m. [m]', 'bottom': 'Interwał [m]'}, 
+            title='Profil podłużny', 
+            pen=pg.mkPen(width=3, color='r'), 
+            antialias=True
+            )      
 
     def cbLayerChanged(self):
         self.cbxUpdateField.setChecked(False)
@@ -277,5 +302,5 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         self.tbShowProfile.setIcon(QgsApplication.getThemeIcon('mActionAddImage.svg'))
         self.tbResetPoints.setIcon(QgsApplication.getThemeIcon('mIconDelete.svg'))
 
-    def showSuccesMessage(self, message):
-        iface.messageBar().pushMessage('Wtyczka GUGiK NMT:', message, Qgis.Success)
+    def showMessage(self, message, level, time=5):
+        iface.messageBar().pushMessage('Narzędzie GUGiK NMT:', message, level, time)

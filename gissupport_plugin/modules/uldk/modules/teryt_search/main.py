@@ -54,6 +54,8 @@ class TerytSearch(QObject):
         self.result_collector_precinct_unknown_factory = result_collector_precinct_unknown_factory
         self.layer_factory = layer_factory
 
+        self.provinces_downloaded = False
+
         self.message_bar_item = None
         self.__init_ui()
 
@@ -184,9 +186,16 @@ class TerytSearch(QObject):
         return text.split(" | ")[1] if text else ""
 
     def fill_combobox_province(self):
-        provinces = self.get_administratives("wojewodztwo")
-        self.ui.combobox_province.clear()
-        self.ui.combobox_province.addItems([""] + provinces)
+        # Wypełnienie listy województ odbywa się tylko raz w momencie kliknięcia na listę
+        # QComboBox nie posiada sygnału emitowanego w czasie kliknięcia,
+        # dlatego lista wstępnie wypełniona jest jednym pustym napisem, aby było możliwe jej rozwinięcie.
+        # Po rozwinięciu listy następuje samoistne najechanie na element listy i wywoływana jest ta metoda
+        if not self.provinces_downloaded:
+            print("fill")
+            provinces = self.get_administratives("wojewodztwo")
+            self.ui.combobox_province.clear()
+            self.ui.combobox_province.addItems([""] + provinces)
+            self.provinces_downloaded = True
     
     def fill_combobox_county(self, province_teryt):
         counties = self.get_administratives("powiat", province_teryt) if province_teryt else []
@@ -221,6 +230,10 @@ class TerytSearch(QObject):
 
     def __init_ui(self):
         
+        self.combobox_province_highlighted = self.ui.combobox_province.highlighted.connect(
+            self.fill_combobox_province
+        )
+
         self.ui.combobox_province.currentIndexChanged.connect(
             lambda i: self.fill_combobox_county(
                     self.parse_combobox_current_text(self.ui.combobox_province)
@@ -251,7 +264,7 @@ class TerytSearch(QObject):
         self.ui.button_search_uldk.clicked.connect(self.search)
         self.ui.checkbox_precinct_unknown.stateChanged.connect(self.__on_checkbox_precinct_unknown_switched)
         self.ui.button_search_lpis.clicked.connect(self.search_lpis)
-        self.fill_combobox_province()
+        self.ui.combobox_province.addItems([""])
 
     def __search_from_sheet(self):
         self.ui.combobox_sheet.setEnabled(False)

@@ -82,7 +82,6 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         layer = self.cbLayers.currentLayer()
         if not layer:
             return
-        layer_crs = layer.crs().authid()
         if self.cbxUpdateField.isChecked():
             field_id = layer.dataProvider().fields().indexFromName(self.cbFields.currentText())
         elif 'nmt_wys' not in layer.fields().names():
@@ -90,19 +89,19 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         else:
             field_id = layer.dataProvider().fields().indexFromName('nmt_wys')
         if self.cbxSelectedOnly.isChecked():
-            feats_meta = {self.transformPoint(feat.geometry(), layer_crs):feat.id() 
-                for feat in layer.selectedFeatures()}
+            feats = layer.selectedFeatures()
         else:
-            feats_meta = {self.transformPoint(feat.geometry(), layer_crs):feat.id() 
-                for feat in layer.getFeatures()}
-        data = {'feats_meta':feats_meta, 'field_id':field_id}
+            feats = list(layer.getFeatures())
+        data = {'feats':feats, 'field_id':field_id}
         self.task2 = QgsTask.fromFunction('Dodawanie pola z wysokościa...', self.addHeightToFields, data=data)
         QgsApplication.taskManager().addTask(self.task2)
 
     def addHeightToFields(self, task: QgsTask, data):
         """ Dodawanie wysokości dla punktów """
-        feats_meta = data.get('feats_meta')
         layer = self.cbLayers.currentLayer()
+        layer_crs = layer.crs().authid()
+        feats_meta = {self.transformPoint(feat.geometry(), layer_crs):feat.id() 
+            for feat in data.get('feats')}
         if not feats_meta:
             return
         field_id = data.get('field_id')

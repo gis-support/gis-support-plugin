@@ -8,7 +8,7 @@ from PyQt5.QtGui import QKeySequence, QPixmap
 from qgis.core import QgsNetworkAccessManager
 from qgis.gui import QgsMessageBarItem
 
-from ...uldk import api as uldk_api
+from ...uldk.api import ULDKSearchTeryt, ULDKSearchParcel, ULDKSearchLogger, ULDKSearchWorker
 from ...uldk import validators
 from ...lpis import api as lpis_api
 from ...lpis.qgis_adapter import extract_lpis_bbox
@@ -54,11 +54,15 @@ class TerytSearch(QObject):
         self.result_collector_precinct_unknown_factory = result_collector_precinct_unknown_factory
         self.layer_factory = layer_factory
 
+        self.provinces_downloaded = False
+
         self.message_bar_item = None
         self.__init_ui()
 
-        self.uldk_search = uldk_api.ULDKSearchParcel("dzialka",
+        self.uldk_search = ULDKSearchParcel("dzialka",
              ("geom_wkt", "wojewodztwo", "powiat", "gmina", "obreb","numer","teryt"))
+
+        self.uldk_search = ULDKSearchLogger(self.uldk_search)
 
     def search(self, teryt):
         if self.ui.checkbox_precinct_unknown.checkState():
@@ -118,7 +122,7 @@ class TerytSearch(QObject):
         self.ui.button_search_uldk.setEnabled(False)
         self.ui.button_search_uldk.setText("Wyszukiwanie...")
 
-        self.uldk_search_worker = uldk_api.ULDKSearchWorker(self.uldk_search, teryts)
+        self.uldk_search_worker = ULDKSearchWorker(self.uldk_search, teryts)
         self.thread = QThread()
         self.uldk_search_worker.moveToThread(self.thread)
         
@@ -174,7 +178,8 @@ class TerytSearch(QObject):
         return len(plot_id.split(".")) >=3
 
     def get_administratives(self, level, teryt = ""):
-        search = uldk_api.ULDKSearchTeryt(level, ("nazwa", "teryt"))
+        search = ULDKSearchTeryt(level, ("nazwa", "teryt"))
+        search = ULDKSearchLogger(search)
         result = search.search(teryt)
         result = [ r.replace("|", " | ") for r in result ]
         return result
@@ -184,9 +189,16 @@ class TerytSearch(QObject):
         return text.split(" | ")[1] if text else ""
 
     def fill_combobox_province(self):
-        provinces = self.get_administratives("wojewodztwo")
-        self.ui.combobox_province.clear()
-        self.ui.combobox_province.addItems([""] + provinces)
+        # Wypełnienie listy województ odbywa się tylko raz w momencie kliknięcia na listę
+        # QComboBox nie posiada sygnału emitowanego w czasie kliknięcia,
+        # dlatego lista wstępnie wypełniona jest jednym pustym napisem, aby było możliwe jej rozwinięcie.
+        # Po rozwinięciu listy następuje samoistne najechanie na element listy i wywoływana jest ta metoda
+        if not self.provinces_downloaded:
+            print("fill")
+            provinces = self.get_administratives("wojewodztwo")
+            self.ui.combobox_province.clear()
+            self.ui.combobox_province.addItems([""] + provinces)
+            self.provinces_downloaded = True
     
     def fill_combobox_county(self, province_teryt):
         counties = self.get_administratives("powiat", province_teryt) if province_teryt else []
@@ -221,6 +233,10 @@ class TerytSearch(QObject):
 
     def __init_ui(self):
         
+        self.combobox_province_highlighted = self.ui.combobox_province.highlighted.connect(
+            self.fill_combobox_province
+        )
+
         self.ui.combobox_province.currentIndexChanged.connect(
             lambda i: self.fill_combobox_county(
                     self.parse_combobox_current_text(self.ui.combobox_province)
@@ -251,7 +267,7 @@ class TerytSearch(QObject):
         self.ui.button_search_uldk.clicked.connect(self.search)
         self.ui.checkbox_precinct_unknown.stateChanged.connect(self.__on_checkbox_precinct_unknown_switched)
         self.ui.button_search_lpis.clicked.connect(self.search_lpis)
-        self.fill_combobox_province()
+        self.ui.combobox_province.addItems([""])
 
     def __search_from_sheet(self):
         self.ui.combobox_sheet.setEnabled(False)
@@ -267,7 +283,7 @@ class TerytSearch(QObject):
         self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key_Return))
 
     def __handle_finished_precinct_unknown(self):
-        self.result_collector_precinct_unknown.update(self.plots_found)
+        self.result_collector_precinct_unknown.update_with_features(self.plots_found)
         self.iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
             f"Wyszukiwanie działek: zapisano znalezione działki do warstwy <b>{self.result_collector_precinct_unknown.layer.sourceName()}</b>"))
         self.ui.button_search_uldk.show()
@@ -311,7 +327,12 @@ class TerytSearch(QObject):
         self.parent.iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")
 
     def __handle_found_precinct_unknown(self, uldk_response_rows):
-        self.plots_found += uldk_response_rows
+        for row in uldk_response_rows:
+            try:
+                feature = self.result_collector_precinct_unknown.uldk_response_to_qgs_feature(row)
+            except self.result_collector_precinct_unknown.BadGeometryException:
+                return
+            self.plots_found.append(feature)
 
     def __handle_progress_precinct_unknown(self):
         self.precincts_progressed += 1

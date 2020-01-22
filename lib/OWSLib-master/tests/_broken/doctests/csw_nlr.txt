@@ -1,0 +1,72 @@
+
+>>> from owslib.csw import CatalogueServiceWeb
+>>> from owslib import fes
+
+>>> c = CatalogueServiceWeb('http://geomatics.nlr.nl/excat/csw')
+
+>>> c.identification.title
+'NLR CSW'
+
+>>> c.identification.abstract
+'NLR CSW: XQuery based catalog service conform to the HTTP protocol binding \n of the OpenGIS Catalogue Service specification version 2.0.2/2.0.1'
+
+>>> c.identification.keywords
+['CSW', 'geospatial', 'catalogue']
+
+>>> c.identification.fees
+'NONE'
+
+>>> c.identification.accessconstraints
+'NONE'
+
+>>> c.identification.type
+'CSW'
+
+>>> c.identification.version
+'2.0.2'
+
+>>> c.provider.name
+'National Aerospace Laboratory NLR'
+
+>>> c.provider.site    #doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'ServiceProvider' object has no attribute 'site'
+
+>>> c.provider.url
+'http://geomatics.nlr.nl/excat'
+
+>>> c.provider.uri      #doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'ServiceProvider' object has no attribute 'uri'
+
+>>> c.provider.contact.name
+'Rob van Swol'
+
+>>> c.provider.contact.position
+'Senior Scientist NLR-ASSP'
+
+>>> [op.name for op in c.operations]
+['GetCapabilities', 'DescribeRecord', 'GetRecords', 'GetRecordById']
+
+>>> grop = c.get_operation_by_name('GetRecords')
+>>> grop.name
+'GetRecords'
+
+>>> c.get_operation_by_name('GetRecords-bad')       #doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyError: 'No operation named GetRecords-bad'
+
+>>> c.describerecord()
+
+>>> c.getdomain('GetRecords.outputSchema')      #doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ExceptionReport: 'Operation not supported: GetDomain'
+
+>>> c.getrecordbyid(['DGFKRYMCWUZSCDRBWRXMIETZE'])
+
+#>>> c.records['DGFKRYMCWUZSCDRBWRXMIETZE'].title
+#'CERISE: Computationally Efficient Radar Image Simulation Environment'

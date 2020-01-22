@@ -2,10 +2,15 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import urlopen
 
+from http.client import IncompleteRead
+
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
 from ..lib.ratelimit import RateLimitException, limits, sleep_and_retry
 from copy import deepcopy
+
+from qgis.core import QgsMessageLog
+from qgis.core import Qgis
 
 class RequestException(Exception):
     pass
@@ -74,6 +79,8 @@ class ULDKSearch:
             status = content_lines[0]
             if status != "0":
                 raise RequestException(status)
+        except IncompleteRead:
+            raise RequestException("Błąd usługi ULDK")
         except HTTPError as e:
             raise e
         except URLError:
@@ -82,6 +89,30 @@ class ULDKSearch:
         if content.endswith("\n"):
             content_lines = content_lines[:-1]
         return content_lines
+
+class ULDKSearchLogger(ULDKSearch):
+
+    """Dekorator obiektów ULDKSearch, służący do zapisywania logu wyszukiwań"""
+
+    message_group_name = "GIS Support - wyszukiwarka działek"
+
+    def __init__(self, decorated: ULDKSearch):
+        self._decorated = decorated
+
+    def search(self, *args, **kwargs):
+        url = str(self._decorated.url)
+
+        try:
+            result = self._decorated.search(*args, **kwargs)
+            self.log_message("{} - pobrano".format(url))
+            return result
+        except Exception as e:
+            message = "{} - błąd {} ({})".format(url, type(e), e)
+            self.log_message(message, Qgis.Critical)
+            raise e
+
+    def log_message(self, message, level=Qgis.Info):
+        QgsMessageLog.logMessage(message, self.message_group_name, level)
 
 class ULDKSearchTeryt(ULDKSearch):
     def __init__(self, target, results):

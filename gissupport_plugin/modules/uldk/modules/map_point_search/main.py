@@ -4,7 +4,7 @@ from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsFeature, QgsPoint)
 from qgis.gui import QgsMapToolEmitPoint
 
-from ...uldk import api as uldk_api
+from ...uldk.api import ULDKSearchLogger, ULDKSearchPoint, ULDKSearchPointWorker, ULDKPoint
 
 CRS_2180 = QgsCoordinateReferenceSystem()
 CRS_2180.createFromSrid(2180)
@@ -37,12 +37,15 @@ class MapPointSearch(QgsMapToolEmitPoint):
         y = point.y()
         srid = 2180
 
-        uldk_search = uldk_api.ULDKSearchPoint(
+        uldk_search = ULDKSearchPoint(
             "dzialka",
             ("geom_wkt", "wojewodztwo", "powiat", "gmina", "obreb","numer","teryt")
         )
-        uldk_point = uldk_api.ULDKPoint(x,y,srid)
-        worker = uldk_api.ULDKSearchPointWorker(uldk_search, (uldk_point,))
+
+        uldk_search = ULDKSearchLogger(uldk_search)
+
+        uldk_point = ULDKPoint(x,y,srid)
+        worker = ULDKSearchPointWorker(uldk_search, (uldk_point,))
         self.worker = worker
         thread= QThread()
         self.thread = thread
@@ -59,7 +62,11 @@ class MapPointSearch(QgsMapToolEmitPoint):
         thread.start()
 
     def __handle_found(self, uldk_response_row):
-        added_feature = self.result_collector.update(uldk_response_row)
+        try:
+            added_feature = self.result_collector.update(uldk_response_row)
+        except self.result_collector.BadGeometryException:
+            self.parent.iface.messageBar().pushCritical(
+                "Wtyczka ULDK",f"Działka posiada niepoprawną geometrię")
         # self.found.emit(added_feature)
 
     def __handle_not_found(self, uldk_point, exception):

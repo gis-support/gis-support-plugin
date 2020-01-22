@@ -7,7 +7,7 @@ from PyQt5.QtGui import QKeySequence, QPixmap
 from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem
 from qgis.gui import QgsMessageBarItem
 
-from ...uldk import api as uldk_api
+from ...uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
@@ -26,8 +26,8 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
     def initGui(self, target_layout):
         target_layout.layout().addWidget(self)
 
-        self.label_info.setPixmap(QPixmap(self.icon_info_path))
-        self.label_info.setToolTip((
+        self.label_info_start.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_start.setToolTip((
             "Wyszukiwanie wielu obiektów może być czasochłonne. W tym czasie\n"
             "będziesz mógł korzystać z pozostałych funkcjonalności wtyczki,\n"
             "ale mogą one działać wolniej. Wyszukiwanie obiektów działa również\n"
@@ -36,6 +36,11 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
         self.label_info_column.setToolTip((
             "Kolumna zawierająca kody TERYT działek, \n"
             "przykład poprawnego kodu: 141201_1.0001.1867/2"))
+
+        self.frame_how_it_works.setToolTip((
+            "Narzędzie wyszukuje działki na podstawie listy:\n"
+            "załaduj plik CSV, wskaż kolumnę z TERYT i uruchom wyszukiwanie."))   
+        self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
 
 class CSVImport:
 
@@ -51,8 +56,10 @@ class CSVImport:
         
         self.__init_ui()
 
-        self.uldk_search = uldk_api.ULDKSearchParcel("dzialka",
+        uldk_search = ULDKSearchParcel("dzialka",
              ("geom_wkt", "wojewodztwo", "powiat", "gmina", "obreb","numer","teryt"))
+
+        self.uldk_search = ULDKSearchLogger(uldk_search)
 
     def start_import(self):
         self.__cleanup_before_search()
@@ -62,7 +69,7 @@ class CSVImport:
             name = layer_name, custom_properties = {"ULDK": layer_name})
 
         self.result_collector = self.result_collector_factory(self.parent, layer)
-        self.uldk_received_rows = []
+        self.features_found = []
         
         teryts = []
         with open(self.file_path) as f:
@@ -73,7 +80,7 @@ class CSVImport:
                 teryts.append(teryt)
         self.csv_rows_count = len(teryts)
 
-        self.worker = uldk_api.ULDKSearchWorker(self.uldk_search, teryts)
+        self.worker = ULDKSearchWorker(self.uldk_search, teryts)
         self.thread = QThread()
         self.worker.moveToThread(self.thread) 
         self.worker.found.connect(self.__handle_found)
@@ -133,14 +140,21 @@ class CSVImport:
     
     def __handle_found(self, uldk_response_rows):
         for row in uldk_response_rows:
-            self.uldk_received_rows.append(row)
+            try:
+                feature = self.result_collector.uldk_response_to_qgs_feature(row)
+            except self.result_collector.BadGeometryException as e:
+                e = self.result_collector.BadGeometryException(e.feature, "Niepoprawna geometria")
+                self._handle_bad_geometry(e.feature, e)
+                return
+            self.features_found.append(feature)
             self.found_count += 1
 
     def __handle_not_found(self, teryt, exception):
-        row = self.ui.table_errors.rowCount()
-        self.ui.table_errors.insertRow(row)
-        self.ui.table_errors.setItem(row, 0, QTableWidgetItem(teryt))
-        self.ui.table_errors.setItem(row, 1, QTableWidgetItem(str(exception)))
+        self._add_table_errors_row(teryt, str(exception))
+        self.not_found_count += 1
+
+    def _handle_bad_geometry(self, feature, exception):
+        self._add_table_errors_row(feature.attribute("teryt"), str(exception))
         self.not_found_count += 1
 
     def __progressed(self):
@@ -153,7 +167,7 @@ class CSVImport:
         self.ui.label_not_found_count.setText("Nie znaleziono: {}".format(not_found_count))
 
     def __handle_finished(self):
-        self.__collect_received_rows()
+        self.__collect_received_features()
         form = "obiekt"
         found_count = self.found_count
         if found_count == 1:
@@ -172,12 +186,18 @@ class CSVImport:
         self.__cleanup_after_search()
 
     def __handle_interrupted(self):
-        self.__collect_received_rows()
+        self.__collect_received_features()
         self.__cleanup_after_search()
 
-    def __collect_received_rows(self):
-        if self.uldk_received_rows:
-            self.result_collector.update(self.uldk_received_rows)
+    def __collect_received_features(self):
+        if self.features_found:
+            self.result_collector.update_with_features(self.features_found)
+
+    def _add_table_errors_row(self, teryt, exception_message):
+        row = self.ui.table_errors.rowCount()
+        self.ui.table_errors.insertRow(row)
+        self.ui.table_errors.setItem(row, 0, QTableWidgetItem(teryt))
+        self.ui.table_errors.setItem(row, 1, QTableWidgetItem(exception_message))
 
     def __cleanup_after_search(self):
         self.__set_controls_enabled(True)

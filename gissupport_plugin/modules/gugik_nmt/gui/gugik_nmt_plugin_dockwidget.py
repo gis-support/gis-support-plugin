@@ -114,7 +114,6 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             if field.type() in [QVariant.LongLong, QVariant.Int]:
                 height = int(float(height))
             to_change[feats_meta.get(coords)] = {field_id:height}
-        layer = self.cbLayers.currentLayer()
         layer.dataProvider().changeAttributeValues(to_change)
         self.on_message.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}', Qgis.Success, 4)
         del self.task2
@@ -132,7 +131,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
     def getPointsHeights(self, feats_meta):
         if isinstance(feats_meta, dict):
             feats_meta = list(feats_meta.keys())
-        if len(feats_meta) < 150:
+        if len(feats_meta) <= 200:
             url = 'https://services.gugik.gov.pl/nmt/?request=GetHByPointList&list=%s'%','.join(feats_meta)
             try:
                 r = urllib.request.urlopen(url)
@@ -141,16 +140,17 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                 self.on_message.emit(str(e), Qgis.Critical, 5)
                 return
         else:
-            chunks = [feats_meta[i:i + 150] for i in range(0, len(feats_meta), 150)]
-            responses = ''
+            chunks = [feats_meta[i:i + 200] for i in range(0, len(feats_meta), 200)]
+            responses = []
             for chunk in chunks:
                 url = 'https://services.gugik.gov.pl/nmt/?request=GetHByPointList&list=%s'%','.join(chunk)
                 try:
                     r = urllib.request.urlopen(url)
-                    responses += f'{r.read().decode()}'
+                    responses.append(f'{r.read().decode()}')
                 except Exception as e:
                     self.on_message.emit(str(e), Qgis.Critical, 5)
                     return
+            responses = ','.join(responses)
             return responses
 
     def transformPoint(self, geometry, current_crs, single=False):

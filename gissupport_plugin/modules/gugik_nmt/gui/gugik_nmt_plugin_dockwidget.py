@@ -302,4 +302,5 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         self.tbResetPoints.setIcon(QgsApplication.getThemeIcon('mIconDelete.svg'))
 
     def showMessage(self, message, level, time=5):
+        #test 
         iface.messageBar().pushMessage('Narzędzie GUGiK NMT:', message, level, time)

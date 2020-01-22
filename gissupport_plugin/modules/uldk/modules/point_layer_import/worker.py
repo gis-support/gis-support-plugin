@@ -3,7 +3,7 @@ from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsField, QgsGeometry,
                        QgsPoint, QgsVectorLayer, QgsFeature)
 
-from ...uldk import api as uldk_api
+from ...uldk.api import ULDKSearchPoint, ULDKSearchLogger, ULDKPoint
 
 PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("wojewodztwo", QVariant.String),
@@ -103,10 +103,11 @@ class PointLayerImportWorker(QObject):
             transformation = None
             features = features_iterator
 
-        uldk_search = uldk_api.ULDKSearchPoint(
+        uldk_search = ULDKSearchPoint(
             "dzialka",
             ("geom_wkt", "wojewodztwo", "powiat", "gmina", "obreb","numer","teryt"))
 
+        uldk_search = ULDKSearchLogger(uldk_search)
 
         found_features = []
 
@@ -127,7 +128,7 @@ class PointLayerImportWorker(QObject):
                 continue
 
             point = source_feature.geometry().asPoint()
-            uldk_point = uldk_api.ULDKPoint(point.x(), point.y(), 2180)
+            uldk_point = ULDKPoint(point.x(), point.y(), 2180)
         
             try:
                 uldk_response_row = uldk_search.search(uldk_point)

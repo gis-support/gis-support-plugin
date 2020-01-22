@@ -7,7 +7,7 @@ from PyQt5.QtGui import QKeySequence, QPixmap
 from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem
 from qgis.gui import QgsMessageBarItem
 
-from ...uldk import api as uldk_api
+from ...uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
@@ -56,8 +56,10 @@ class CSVImport:
         
         self.__init_ui()
 
-        self.uldk_search = uldk_api.ULDKSearchParcel("dzialka",
+        uldk_search = ULDKSearchParcel("dzialka",
              ("geom_wkt", "wojewodztwo", "powiat", "gmina", "obreb","numer","teryt"))
+
+        self.uldk_search = ULDKSearchLogger(uldk_search)
 
     def start_import(self):
         self.__cleanup_before_search()
@@ -78,7 +80,7 @@ class CSVImport:
                 teryts.append(teryt)
         self.csv_rows_count = len(teryts)
 
-        self.worker = uldk_api.ULDKSearchWorker(self.uldk_search, teryts)
+        self.worker = ULDKSearchWorker(self.uldk_search, teryts)
         self.thread = QThread()
         self.worker.moveToThread(self.thread) 
         self.worker.found.connect(self.__handle_found)

@@ -8,7 +8,7 @@ from PyQt5.QtGui import QKeySequence, QPixmap
 from qgis.core import QgsNetworkAccessManager
 from qgis.gui import QgsMessageBarItem
 
-from ...uldk import api as uldk_api
+from ...uldk.api import ULDKSearchTeryt, ULDKSearchParcel, ULDKSearchLogger, ULDKSearchWorker
 from ...uldk import validators
 from ...lpis import api as lpis_api
 from ...lpis.qgis_adapter import extract_lpis_bbox
@@ -59,8 +59,10 @@ class TerytSearch(QObject):
         self.message_bar_item = None
         self.__init_ui()
 
-        self.uldk_search = uldk_api.ULDKSearchParcel("dzialka",
+        self.uldk_search = ULDKSearchParcel("dzialka",
              ("geom_wkt", "wojewodztwo", "powiat", "gmina", "obreb","numer","teryt"))
+
+        self.uldk_search = ULDKSearchLogger(self.uldk_search)
 
     def search(self, teryt):
         if self.ui.checkbox_precinct_unknown.checkState():
@@ -120,7 +122,7 @@ class TerytSearch(QObject):
         self.ui.button_search_uldk.setEnabled(False)
         self.ui.button_search_uldk.setText("Wyszukiwanie...")
 
-        self.uldk_search_worker = uldk_api.ULDKSearchWorker(self.uldk_search, teryts)
+        self.uldk_search_worker = ULDKSearchWorker(self.uldk_search, teryts)
         self.thread = QThread()
         self.uldk_search_worker.moveToThread(self.thread)
         
@@ -176,7 +178,8 @@ class TerytSearch(QObject):
         return len(plot_id.split(".")) >=3
 
     def get_administratives(self, level, teryt = ""):
-        search = uldk_api.ULDKSearchTeryt(level, ("nazwa", "teryt"))
+        search = ULDKSearchTeryt(level, ("nazwa", "teryt"))
+        search = ULDKSearchLogger(search)
         result = search.search(teryt)
         result = [ r.replace("|", " | ") for r in result ]
         return result

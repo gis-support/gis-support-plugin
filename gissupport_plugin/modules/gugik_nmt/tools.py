@@ -17,19 +17,21 @@ class IdentifyTool(QgsMapTool):
         super(IdentifyTool, self).__init__(canvas)
         self.parent = parent
         
+        #Konfiguracja narzędzia
         set_cursor(self)
-
         self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.PointGeometry)
         self.tempGeom.setColor(QColor('red'))
         self.tempGeom.setWidth = 5
         
     def canvasMoveEvent(self, e):
-        if QgsProject.instance().crs().authid() != 'EPSG:2180':
-            point92 = self.parent.coordsTransform(e.mapPoint(), 'EPSG:2180')
+        """ Przeliczanie współrzędnych dla miejsca kursora """
+        project_crs = QgsProject.instance().crs().authid()
+        if project_crs != 'EPSG:2180':
+            point92 = self.parent.transformGeometry(QgsGeometry.fromPointXY(e.mapPoint()), current_crs=project_crs).asPoint()
         else:
             point92 = e.mapPoint()
-        if QgsProject.instance().crs().authid() != 'EPSG:4326':
-            point84 = self.parent.coordsTransform(e.mapPoint(), 'EPSG:4326')
+        if project_crs != 'EPSG:4326':
+            point84 = self.parent.transformGeometry(QgsGeometry.fromPointXY(e.mapPoint()), current_crs=project_crs, dest_crs='EPSG:4326').asPoint()
         else:
             point84 = e.mapPoint()
         x92, y92 = point92.x(), point92.y()
@@ -40,6 +42,7 @@ class IdentifyTool(QgsMapTool):
         self.parent.dsbWgsY.setValue(y84)
 
     def canvasReleaseEvent(self, e):
+        """ Nanoszenie na mape punktu tymczasowego wraz z wysokościa w tym miejscu """
         geom = QgsGeometry.fromPointXY(e.mapPoint())
         height = self.parent.getSingleHeight(geom)
         if height:
@@ -51,6 +54,10 @@ class IdentifyTool(QgsMapTool):
                 })
 
     def keyPressEvent(self, e):
+        """ 
+        Usuwanie ostatniego dodanego punktu/segmentu lub
+        czyszczenie całości
+        """
         if e.key() == Qt.Key_Escape:
             self.tempGeom.reset(QgsWkbTypes.PointGeometry)
             if self.parent.savedFeats:
@@ -61,10 +68,12 @@ class IdentifyTool(QgsMapTool):
                 del self.parent.savedFeats[-1]
 
     def reset(self):
+        """ Czyszczenie narzędzia """
         self.tempGeom.reset(QgsWkbTypes.PointGeometry)
         self.parent.savedFeats = []
     
     def deactivate(self):
+        """ Reagowanie zmiany aktywności narzędzia """
         self.tempGeom.reset(QgsWkbTypes.PointGeometry)
         self.button().setChecked(False)
 
@@ -79,17 +88,20 @@ class ProfileTool(QgsMapTool):
         self.editing = False
         self.parent = parent
         self.task = None
-
+        #Konfiguracja geometrii tymczasowych
         self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.LineGeometry)
         self.tempGeom.setColor(QColor('red'))
         self.tempGeom.setWidth(2)
-
         self.tempLine = QgsRubberBand(canvas, QgsWkbTypes.LineGeometry)
         self.tempLine.setColor(QColor('red'))
         self.tempLine.setWidth(2)
         self.tempLine.setLineStyle(Qt.DotLine)
 
     def keyPressEvent(self, e):
+        """ 
+        Usuwanie ostatniego dodanego punktu/segmentu lub
+        czyszczenie całości
+        """
         if e.key() == Qt.Key_Delete:
             pointsCount = self.tempLine.numberOfVertices() 
             if pointsCount > 2 and self.editing:
@@ -107,12 +119,13 @@ class ProfileTool(QgsMapTool):
             self.reset()
 
     def canvasMoveEvent(self, e):
-        #Poruszanie" wierzchołkiem linii tymczasowej zgodnie z ruchem myszki
+        """ 'Poruszanie' wierzchołkiem linii tymczasowej zgodnie z ruchem myszki """
         if self.tempGeom.numberOfVertices()>1:
             point = e.snapPoint()
             self.tempLine.movePoint(point)
 
     def canvasReleaseEvent(self, e):
+        """ Rysowanie obiektu """
         point = e.snapPoint()
         if self.task is not None:
             self.parent.on_message.emit('Trwa genrowanie profilu. Aby wygenerować następny poczekaj na pobranie danych', Qgis.Warning, 4)
@@ -146,18 +159,15 @@ class ProfileTool(QgsMapTool):
             self.getInterval()
 
     def getInterval(self):
+        """ Zebranie geometrii punktów na linii zgodnie z zadanym interwałem """
         interval, ok = QInputDialog.getDouble(self.parent, 'Podaj interwał', 'Interwał [m]:')
         if not ok:
             self.reset()
             return
-        geom = self.tempGeom.asGeometry()
-        
-        activeCrs = QgsProject.instance().crs().authid()
-        fromCrs = QgsCoordinateReferenceSystem(activeCrs)
-        toCrs = QgsCoordinateReferenceSystem(2180)
-        transformation = QgsCoordinateTransform(fromCrs, toCrs, QgsProject.instance())
-        geom.transform(transformation)
-        
+        geom = self.parent.transformGeometry(
+            self.tempGeom.asGeometry(), 
+            current_crs=QgsProject.instance().crs().authid(),
+            )
         meters_len = geom.length()
         if meters_len <= interval:
             self.parent.on_message.emit('Długość linii krótsza lub równa podanemu interwałowi', Qgis.Critical, 5)
@@ -182,6 +192,7 @@ class ProfileTool(QgsMapTool):
         QgsApplication.taskManager().addTask(self.task)
 
     def generateProfileFromPoints(self, task: QgsTask, data):
+        """ Pobranie wysokości dla punktów na linii """
         points_on_line = data.get('points')
         intervals = data.get('intervals')
         response = self.parent.getPointsHeights(points_on_line).split(',')
@@ -195,6 +206,7 @@ class ProfileTool(QgsMapTool):
         self.task = None
 
     def fillTable(self, heights, intervals):
+        """ Wypełnienie tabelii interwałami i wysokościami dla nich """
         for idx, interval in enumerate(intervals):
             try:
                 self.parent.twData.setRowCount(idx+1)
@@ -204,26 +216,30 @@ class ProfileTool(QgsMapTool):
                 return
 
     def calculateDistance(self, geometry):
-        distanceArea = QgsDistanceArea()
-        distanceArea.setEllipsoid('GRS80')
-        distanceArea.setSourceCrs(QgsProject.instance().crs(), QgsCoordinateTransformContext())
-        length = distanceArea.measureLength(geometry)
-        result = distanceArea.convertLengthMeasurement(length, QgsUnitTypes.DistanceMeters)
+        """ Obliczenie długości linii w odpowiedniej jednostce """
+        distance_area = QgsDistanceArea()
+        distance_area.setEllipsoid('GRS80')
+        distance_area.setSourceCrs(QgsProject.instance().crs(), QgsCoordinateTransformContext())
+        length = distance_area.measureLength(geometry)
+        result = distance_area.convertLengthMeasurement(length, QgsUnitTypes.DistanceMeters)
         return result
         
     def reset(self):
+        """ Czyszczenie narzędzia """
         self.tempLine.reset(QgsWkbTypes.LineGeometry)
         self.tempGeom.reset(QgsWkbTypes.LineGeometry)
         self.parent.dsbLineLength.setValue(0)
         self.parent.twData.setRowCount(0)
 
     def deactivate(self):
+        """ Reagowanie zmiany aktywności narzędzia """
         self.reset()
         self.parent.dsbLineLength.setEnabled(False) 
         self.button().setChecked(False)
 
 
 def set_cursor(tool):
+    """ Konfiguracja kursora """
     tool.setCursor( QCursor(QPixmap(["16 16 2 1",
         "      c None",
         ".     c #000000",

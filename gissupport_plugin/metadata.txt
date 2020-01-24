@@ -10,7 +10,7 @@
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
 description=Wtyczka GIS Support
-version=1.2.1
+version=1.2.2
 author=GIS Support
 email=kamil.kozik@gis-support.pl
 
@@ -23,8 +23,7 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog= GUGiK NMT: poprawka dzielenia listy punktów, fixy w asynchroniczności
-    Baza WMS: dodanie serwisu HGIS z mapą WIG 500k
+changelog= Baza WMS: dodanie nowych usług
 
 # Tags are comma separated with spaces allowed
 tags=python

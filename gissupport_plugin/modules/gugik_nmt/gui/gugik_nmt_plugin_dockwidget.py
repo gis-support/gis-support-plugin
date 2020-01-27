@@ -53,14 +53,29 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         super(GugikNmtDockWidget, self).__init__(parent)
         self.setupUi(self)
 
+        self.cbLayers.setFilters(QgsMapLayerProxyModel.PointLayer)
+        self.menageSignals()
         self.registerTools()
         self.setButtonIcons()
-        self.on_message.connect(self.showMessage)
-
+        #Referencje
         self.savedFeats = []
         self.infoDialog = InfoDialog()
 
-        self.cbLayers.setFilters(QgsMapLayerProxyModel.PointLayer)
+    def setButtonIcons(self):
+        """ Ustawienie ikonek dla przycisków """
+        self.tbGetPoint.setIcon(QIcon(':/plugins/gissupport_plugin/gugik_nmt/index.svg'))
+        self.tbExportCsv.setIcon(QgsApplication.getThemeIcon('mActionAddTable.svg'))
+        self.tbCreateTempLyr.setIcon(QgsApplication.getThemeIcon('mActionFileSave.svg'))
+        self.tbExtendLayer.setIcon(QgsApplication.getThemeIcon('mActionStart.svg'))
+        self.tbMakeLine.setIcon(QgsApplication.getThemeIcon('mActionAddPolyline.svg'))
+        self.tbShowProfile.setIcon(QgsApplication.getThemeIcon('mActionAddImage.svg'))
+        self.tbResetPoints.setIcon(QgsApplication.getThemeIcon('mIconDelete.svg'))
+
+    def menageSignals(self):
+        """ Zarządzanie sygnałami """
+        #Customowe sygnały
+        self.on_message.connect(self.showMessage)
+        #Kontrolki
         self.cbLayers.layerChanged.connect(self.cbLayerChanged)
         self.tbExtendLayer.clicked.connect(self.extendLayerByHeight)
         self.cbxUpdateField.stateChanged.connect(self.switchFieldsCb)
@@ -70,64 +85,62 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         self.tbInfos.clicked.connect(self.showInfo)
         self.tbResetPoints.clicked.connect(lambda: self.identifyTool.reset())
 
+    def registerTools(self):
+        """ Zarejestrowanie narzędzi jak narzędzi mapy QGIS """
+        self.identifyTool = IdentifyTool(self)
+        self.identifyTool.setButton(self.tbGetPoint)
+        self.tbGetPoint.clicked.connect(lambda: self.activateTool(self.identifyTool))
+        self.profileTool = ProfileTool(self)
+        self.profileTool.setButton(self.tbMakeLine)
+        self.tbMakeLine.clicked.connect(lambda: self.activateTool(self.profileTool))
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
         
     def showInfo(self):
         self.infoDialog.show()
+    
+    def showMessage(self, message, level, time=5):
+        """ Wyświetlanie wiadomości na pasku """
+        iface.messageBar().pushMessage('Narzędzie GUGiK NMT:', message, level, time)
 
-    def extendLayerByHeight(self):
-        """ Rozszerzenie warstwy o pole z wysokością """
+    def switchFieldsCb(self, state):
+        """ Aktualizowanie comboboxa z polami """
+        self.cbFields.setEnabled(state)
+        self.cbFields.clear()
         layer = self.cbLayers.currentLayer()
         if not layer:
             return
-        if self.cbxUpdateField.isChecked():
-            field_id = layer.dataProvider().fields().indexFromName(self.cbFields.currentText())
-        elif 'nmt_wys' not in layer.fields().names():
-            field_id = self.createNewField(layer)
-        else:
-            field_id = layer.dataProvider().fields().indexFromName('nmt_wys')
-        if self.cbxSelectedOnly.isChecked():
-            feats = layer.selectedFeatures()
-        else:
-            feats = list(layer.getFeatures())
-        data = {'feats':feats, 'field_id':field_id}
-        self.task2 = QgsTask.fromFunction('Dodawanie pola z wysokościa...', self.addHeightToFields, data=data)
-        QgsApplication.taskManager().addTask(self.task2)
-
-    def addHeightToFields(self, task: QgsTask, data):
-        """ Dodawanie wysokości dla punktów """
-        layer = self.cbLayers.currentLayer()
-        layer_crs = layer.crs().authid()
-        feats_meta = {self.transformPoint(feat.geometry(), layer_crs):feat.id() 
-            for feat in data.get('feats')}
-        if not feats_meta:
+        if not state:
             return
-        field_id = data.get('field_id')
-        field = layer.dataProvider().fields().field(field_id)
-        response = self.getPointsHeights(feats_meta).split(',')
-        to_change = {}
-        for r in response:
-            coords, height = r.replace(' ', '%20', 1).split(' ')
-            if field.type() in [QVariant.LongLong, QVariant.Int]:
-                height = int(float(height))
-            to_change[feats_meta.get(coords)] = {field_id:height}
-        layer.dataProvider().changeAttributeValues(to_change)
-        self.on_message.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}', Qgis.Success, 4)
-        del self.task2
+        self.cbFields.addItems([fname for fname in layer.fields().names()])
 
-    def createNewField(self, layer):
-        """ Utworzenie nowego pola i znalezienie id """
-        #Dodanie nowego pola o podanych parametrach
-        data_provider = layer.dataProvider()
-        data_provider.addAttributes([QgsField('nmt_wys', QVariant.Double)])
-        layer.reload()
-        #Znalezienie id pola
-        field_id = data_provider.fields().indexFromName('nmt_wys')
-        return field_id
+    def cbLayerChanged(self):
+        """ Reagowanie na zmianę warstwy w QgsMapCombobox """
+        self.cbxUpdateField.setChecked(False)
+        self.cbFields.clear()
+
+    def getSingleHeight(self, geom):
+        """ Wysłanie zapytania do serwisu GUGiK NMT po wysokość w podanych współrzędnych """
+        # http://services.gugik.gov.pl/nmt/?request=GetHbyXY&x=486617&y=637928
+        project_crs = QgsProject.instance().crs().authid()
+        if project_crs != 'EPSG:2180':
+            point = self.transformGeometry(geom, project_crs).asPoint()
+        x, y = point.y(), point.x()
+        try:
+            r = urllib.request.urlopen(f'https://services.gugik.gov.pl/nmt/?request=GetHbyXY&x={x}&y={y}')
+            return r.read().decode()
+        except Exception as e:
+            self.on_message.emit(str(e), Qgis.Critical, 5)
+            return
 
     def getPointsHeights(self, feats_meta):
+        """ 
+        Pobieranie wysokości dla większej ilości punktów. Jeśli ich liczba > 200 -
+        lista zostaje podzielona na mniejsze częśći i dopiero dla tych części wysyłane są
+        requesty do api
+        """
         if isinstance(feats_meta, dict):
             feats_meta = list(feats_meta.keys())
         if len(feats_meta) <= 200:
@@ -152,67 +165,74 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             responses = ','.join(responses)
             return responses
 
-    def transformPoint(self, geometry, current_crs, single=False):
-        if current_crs != 'EPSG:2180':
+    def transformGeometry(self, geometry, current_crs, dest_crs='EPSG:2180', multi=False):
+        """ Transformacja geometrii """
+        if current_crs != dest_crs:
             ct = QgsCoordinateTransform(
                 QgsCoordinateReferenceSystem(current_crs), 
-                QgsCoordinateReferenceSystem('EPSG:2180'), 
+                QgsCoordinateReferenceSystem(dest_crs), 
                 QgsProject().instance()
                 )
             geometry.transform(ct)
-        return f'{geometry.asPoint().y()}%20{geometry.asPoint().x()}'
+        if multi:
+            return f'{geometry.asPoint().y()}%20{geometry.asPoint().x()}'
+        return geometry
 
-    def getSingleHeight(self, geom):
-        """ Wysłanie zapytania do serwisu GUGiK NMT po wysokość w podanych współrzędnych """
-        # http://services.gugik.gov.pl/nmt/?request=GetHbyXY&x=486617&y=637928
-        point = geom.asPoint()
-        if QgsProject.instance().crs().authid() != 'EPSG:2180':
-            point = self.coordsTransform(point, 'EPSG:2180')
-        x, y = point.y(), point.x()
-        try:
-            r = urllib.request.urlopen(f'https://services.gugik.gov.pl/nmt/?request=GetHbyXY&x={x}&y={y}')
-            return r.read().decode()
-        except Exception as e:
-            self.on_message.emit(str(e), Qgis.Critical, 5)
-            return
+    def createNewField(self, layer):
+        """ Utworzenie nowego pola i zwrócenie jego id """
+        #Dodanie nowego pola o podanych parametrach
+        data_provider = layer.dataProvider()
+        data_provider.addAttributes([QgsField('nmt_wys', QVariant.Double)])
+        layer.reload()
+        #Znalezienie id pola
+        field_id = data_provider.fields().indexFromName('nmt_wys')
+        return field_id
 
-    def switchFieldsCb(self, state):
-        """ Aktualizowanie combo boxa z polami """
-        self.cbFields.setEnabled(state)
-        self.cbFields.clear()
+    def extendLayerByHeight(self):
+        """ Rozszerzenie warstwy o pole z wysokością """
         layer = self.cbLayers.currentLayer()
         if not layer:
             return
-        if not state:
-            return
-        self.cbFields.addItems([fname for fname in layer.fields().names()])
-
-    def registerTools(self):
-        self.identifyTool = IdentifyTool(self)
-        self.identifyTool.setButton(self.tbGetPoint)
-        self.tbGetPoint.clicked.connect(lambda: self.activateTool(self.identifyTool))
-        
-        self.profileTool = ProfileTool(self)
-        self.profileTool.setButton(self.tbMakeLine)
-        self.tbMakeLine.clicked.connect(lambda: self.activateTool(self.profileTool))
-
-    def activateTool(self, tool):
-        iface.mapCanvas().setMapTool(tool)
-        if tool == self.profileTool:
-            self.dsbLineLength.setEnabled(True)
-
-    def coordsTransform(self, geom, epsg, layer=None):
-        if layer:
-            activeCrs = layer.crs().authid()
+        if self.cbxUpdateField.isChecked():
+            field_id = layer.dataProvider().fields().indexFromName(self.cbFields.currentText())
+        elif 'nmt_wys' not in layer.fields().names():
+            field_id = self.createNewField(layer)
         else:
-            activeCrs = QgsProject.instance().crs().authid()
-        fromCrs = QgsCoordinateReferenceSystem(activeCrs)
-        toCrs = QgsCoordinateReferenceSystem(epsg)
-        transformation = QgsCoordinateTransform(fromCrs, toCrs, QgsProject.instance())
-        geom = transformation.transform(geom)
-        return geom
+            field_id = layer.dataProvider().fields().indexFromName('nmt_wys')
+        if self.cbxSelectedOnly.isChecked():
+            feats = layer.selectedFeatures()
+        else:
+            feats = list(layer.getFeatures())
+        data = {'feats':feats, 'field_id':field_id}
+        self.task2 = QgsTask.fromFunction('Dodawanie pola z wysokościa...', self.addHeightToFields, data=data)
+        QgsApplication.taskManager().addTask(self.task2)
+
+    def addHeightToFields(self, task: QgsTask, data):
+        """ Dodawanie wysokości dla punktów """
+        layer = self.cbLayers.currentLayer()
+        layer_crs = layer.crs().authid()
+        feats_meta = {self.transformGeometry(feat.geometry(), layer_crs, multi=True):feat.id() 
+            for feat in data.get('feats')}
+        if not feats_meta:
+            return
+        field_id = data.get('field_id')
+        field = layer.dataProvider().fields().field(field_id)
+        response = self.getPointsHeights(feats_meta).split(',')
+        to_change = {}
+        for r in response:
+            coords, height = r.replace(' ', '%20', 1).split(' ')
+            if field.type() in [QVariant.LongLong, QVariant.Int]:
+                height = int(float(height))
+            to_change[feats_meta.get(coords)] = {field_id:height}
+        layer.dataProvider().changeAttributeValues(to_change)
+        self.on_message.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}', Qgis.Success, 4)
+        del self.task2
 
     def createTempLayer(self):
+        """ 
+        Tworzenie warstwy tymczasowej i dodanie do niej punktów, 
+        dla których zostały pobrane wysokości
+        """
         if not self.savedFeats:
             self.on_message.emit('Brak punktów do zapisu', Qgis.Warning, 5)
             return
@@ -226,6 +246,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         QgsApplication.taskManager().addTask(self.task)
 
     def populateLayer(self, task: QgsTask, data):
+        """ Dodawanie do wybranej warstwy pobranych wysokości """
         lyr_fields = self.tempLayer.fields()
         total = 100/len(data)
         features = []
@@ -246,6 +267,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         del self.task
 
     def exportToCsv(self):
+        """ Eksport wysokości wraz z interwałami do pliku csv """
         rows = self.twData.rowCount()
         if rows < 1:
             return
@@ -267,6 +289,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.Success, 4)   
 
     def generatePlot(self):
+        """ Wyświetlenie profilu podłużnego """
         rows = self.twData.rowCount()
         if rows < 1:
             return
@@ -288,18 +311,8 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             antialias=True
             )      
 
-    def cbLayerChanged(self):
-        self.cbxUpdateField.setChecked(False)
-        self.cbFields.clear()
-
-    def setButtonIcons(self):
-        self.tbGetPoint.setIcon(QIcon(':/plugins/gissupport_plugin/gugik_nmt/index.svg'))
-        self.tbExportCsv.setIcon(QgsApplication.getThemeIcon('mActionAddTable.svg'))
-        self.tbCreateTempLyr.setIcon(QgsApplication.getThemeIcon('mActionFileSave.svg'))
-        self.tbExtendLayer.setIcon(QgsApplication.getThemeIcon('mActionStart.svg'))
-        self.tbMakeLine.setIcon(QgsApplication.getThemeIcon('mActionAddPolyline.svg'))
-        self.tbShowProfile.setIcon(QgsApplication.getThemeIcon('mActionAddImage.svg'))
-        self.tbResetPoints.setIcon(QgsApplication.getThemeIcon('mIconDelete.svg'))
-
-    def showMessage(self, message, level, time=5):
-        iface.messageBar().pushMessage('Narzędzie GUGiK NMT:', message, level, time)
+    def activateTool(self, tool):
+        """ Zmiana aktywnego narzędzia mapy """
+        iface.mapCanvas().setMapTool(tool)
+        if tool == self.profileTool:
+            self.dsbLineLength.setEnabled(True)

@@ -6,7 +6,7 @@ from http.client import IncompleteRead
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
-from ..lib.ratelimit import RateLimitException, limits, sleep_and_retry
+from .api_limits import RateLimitException, RateLimitDecorator, sleep_and_retry
 from copy import deepcopy
 
 from qgis.core import QgsMessageLog
@@ -66,7 +66,7 @@ class ULDKSearch:
             self.url.set_param("request", method)
 
     @sleep_and_retry
-    @limits(calls = 5, period = 3)
+    @RateLimitDecorator(calls = 5, period = 3)
     def search(self):
         url = str(self.url)
         # print(url)

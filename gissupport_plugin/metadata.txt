@@ -9,12 +9,17 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-description=Wtyczka GIS Support
+description=Wtyczka GIS Support: zawiera narzędzia, które ułatwiają komunikację z usługami oferowanymi przez polskie instytucje (np. GUGiK).
 version=1.2.2
 author=GIS Support
 email=kamil.kozik@gis-support.pl
 
-about=Provide a brief description of the plugin and its purpose.
+about=Lista narzędzi wtyczki:
+    * Wyszukiwarka działek ewidencyjnych - narzędzie zbudowane na podstawie wtyczki „Wyszukiwarka działek ewidencyjnych (GUGiK ULDK)”. Pozwala na wyszukiwanie aktualnych działek ewidencyjnych poprzez usługę ULDK uruchomioną przez GUGiK. Dodatkowo jest możliwość wyszukiwania lokalizacji działek „historycznych”, czyli LPIS (bez możliwości pobrania geometrii).
+
+    * Baza WMS 2.0 - nowsza, lepsza wersja starej wtyczki „Baza WMS”. Jest to zbiór linków do popularnych, ogólnokrajowych usług WMS.
+
+    * GUGiK NMT – narzędzie wykorzystujące API NMT GUGiK do danych wysokościowych. Narzędzie pozwala na poznanie wysokości nad poziomem morza dla klikniętego miejsca, dopisanie danych o wysokości dla obiektów z warstwy punktowej oraz stworzenie wykresu wysokościowego wzdłuż narysowanej linii.
 
 tracker=https://github.com/gis-support/gis-support-plugin/issues
 repository=https://github.com/gis-support/gis-support-plugin

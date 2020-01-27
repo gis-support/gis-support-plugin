@@ -16,7 +16,7 @@ email=kamil.kozik@gis-support.pl
 
 about=Provide a brief description of the plugin and its purpose.
 
-tracker=https://github.com/gis-support/gis-support-plugin
+tracker=https://github.com/gis-support/gis-support-plugin/issues
 repository=https://github.com/gis-support/gis-support-plugin
 # End of mandatory metadata
 

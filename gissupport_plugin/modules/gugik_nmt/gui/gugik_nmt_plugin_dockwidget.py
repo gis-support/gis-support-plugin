@@ -24,8 +24,14 @@
 
 import os, csv
 import urllib.request
-import pyqtgraph as pg
-# from matplotlib import pyplot as plt
+#Nie każdy instalator QGIS ma wbudowanego matplotliba, a bibliotek zewnętrznych nie można instalować
+# dla wtyczek w oficjalnym repo
+# https://github.com/gis-support/gis-support-plugin/issues/4
+try:
+    from matplotlib import pyplot as plt 
+    matplotlib_library = True
+except ImportError:
+    matplotlib_library = False
 
 from qgis.PyQt import QtGui, uic
 from qgis.PyQt.QtWidgets import QDockWidget, QInputDialog, QFileDialog
@@ -290,6 +296,9 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
 
     def generatePlot(self):
         """ Wyświetlenie profilu podłużnego """
+        if not matplotlib_library:
+            self.on_message.emit("Nie wykryto biblioteki matplotlib. W celu prawidłowego działania wyświetalnia profilu proszę ją doinstalować.", Qgis.Warning, 5)
+            return
         rows = self.twData.rowCount()
         if rows < 1:
             return
@@ -301,15 +310,11 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                 val = self.twData.item(row, 1).text()
                 dist_list.append(float(dist))
                 values.append(float(val))
-        pg.setConfigOption('background', 'w')
-        pg.setConfigOption('foreground', 'k')
-        pg.plot(
-            x=dist_list,y=values, 
-            labels={'left': 'Wysokość n.p.m. [m]', 'bottom': 'Interwał [m]'}, 
-            title='Profil podłużny', 
-            pen=pg.mkPen(width=3, color='r'), 
-            antialias=True
-            )      
+        fig, ax = plt.subplots()
+        ax.set(xlabel='Interwał [m]', ylabel='Wysokość npm',
+            title='Profil podłużny')
+        ax.plot(dist_list, values)
+        plt.show()   
 
     def activateTool(self, tool):
         """ Zmiana aktywnego narzędzia mapy """

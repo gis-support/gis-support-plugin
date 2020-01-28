@@ -58,7 +58,6 @@ class GISSupportPlugin:
         self.toolbar = self.iface.addToolBar(PLUGIN_NAME)
         self.toolbar.addSeparator
         
-        self.first_start = None
         self.api_key_dialog = GisSupportPluginDialog()
         
     def tr(self, message):
@@ -136,8 +135,6 @@ class GISSupportPlugin:
             add_to_toolbar=False
         )
 
-        self.first_start = True
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         self.toolbar.clear()
@@ -181,6 +178,8 @@ class GISSupportPlugin:
             lambda changed: self.identify_toolbar_action.setChecked(changed)
         )
 
+        dockwidget.hide()
+
     def _init_gugik_nmt_module(self, add_separator = False):
         if add_separator:
             self.toolbar.addSeparator()
@@ -199,6 +198,7 @@ class GISSupportPlugin:
             add_to_topmenu=True
         )
         dockwidget.visibilityChanged.connect(self.gugik_nmt_action.setChecked)
+        dockwidget.hide()
 
     def show_api_key_dialog(self):
         self.api_key_dialog.show()

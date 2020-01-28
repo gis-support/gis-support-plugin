@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=1.2.3
+version=1.2.4
 author=GIS Support
 email=kamil.kozik@gis-support.pl
 
@@ -37,8 +37,7 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog= Uzupełnienie metadanych wtyczki
- Usunięcie zależności dla kilku bibliotek
+changelog=Uzupełnienie metadanych o opis w języku angielskim
 
 # Tags are comma separated with spaces allowed
 tags=python

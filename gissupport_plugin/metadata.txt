@@ -9,12 +9,21 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-description=Wtyczka GIS Support: zawiera narzędzia, które ułatwiają komunikację z usługami oferowanymi przez polskie instytucje (np. GUGiK).
 version=1.2.2
 author=GIS Support
 email=kamil.kozik@gis-support.pl
 
-about=Lista narzędzi wtyczki:
+description=GIS Support Plugin: integrates features that facilitate communication with services offered by Polish institutions (eg GUGiK).
+about=Features:
+    * Wyszukiwarka działek ewidencyjnych - A tool built on the basis of the"GUGiK ULDK"  plugin. It allows you to search for current land parcel through the ULDK service launched by GUGiK. In addition, it is possible to search for locations of the "historical" cadastral parcel, i.e. LPIS (without the download geometry option).
+
+    * Baza WMS 2.0 -  A newer, better version of the old "Baza WMS" plugin. It is a collection of links to popular, nationwide WMS services.
+
+    * GUGiK NMT - A tool using the NMT GUGiK API for altitude data. The tool allows you to know the height above sea level for the clicked place, add height data for objects from the point layer and create a height chart along the drawn line.
+
+
+description[pl]=Wtyczka GIS Support: zawiera narzędzia, które ułatwiają komunikację z usługami oferowanymi przez polskie instytucje (np. GUGiK).
+about[pl]=Lista narzędzi wtyczki:
     * Wyszukiwarka działek ewidencyjnych - narzędzie zbudowane na podstawie wtyczki „Wyszukiwarka działek ewidencyjnych (GUGiK ULDK)”. Pozwala na wyszukiwanie aktualnych działek ewidencyjnych poprzez usługę ULDK uruchomioną przez GUGiK. Dodatkowo jest możliwość wyszukiwania lokalizacji działek „historycznych”, czyli LPIS (bez możliwości pobrania geometrii).
 
     * Baza WMS 2.0 - nowsza, lepsza wersja starej wtyczki „Baza WMS”. Jest to zbiór linków do popularnych, ogólnokrajowych usług WMS.

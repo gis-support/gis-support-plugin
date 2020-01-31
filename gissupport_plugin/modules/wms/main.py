@@ -25,8 +25,18 @@ class Main:
         #Initialize table headers
         self.dlg.servicesTableWidget.setHorizontalHeaderLabels(['ID', 'Źródło', 'Nazwa', 'URL'])
         self.dlg.servicesTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.dlg.servicesTableWidget.setColumnCount(4)
+        self.dlg.servicesTableWidget.setColumnWidth(0, 20)
+        self.dlg.servicesTableWidget.setColumnWidth(1, 100)
+        self.dlg.servicesTableWidget.setColumnWidth(2, 300)
         self.dlg.layersTableWidget.setHorizontalHeaderLabels(['Nr', 'Nazwa', 'Tytuł', 'Streszczenie', 'Układ współrzędnych'])
         self.dlg.layersTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.dlg.layersTableWidget.setColumnCount(5)
+        self.dlg.layersTableWidget.setColumnWidth(0, 20)
+        self.dlg.layersTableWidget.setColumnWidth(1, 70)
+        self.dlg.layersTableWidget.setColumnWidth(2, 170)
+        self.dlg.layersTableWidget.setColumnWidth(3, 170)
+        self.dlg.layersTableWidget.setColumnWidth(4, 90)
 
         #Connect slots to signals
         self.dlg.servicesTableWidget.currentItemChanged.connect(self.showDescription)

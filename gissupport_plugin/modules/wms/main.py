@@ -17,6 +17,7 @@ class Main:
         self.iface = iface
         self.canvas = self.iface.mapCanvas()
         self.dlg = BazaWMSDialog()
+        self.curServiceData = None
 
         self.project = QgsProject.instance()
         #Load WMS services list from json file
@@ -80,32 +81,33 @@ class Main:
     def loadLayers(self):
         self.dlg.layersTableWidget.setRowCount(0)
         defaultCrs = 'EPSG:2180'
-        try:
-            wmsCapabilities = WebMapService(self.curServiceData['url'])
-        except AttributeError:
-            wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
-        except requests.exceptions.ReadTimeout:
-            self.iface.messageBar().pushMessage(
-                'Baza krajowych usług WMS',
-                'Serwer WMS nie odpowiada. Spróbuj ponownie później.',
-                level=Qgis.Critical
-            )
-            return 1
-        except requests.exceptions.SSLError:
-            self.iface.messageBar().pushMessage(
-                'Baza krajowych usług WMS',
-                'Błąd połączenia z serwerem WMS.',
-                level=Qgis.Critical
-            )
-            return 1
-        for nr, layer in enumerate(list(wmsCapabilities.contents)):
-            wmsLayer = wmsCapabilities[layer]
-            self.dlg.layersTableWidget.insertRow(nr)
-            self.dlg.layersTableWidget.setItem(nr, 0, QTableWidgetItem(str(nr+1)))
-            self.dlg.layersTableWidget.setItem(nr, 1, QTableWidgetItem(wmsLayer.name))
-            self.dlg.layersTableWidget.setItem(nr, 2, QTableWidgetItem(wmsLayer.title))
-            self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))
-            self.dlg.layersTableWidget.setItem(nr, 4, QTableWidgetItem(defaultCrs if defaultCrs in wmsLayer.crsOptions else wmsLayer.crsOptions[0]))
+        if self.curServiceData:
+            try:
+                wmsCapabilities = WebMapService(self.curServiceData['url'])
+            except AttributeError:
+                wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
+            except requests.exceptions.ReadTimeout:
+                self.iface.messageBar().pushMessage(
+                    'Baza krajowych usług WMS',
+                    'Serwer WMS nie odpowiada. Spróbuj ponownie później.',
+                    level=Qgis.Critical
+                )
+                return 1
+            except requests.exceptions.SSLError:
+                self.iface.messageBar().pushMessage(
+                    'Baza krajowych usług WMS',
+                    'Błąd połączenia z serwerem WMS.',
+                    level=Qgis.Critical
+                )
+                return 1
+            for nr, layer in enumerate(list(wmsCapabilities.contents)):
+                wmsLayer = wmsCapabilities[layer]
+                self.dlg.layersTableWidget.insertRow(nr)
+                self.dlg.layersTableWidget.setItem(nr, 0, QTableWidgetItem(str(nr+1)))
+                self.dlg.layersTableWidget.setItem(nr, 1, QTableWidgetItem(wmsLayer.name))
+                self.dlg.layersTableWidget.setItem(nr, 2, QTableWidgetItem(wmsLayer.title))
+                self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))
+                self.dlg.layersTableWidget.setItem(nr, 4, QTableWidgetItem(defaultCrs if defaultCrs in wmsLayer.crsOptions else wmsLayer.crsOptions[0]))
 
     def enableAddToMap(self):
         layerSelected = True if self.dlg.layersTableWidget.selectionModel().selectedRows() else False

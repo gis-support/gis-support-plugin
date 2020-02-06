@@ -131,8 +131,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         """ Wysłanie zapytania do serwisu GUGiK NMT po wysokość w podanych współrzędnych """
         # http://services.gugik.gov.pl/nmt/?request=GetHbyXY&x=486617&y=637928
         project_crs = QgsProject.instance().crs().authid()
-        if project_crs != 'EPSG:2180':
-            point = self.transformGeometry(geom, project_crs).asPoint()
+        point = self.transformGeometry(geom, project_crs).asPoint()
         x, y = point.y(), point.x()
         try:
             r = urllib.request.urlopen(f'https://services.gugik.gov.pl/nmt/?request=GetHbyXY&x={x}&y={y}')

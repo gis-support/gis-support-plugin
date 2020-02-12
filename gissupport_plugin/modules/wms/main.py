@@ -7,6 +7,7 @@ import json
 from os import path
 from owslib.wms import WebMapService
 import requests.exceptions
+import urllib
 
 
 class Main:
@@ -126,7 +127,7 @@ class Main:
                 "styles=&"
                 "url={}".format(
                     self.dlg.layersTableWidget.item(layerId, 4).text(),
-                    self.dlg.layersTableWidget.item(layerId, 1).text(),
+                    urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text()),
                     self.curServiceData['url']
                 )
             )

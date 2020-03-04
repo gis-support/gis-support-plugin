@@ -2,6 +2,7 @@
 from .baza_wms_dialog import BazaWMSDialog
 #from .resources import *
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
+from PyQt5.QtGui import QPixmap
 from qgis.core import QgsProject, QgsRasterLayer, Qgis
 import json
 from os import path
@@ -11,7 +12,7 @@ import urllib
 
 
 class Main:
-    module_name = "Baza krajowych usług WMS - wersja beta"
+    module_name = "Baza krajowych usług WMS"
 
     def __init__(self, iface):
 
@@ -48,6 +49,12 @@ class Main:
         self.dlg.addLayersButton.clicked.connect(self.addToMap)
 
         self.updateServicesList()
+
+        icon_info_path = ':/plugins/plugin/info.png'
+        self.dlg.label_2.setPixmap(QPixmap(icon_info_path))
+        self.dlg.label_2.setToolTip((
+            "Brakuje adresu WMS, którego szukasz?\n"
+            "Napisz do nas: info@gis-support.pl"))
 
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """

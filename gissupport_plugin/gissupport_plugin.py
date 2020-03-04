@@ -183,7 +183,6 @@ class GISSupportPlugin:
     def _init_gugik_nmt_module(self, add_separator = False):
         if add_separator:
             self.toolbar.addSeparator()
-            self.topMenu.addSeparator()
         from .modules.gugik_nmt.main import GugikNmt as Main
         gugik_nmt = Main(self.iface)
         dockwidget = gugik_nmt.dockwidget

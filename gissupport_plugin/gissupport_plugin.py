@@ -137,6 +137,11 @@ class GISSupportPlugin:
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
+        for action in self.actions:
+            self.iface.removePluginMenu(
+                self.menu,
+                action)
+
         self.toolbar.clear()
         self.toolbar.deleteLater()
         self.topMenu.clear()

@@ -23,12 +23,6 @@
  This script initializes the plugin, making it known to QGIS.
 """
 
-#Dodanie ścieżki do bibliotek instalowanych z wtyczką
-import sys
-from pathlib import Path
-path = Path(__file__).parent.joinpath( 'lib' )
-sys.path.append( str(path) )
-
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
     """Load GISSupportPlugin class from file GISSupportPlugin.

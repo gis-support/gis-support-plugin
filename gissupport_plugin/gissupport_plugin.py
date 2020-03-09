@@ -23,16 +23,14 @@
 """
 import os.path
 
-from PyQt5.QtCore import (QCoreApplication, QSettings, Qt, QTranslator, QUrl,
-                          qVersion)
-from PyQt5.QtGui import QDesktopServices, QIcon, QPixmap
-from PyQt5.QtWidgets import QAction, QLabel, QMenu, QSizePolicy
+from PyQt5.QtCore import (QCoreApplication, Qt, QUrl)
+from PyQt5.QtGui import QDesktopServices, QIcon
+from PyQt5.QtWidgets import QAction
 
 from .key_dialog import GisSupportPluginDialog
 from .resources import resources
 
 PLUGIN_NAME = "Wtyczka GIS Support"
-
 
 class GISSupportPlugin:
 
@@ -40,18 +38,6 @@ class GISSupportPlugin:
 
         self.iface = iface
         self.plugin_dir = os.path.dirname(__file__)
-        # locale = QSettings().value('locale/userLocale')[0:2]
-        # locale_path = os.path.join(
-        #     self.plugin_dir,
-        #     'i18n',
-        #     'GISSupportPlugin_{}.qm'.format(locale))
-
-        # if os.path.exists(locale_path):
-        #     self.translator = QTranslator()
-        #     self.translator.load(locale_path)
-
-        #     if qVersion() > '4.3.3':
-        #         QCoreApplication.installTranslator(self.translator)
 
         self.actions = []
         self.menu = self.tr(u'&Wtyczka GIS Support')

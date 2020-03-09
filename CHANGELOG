@@ -1,3 +1,7 @@
+1.2.6
+Usunięcie błędów przy włączaniu i wyłączaniu wtyczki
+Baza WMS: dodanie informacji do okna z listą usług WMS
+
 1.2.5
 Baza WMS: poprawienie obsługi warstw z polskimi znakami
 GUGiK NMT: naprawa obsługi układu PUWG 1992

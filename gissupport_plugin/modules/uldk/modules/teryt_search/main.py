@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtGui import QKeySequence, QPixmap
 from qgis.core import QgsNetworkAccessManager
 from qgis.gui import QgsMessageBarItem
+from qgis.utils import iface
 
 from ...uldk.api import ULDKSearchTeryt, ULDKSearchParcel, ULDKSearchLogger, ULDKSearchWorker
 from ...uldk import validators
@@ -46,8 +47,7 @@ class TerytSearch(QObject):
                  result_collector_precinct_unknown_factory, layer_factory):
         super().__init__()
         self.parent = parent
-        self.iface = parent.iface
-        self.canvas = self.iface.mapCanvas()
+        self.canvas = iface.mapCanvas()
         self.ui = UI(target_layout)
 
         self.result_collector = result_collector
@@ -83,7 +83,7 @@ class TerytSearch(QObject):
             return
         lpis_response = lpis_api.search(teryt, key)
         if len(lpis_response) == 0:
-            self.parent.iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono przybliżonej lokacji działki{teryt}")
+            iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono przybliżonej lokacji działki{teryt}")
         elif len(lpis_response) > 1:
             combobox = self.ui.combobox_sheet
             def _zoom_to_lpis_wrapper():
@@ -93,7 +93,7 @@ class TerytSearch(QObject):
                 combobox.setEnabled(False)
 
             self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
-            self.iface.messageBar().pushWidget(self.message_bar_item)
+            iface.messageBar().pushWidget(self.message_bar_item)
             
             combobox.setEnabled(True)
             combobox.clear()
@@ -111,7 +111,7 @@ class TerytSearch(QObject):
 
     def _zoom_to_lpis(self, lpis_response):
         teryt = lpis_response["identyfikator"]
-        self.iface.messageBar().pushSuccess("Wtyczka ULDK", f"Znaleziono historyczną lokację działki '{teryt}'")
+        iface.messageBar().pushSuccess("Wtyczka ULDK", f"Znaleziono historyczną lokację działki '{teryt}'")
         canvas_crs = self.canvas.mapSettings().destinationCrs()
         lpis_bbox = extract_lpis_bbox(lpis_response, canvas_crs)
         self.canvas.setExtent(lpis_bbox)
@@ -284,7 +284,7 @@ class TerytSearch(QObject):
 
     def __handle_finished_precinct_unknown(self):
         self.result_collector_precinct_unknown.update_with_features(self.plots_found)
-        self.iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
+        iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
             f"Wyszukiwanie działek: zapisano znalezione działki do warstwy <b>{self.result_collector_precinct_unknown.layer.sourceName()}</b>"))
         self.ui.button_search_uldk.show()
         self.ui.progress_bar_precinct_unknown.hide()
@@ -305,26 +305,26 @@ class TerytSearch(QObject):
 
                 self.ui.combobox_sheet.addItem(sheet_name, row)
             self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
-            self.iface.messageBar().pushWidget(self.message_bar_item)
+            iface.messageBar().pushWidget(self.message_bar_item)
         else:
             result = uldk_response_rows[0]
             
             try:
                 added_feature = self.result_collector.update(result)
             except self.result_collector.BadGeometryException:
-                self.parent.iface.messageBar().pushCritical("Wtyczka ULDK", f"Działka posiada niepoprawną geometrię")
+                iface.messageBar().pushCritical("Wtyczka ULDK", f"Działka posiada niepoprawną geometrię")
                 return
             self.result_collector.zoom_to_feature(added_feature)
 
             if self.message_bar_item:
-                self.iface.messageBar().popWidget(self.message_bar_item)
+                iface.messageBar().popWidget(self.message_bar_item)
                 self.message_bar_item = None
 
-            self.iface.messageBar().pushSuccess("Wtyczka ULDK", "Zaaktualizowano warstwę '{}'"
+            iface.messageBar().pushSuccess("Wtyczka ULDK", "Zaaktualizowano warstwę '{}'"
                                             .format(self.result_collector.layer.sourceName()))
     
     def __handle_not_found(self, teryt, exception):
-        self.parent.iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")
+        iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")
 
     def __handle_found_precinct_unknown(self, uldk_response_rows):
         for row in uldk_response_rows:

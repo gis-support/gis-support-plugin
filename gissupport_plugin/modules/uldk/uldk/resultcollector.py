@@ -80,7 +80,6 @@ class ResultCollectorSingle(ResultCollector):
 
     def __init__(self, parent, layer_factory=None):
         self.parent = parent
-        self.iface = parent.iface
         self.canvas = parent.canvas
         self.layer_factory = layer_factory
         self.layer = None
@@ -129,8 +128,6 @@ class ResultCollectorSingle(ResultCollector):
 class ResultCollectorMultiple(ResultCollector):
 
     def __init__(self, parent, target_layer):
-        self.parent = parent
-        self.iface = parent.iface
         self.canvas = parent.canvas
         self.layer = target_layer
 

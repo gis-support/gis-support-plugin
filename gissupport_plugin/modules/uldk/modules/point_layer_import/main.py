@@ -8,6 +8,7 @@ from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsMapLayerProxyModel,
                        QgsProject)
 from qgis.gui import QgsMessageBarItem
+from qgis.utils import iface
 
 from .worker import PointLayerImportWorker
 
@@ -66,8 +67,7 @@ class PointLayerImport:
 
     def __init__(self, parent, target_layout):
         self.parent = parent
-        self.iface = parent.iface
-        self.canvas = self.iface.mapCanvas()
+        self.canvas = iface.mapCanvas()
         self.ui = UI(target_layout)
         self.__init_ui()
         
@@ -117,7 +117,7 @@ class PointLayerImport:
         self.ui.button_start.setEnabled(False)
         if layer:
             if layer.dataProvider().featureCount() == 0:
-                self.parent.iface.messageBar().pushCritical(
+                iface.messageBar().pushCritical(
                     "Wtyczka ULDK",f"Warstwa <b>{layer.sourceName()} nie zawiera żadnych obiektów.</b>")
                 return
             self.source_layer = layer
@@ -168,7 +168,7 @@ class PointLayerImport:
         if layer_not_found.dataProvider().featureCount():
             QgsProject.instance().addMapLayer(layer_not_found)
 
-        self.iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
+        iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
             f"Import CSV: zakończono wyszukiwanie. Zapisano {self.found_count} {get_obiekty_form(self.found_count)} do warstwy <b>{self.ui.text_edit_target_layer_name.text()}</b>"))
         
     def __handle_interrupted(self, layer_found, layer_not_found):

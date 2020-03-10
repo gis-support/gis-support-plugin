@@ -3,6 +3,7 @@ from PyQt5.QtGui import QCursor
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsFeature, QgsPoint)
 from qgis.gui import QgsMapToolEmitPoint
+from qgis.utils import iface
 
 from ...uldk.api import ULDKSearchLogger, ULDKSearchPoint, ULDKSearchPointWorker, ULDKPoint
 
@@ -15,7 +16,6 @@ class MapPointSearch(QgsMapToolEmitPoint):
 
     def __init__(self, parent, result_collector):
         self.parent = parent
-        self.iface = parent.iface
         self.canvas = parent.canvas
         super(QgsMapToolEmitPoint, self).__init__(self.canvas)
         self.canvasClicked.connect(self.__search)
@@ -65,12 +65,12 @@ class MapPointSearch(QgsMapToolEmitPoint):
         try:
             added_feature = self.result_collector.update(uldk_response_row)
         except self.result_collector.BadGeometryException:
-            self.parent.iface.messageBar().pushCritical(
+            iface.messageBar().pushCritical(
                 "Wtyczka ULDK",f"Działka posiada niepoprawną geometrię")
         # self.found.emit(added_feature)
 
     def __handle_not_found(self, uldk_point, exception):
-        self.parent.iface.messageBar().pushCritical(
+        iface.messageBar().pushCritical(
             "Wtyczka ULDK",f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")
         # self.not_found.emit(exception)
 

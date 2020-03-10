@@ -7,32 +7,34 @@ import time
 from collections import OrderedDict
 from urllib.request import urlopen
 
-from PyQt5.QtCore import (QCoreApplication, QSettings, Qt, QTranslator,
+from PyQt5.QtCore import (QCoreApplication, Qt, QTranslator,
                           QVariant, qVersion)
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QAction, QShortcut
 from qgis.core import *
 from qgis.gui import QgsMessageBar
+from qgis.utils import iface
 
-from .modules.csv_import.main import CSVImport
-from .modules.map_point_search.main import MapPointSearch
-from .modules.point_layer_import.main import PointLayerImport
-from .modules.teryt_search.main import TerytSearch
-from .plugin_dockwidget import wyszukiwarkaDzialekDockWidget
-from .resources import resources
-from .uldk.resultcollector import (ResultCollectorMultiple,
-                                   ResultCollectorSingle)
+from gissupport_plugin.modules.base import BaseModule
+from gissupport_plugin.modules.uldk.modules.csv_import.main import CSVImport
+from gissupport_plugin.modules.uldk.modules.map_point_search.main import MapPointSearch
+from gissupport_plugin.modules.uldk.modules.point_layer_import.main import PointLayerImport
+from gissupport_plugin.modules.uldk.modules.teryt_search.main import TerytSearch
+from gissupport_plugin.modules.uldk.plugin_dockwidget import wyszukiwarkaDzialekDockWidget
+from gissupport_plugin.modules.uldk.resources import resources
+from gissupport_plugin.modules.uldk.uldk.resultcollector import (ResultCollectorMultiple,
+                                ResultCollectorSingle)
 
 
-
-class Main:
+class Main(BaseModule):
     module_name = "Wyszukiwarka działek ewidencyjnych"    
 
-    def __init__(self, iface, dockwidget = None):
+    def __init__(self, parent):
 
-        self.iface = iface
-        self.canvas = self.iface.mapCanvas()
-        self.dockwidget = dockwidget or wyszukiwarkaDzialekDockWidget()
+        self.parent = parent
+
+        self.canvas = iface.mapCanvas()
+        self.dockwidget = wyszukiwarkaDzialekDockWidget()
         # self.menu = self.tr(PLUGIN_NAME)
         # self.toolbar = self.iface.addToolBar(PLUGIN_NAME)
         # self.toolbar.setObjectName(PLUGIN_NAME)
@@ -87,6 +89,43 @@ class Main:
         self.dockwidget.label_info_map_point_search.setToolTip((
             "Wybierz narzędzie i kliknij na mapę.\n"
             "Narzędzie wyszuka działkę, w której zawierają się współrzędne kliknięcia."))
+
+        #Zarejestrowanie we wtyczce
+
+        iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+
+        self.uldk_toolbar_action = self.parent.add_action(
+            ":/plugins/gissupport_plugin/uldk/search.png",
+            self.module_name,
+            lambda state: self.dockwidget.setHidden(not state),
+            checkable = True,
+            parent = iface.mainWindow(),
+            add_to_topmenu=True,
+            #toolbar_position=0
+        )
+
+        self.dockwidget.visibilityChanged.connect(self.uldk_toolbar_action.setChecked)
+
+        self.identify_toolbar_action = self.parent.add_action(
+            ":/plugins/gissupport_plugin/uldk/intersect.png",
+            text = "Identifykacja ULDK",
+            callback = lambda toggle: self.identifyAction.trigger(),
+            parent = iface.mainWindow(),
+            checkable = True,
+            add_to_topmenu=False,
+            #oolbar_position=0
+        )
+        self.identifyAction.toggled.connect(
+            lambda changed: self.identify_toolbar_action.setChecked(changed)
+        )
+        #self.parent.toolbar.insertSeparator()
+        self.parent.toolbar.addSeparator()
+
+        self.dockwidget.hide()
+
+    def unload(self):
+        """ Wyłączenie modułu """
+        iface.removeDockWidget(self.dockwidget)
 
     def add_wms_kieg(self):
         

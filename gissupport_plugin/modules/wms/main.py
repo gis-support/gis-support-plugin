@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-from .baza_wms_dialog import BazaWMSDialog
+from gissupport_plugin.modules.wms.baza_wms_dialog import BazaWMSDialog
+from gissupport_plugin.modules.base import BaseModule
 #from .resources import *
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
 from PyQt5.QtGui import QPixmap
 from qgis.core import QgsProject, QgsRasterLayer, Qgis
+from qgis.utils import iface
 import json
 from os import path
 from owslib.wms import WebMapService
@@ -11,13 +13,13 @@ import requests.exceptions
 import urllib
 
 
-class Main:
+class Main(BaseModule):
     module_name = "Baza krajowych usług WMS"
 
-    def __init__(self, iface):
-
-        self.iface = iface
-        self.canvas = self.iface.mapCanvas()
+    def __init__(self, parent):
+        self.parent = parent
+        
+        self.canvas = iface.mapCanvas()
         self.dlg = BazaWMSDialog()
         self.curServiceData = None
 
@@ -50,11 +52,26 @@ class Main:
 
         self.updateServicesList()
 
+        #Zarejestrowanie we wtyczce
+
         icon_info_path = ':/plugins/plugin/info.png'
         self.dlg.label_2.setPixmap(QPixmap(icon_info_path))
         self.dlg.label_2.setToolTip((
             "Brakuje adresu WMS, którego szukasz?\n"
             "Napisz do nas: info@gis-support.pl"))
+        
+        self.parent.add_action(
+            ":/plugins/gissupport_plugin/wms/wms.png",
+            self.module_name,
+            callback = self.dlg.show,
+            checkable = False,
+            parent = iface.mainWindow(),
+            add_to_topmenu=True 
+        )
+    
+    def unload(self):
+        """ Wyłączenie modułu """
+        del self.dlg
 
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """
@@ -95,14 +112,14 @@ class Main:
             except AttributeError:
                 wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
             except requests.exceptions.ReadTimeout:
-                self.iface.messageBar().pushMessage(
+                iface.messageBar().pushMessage(
                     'Baza krajowych usług WMS',
                     'Serwer WMS nie odpowiada. Spróbuj ponownie później.',
                     level=Qgis.Critical
                 )
                 return 1
             except requests.exceptions.SSLError:
-                self.iface.messageBar().pushMessage(
+                iface.messageBar().pushMessage(
                     'Baza krajowych usług WMS',
                     'Błąd połączenia z serwerem WMS.',
                     level=Qgis.Critical
@@ -142,7 +159,7 @@ class Main:
             if wmsLayer.isValid():
                 QgsProject.instance().addMapLayer(wmsLayer)
             else:
-                self.iface.messageBar().pushMessage(
+                iface.messageBar().pushMessage(
                     'Baza krajowych usług WMS',
                     'Nie udało się wczytać warstwy %s' % self.dlg.layersTableWidget.item(layerId, 2).text(),
                     level=Qgis.Warning

@@ -26,7 +26,10 @@ import os.path
 from PyQt5.QtCore import (QCoreApplication, Qt, QUrl)
 from PyQt5.QtGui import QDesktopServices, QIcon
 from PyQt5.QtWidgets import QAction
+from pathlib import Path
+import inspect, importlib
 
+from gissupport_plugin.modules.base import BaseModule
 from .key_dialog import GisSupportPluginDialog
 from .resources import resources
 
@@ -40,6 +43,7 @@ class GISSupportPlugin:
         self.plugin_dir = os.path.dirname(__file__)
 
         self.actions = []
+        self.modules = []
         self.menu = self.tr(u'&Wtyczka GIS Support')
         self.toolbar = self.iface.addToolBar(PLUGIN_NAME)
         self.toolbar.addSeparator
@@ -91,14 +95,31 @@ class GISSupportPlugin:
 
         return action
 
+    def initModules(self):
+        """ Włączenie modułów """
+
+        modules_path = Path( self.plugin_dir ).joinpath('modules')
+        #Iteracja po modułach dodatkowych
+        for module_name in ['uldk', 'gugik_nmt', 'wms']:
+            main_module = modules_path.joinpath(module_name).joinpath('main.py')
+            #Załadowanie modułu
+            spec = importlib.util.spec_from_file_location('main', main_module)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            #Lista obiektów w module
+            clsmembers = inspect.getmembers(module, inspect.isclass)
+            for (_, c) in clsmembers:
+                # Odrzucamy inne klasy niż dziedziczące po klasie bazowej
+                if issubclass(c, BaseModule) and c is not BaseModule:
+                    #Aktywacja i rejestracja modułu
+                    self.modules.append( c(self) )
+
     def initGui(self):
 
         self.topMenu = self.iface.mainWindow().menuBar().addMenu(u'&GIS Support')
 
         #Load plugin modules
-        self._init_uldk_module()
-        self._init_gugik_nmt_module(add_separator=True)
-        self._init_wms_module()
+        self.initModules()
 
         self.topMenu.addSeparator()
         self.topMenu.setObjectName('gisSupportMenu')
@@ -127,85 +148,17 @@ class GISSupportPlugin:
             self.iface.removePluginMenu(
                 self.menu,
                 action)
+        #Wyłączenie modułów
+        for module in self.modules:
+            module.unload()
 
         self.toolbar.clear()
         self.toolbar.deleteLater()
         self.topMenu.clear()
         self.topMenu.deleteLater()
 
-    def _init_uldk_module(self, add_separator=False):
-        if add_separator:
-            self.toolbar.addSeparator()
-            self.topMenu.addSeparator()
-        from .modules.uldk.main import Main
-        from .modules.uldk.modules.map_point_search.main import MapPointSearch
-        main = Main(self.iface)
-        dockwidget = main.dockwidget
-        self.uldk_module = main
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, main.dockwidget)
-        dockwidget_icon_path = ":/plugins/gissupport_plugin/uldk/search.png"
-
-        self.uldk_toolbar_action = self.add_action(
-            dockwidget_icon_path,
-            main.module_name,
-            lambda state: dockwidget.setHidden(not state),
-            checkable = True,
-            parent = self.iface.mainWindow(),
-            add_to_topmenu=True 
-        )
-
-        dockwidget.visibilityChanged.connect(self.uldk_toolbar_action.setChecked)
-
-        intersect_icon_path = ":/plugins/gissupport_plugin/uldk/intersect.png"
-        self.identify_toolbar_action = self.add_action(
-            intersect_icon_path,
-            text = "Identifykacja ULDK",
-            callback = lambda toggle: self.uldk_module.identifyAction.trigger(),
-            parent = self.iface.mainWindow(),
-            checkable = True,
-            add_to_topmenu=False
-        )
-        self.uldk_module.identifyAction.toggled.connect(
-            lambda changed: self.identify_toolbar_action.setChecked(changed)
-        )
-
-        dockwidget.hide()
-
-    def _init_gugik_nmt_module(self, add_separator = False):
-        if add_separator:
-            self.toolbar.addSeparator()
-        from .modules.gugik_nmt.main import GugikNmt as Main
-        gugik_nmt = Main(self.iface)
-        dockwidget = gugik_nmt.dockwidget
-        dockwidget_icon_path = ":/plugins/gissupport_plugin/gugik_nmt/icon.png"
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
-        self.gugik_nmt_action = self.add_action(
-            dockwidget_icon_path,
-            text = "GUGiK NMT",
-            callback = lambda state: dockwidget.setHidden(not state),
-            checkable=True,
-            parent=self.iface.mainWindow(),
-            add_to_topmenu=True
-        )
-        dockwidget.visibilityChanged.connect(self.gugik_nmt_action.setChecked)
-        dockwidget.hide()
-
     def show_api_key_dialog(self):
         self.api_key_dialog.show()
-
-    def _init_wms_module(self):
-        from .modules.wms.main import Main
-        self.wms_module = Main(self.iface)
-        dlg_icon_path = ":/plugins/gissupport_plugin/wms/wms.png"
-
-        self.wms_toolbar_action = self.add_action(
-            dlg_icon_path,
-            self.wms_module.module_name,
-            callback = self.wms_module.dlg.show,
-            checkable = False,
-            parent = self.iface.mainWindow(),
-            add_to_topmenu=True 
-        )
 
     def open_about(self):
         QDesktopServices.openUrl(QUrl("https://gis-support.pl/wtyczka-gis-support"))

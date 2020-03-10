@@ -21,21 +21,22 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
+from qgis.PyQt.QtCore import QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
+from qgis.utils import iface
 # Initialize Qt resources from file resources.py
 
-
 # Import the code for the DockWidget
-from .gui.gugik_nmt_plugin_dockwidget import GugikNmtDockWidget
+from gissupport_plugin.modules.base import BaseModule
+from gissupport_plugin.modules.gugik_nmt.gui.gugik_nmt_plugin_dockwidget import GugikNmtDockWidget
 import os.path
 
 
-class GugikNmt:
+class GugikNmt(BaseModule):
     """QGIS Plugin Implementation."""
 
-    def __init__(self, iface):
+    def __init__(self, parent):
         """Constructor.
 
         :param iface: An interface instance that will be passed to this class
@@ -43,8 +44,21 @@ class GugikNmt:
             application at run time.
         :type iface: QgsInterface
         """
-        self.iface = iface
+        self.parent = parent
         self.dockwidget = GugikNmtDockWidget()
 
-
-
+        iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        self.gugik_nmt_action = self.parent.add_action(
+            ":/plugins/gissupport_plugin/gugik_nmt/icon.png",
+            text = "GUGiK NMT",
+            callback = lambda state: self.dockwidget.setHidden(not state),
+            checkable=True,
+            parent=iface.mainWindow(),
+            add_to_topmenu=True
+        )
+        self.dockwidget.visibilityChanged.connect(self.gugik_nmt_action.setChecked)
+        self.dockwidget.hide()
+    
+    def unload(self):
+        """ Wyłączenie modułu """
+        iface.removeDockWidget(self.dockwidget)

@@ -6,8 +6,9 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QKeySequence, QPixmap
 from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem
 from qgis.gui import QgsMessageBarItem
+from qgis.utils import iface
 
-from ...uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
+from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
@@ -46,7 +47,6 @@ class CSVImport:
 
     def __init__(self, parent, target_layout, result_collector_factory, layer_factory):
         self.parent = parent
-        self.iface = parent.iface
         self.ui = UI(parent.dockwidget, target_layout)
 
         self.result_collector_factory = result_collector_factory
@@ -181,7 +181,7 @@ class CSVImport:
             if units in (2,3,4):
                 form = "obiekty"
 
-        self.iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
+        iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
             f"Import CSV: zakończono wyszukiwanie. Zapisano {found_count} {form} do warstwy <b>{self.ui.text_edit_layer_name.text()}</b>"))
         self.__cleanup_after_search()
 

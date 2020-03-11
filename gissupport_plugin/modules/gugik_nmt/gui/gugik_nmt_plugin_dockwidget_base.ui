@@ -267,7 +267,7 @@
         <item>
          <widget class="QCheckBox" name="cbxUpdateField">
           <property name="text">
-           <string>Aktualizuj kolumne</string>
+           <string>Aktualizuj kolumnę</string>
           </property>
          </widget>
         </item>

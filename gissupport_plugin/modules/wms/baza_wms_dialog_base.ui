@@ -51,7 +51,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QTableWidget" name="servicesTableWidget">
+    <widget class="QTableView" name="servicesTableView">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
@@ -64,19 +64,6 @@
      <property name="sortingEnabled">
       <bool>true</bool>
      </property>
-     <property name="columnCount">
-      <number>4</number>
-     </property>
-     <attribute name="horizontalHeaderStretchLastSection">
-      <bool>true</bool>
-     </attribute>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-     <column/>
-     <column/>
-     <column/>
-     <column/>
     </widget>
    </item>
    <item>

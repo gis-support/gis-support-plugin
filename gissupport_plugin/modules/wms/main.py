@@ -3,9 +3,11 @@ from gissupport_plugin.modules.wms.baza_wms_dialog import BazaWMSDialog
 from gissupport_plugin.modules.base import BaseModule
 #from .resources import *
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
-from PyQt5.QtGui import QPixmap
+from qgis.PyQt.QtGui import QPixmap, QStandardItemModel, QStandardItem
+from qgis.PyQt.QtCore import QSortFilterProxyModel, QItemSelectionModel, Qt
 from qgis.core import QgsProject, QgsRasterLayer, Qgis
 from qgis.utils import iface
+from gissupport_plugin.modules.wms.models import ServicesTableModel, ServicesProxyModel
 import json
 from os import path
 from owslib.wms import WebMapService
@@ -27,13 +29,25 @@ class Main(BaseModule):
         #Load WMS services list from json file
         with open(path.join(path.dirname(__file__), 'services.json')) as servicesJson:
             self.services = json.load(servicesJson)
+
+        #Models
+        servicesProxyModel = ServicesProxyModel()
+        servicesProxyModel.sort(0)
+        servicesProxyModel.setSourceModel(ServicesTableModel())
+        self.dlg.servicesTableView.setModel(servicesProxyModel)
+        self.servicesTableModel = self.dlg.servicesTableView.model().sourceModel()
+        self.dlg.servicesTableView.setSortingEnabled(False)
+
         #Initialize table headers
-        self.dlg.servicesTableWidget.setHorizontalHeaderLabels(['ID', 'Źródło', 'Nazwa', 'URL'])
-        self.dlg.servicesTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.dlg.servicesTableWidget.setColumnCount(4)
-        self.dlg.servicesTableWidget.setColumnWidth(0, 20)
-        self.dlg.servicesTableWidget.setColumnWidth(1, 100)
-        self.dlg.servicesTableWidget.setColumnWidth(2, 300)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
+
+        self.dlg.servicesTableView.setColumnWidth(0, 20)
+        self.dlg.servicesTableView.setColumnWidth(1, 100)
+        self.dlg.servicesTableView.setColumnWidth(2, 300)
+
         self.dlg.layersTableWidget.setHorizontalHeaderLabels(['Nr', 'Nazwa', 'Tytuł', 'Streszczenie', 'Układ współrzędnych'])
         self.dlg.layersTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.dlg.layersTableWidget.setColumnCount(5)
@@ -44,8 +58,8 @@ class Main(BaseModule):
         self.dlg.layersTableWidget.setColumnWidth(4, 90)
 
         #Connect slots to signals
-        self.dlg.servicesTableWidget.currentItemChanged.connect(self.showDescription)
-        self.dlg.searchLineEdit.textChanged.connect(self.updateServicesList)
+        self.dlg.servicesTableView.selectionModel().selectionChanged.connect(self.showDescription)
+        self.dlg.searchLineEdit.textChanged.connect(servicesProxyModel.setFilterRegExp)
         self.dlg.getLayersButton.clicked.connect(self.loadLayers)
         self.dlg.layersTableWidget.itemSelectionChanged.connect(self.enableAddToMap)
         self.dlg.addLayersButton.clicked.connect(self.addToMap)
@@ -74,32 +88,25 @@ class Main(BaseModule):
 
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """
-        self.dlg.servicesTableWidget.setRowCount(0)
-        self.dlg.servicesTableWidget.clearContents()
-        self.dlg.descriptionTextEdit.clear()
-        servicesList = {}
-        search = self.dlg.searchLineEdit.text()
-        if search:
-            for id, info in self.services.items():
-                if search.lower() in info['name'].lower():
-                    servicesList.update({ id : info })
-        else:
-            servicesList = self.services
-        for i, wms in enumerate(servicesList.items()):
+        servicesList = self.services
+        for wms in servicesList.items():
             id, info = wms
-            self.dlg.servicesTableWidget.insertRow(i)
-            self.dlg.servicesTableWidget.setItem(i, 0, QTableWidgetItem(id))
-            self.dlg.servicesTableWidget.setItem(i, 1, QTableWidgetItem(info['source']))
-            self.dlg.servicesTableWidget.setItem(i, 2, QTableWidgetItem(info['name']))
-            self.dlg.servicesTableWidget.setItem(i, 3, QTableWidgetItem(info['url']))
-
+            self.servicesTableModel.insertRows(0, [{
+                'ID': int(id),
+                'Źródło': info['source'],
+                'Nazwa': info['name'],
+                'URL': info['url'],
+                'Opis': info['description']
+            }])
+            
     def showDescription(self):
         self.dlg.layersTableWidget.setRowCount(0)
         self.dlg.layersTableWidget.clearContents()
-        curRow = self.dlg.servicesTableWidget.currentRow()
-        if curRow != -1:
-            curServiceId = self.dlg.servicesTableWidget.item(curRow, 0).text()
-            self.curServiceData = self.services[curServiceId]
+        row = self.dlg.servicesTableView.selectionModel().selectedRows()
+        if len(row) > 0:
+            selected = row[0]
+            curServiceData = selected.sibling(selected.row(), selected.column()).data(role=Qt.UserRole)
+            self.curServiceData = self.services[str(curServiceData['ID'])]
             self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['description'])
 
     def loadLayers(self):

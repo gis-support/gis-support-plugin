@@ -105,9 +105,8 @@ class Main(BaseModule):
         row = self.dlg.servicesTableView.selectionModel().selectedRows()
         if len(row) > 0:
             selected = row[0]
-            curServiceData = selected.sibling(selected.row(), selected.column()).data(role=Qt.UserRole)
-            self.curServiceData = self.services[str(curServiceData['ID'])]
-            self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['description'])
+            self.curServiceData = selected.sibling(selected.row(), selected.column()).data(role=Qt.UserRole)
+            self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['Opis'])
 
     def loadLayers(self):
         self.dlg.layersTableWidget.setRowCount(0)

@@ -55,7 +55,7 @@ class ServicesProxyModel(QSortFilterProxyModel):
             return True
         index = self.sourceModel().index(source_row, 0, source_parent)
         value = self.sourceModel().data(index, role=Qt.UserRole)
-        for key in ['Źródło', 'Nazwa', 'Opis']:
+        for key in ['source', 'name', 'description']:
             if value[key].casefold().__contains__(pattern.casefold()):
                 return True
         return False

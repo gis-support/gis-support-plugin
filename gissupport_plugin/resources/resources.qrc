@@ -2,11 +2,11 @@
     <qresource prefix="/plugins/gissupport_plugin" >
         <file>gissupport_logo.jpg</file>
         <file>info.png</file>
-        <file>uldk/search.png</file>
-        <file>uldk/intersect.png</file>
-	<file>wms/wms.png</file>
-		<file>gissupport_small.jpg</file>
-        <file>gugik_nmt/icon.png</file>
+        <file>uldk/uldk.svg</file>
+        <file>uldk/uldk_identify.svg</file>
+        <file>wms/wms.svg</file>
+        <file>gissupport_small.jpg</file>
         <file>gugik_nmt/index.svg</file>
+        <file>gugik_nmt/nmt.svg</file>
     </qresource>     
 </RCC>

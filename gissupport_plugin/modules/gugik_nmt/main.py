@@ -49,7 +49,7 @@ class GugikNmt(BaseModule):
 
         iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.gugik_nmt_action = self.parent.add_action(
-            ":/plugins/gissupport_plugin/gugik_nmt/icon.png",
+            ":/plugins/gissupport_plugin/gugik_nmt/nmt.svg",
             text = "GUGiK NMT",
             callback = lambda state: self.dockwidget.setHidden(not state),
             checkable=True,

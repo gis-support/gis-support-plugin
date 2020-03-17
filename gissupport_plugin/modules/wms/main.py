@@ -74,7 +74,7 @@ class Main(BaseModule):
             "Napisz do nas: info@gis-support.pl"))
         
         self.parent.add_action(
-            ":/plugins/gissupport_plugin/wms/wms.png",
+            ":/plugins/gissupport_plugin/wms/wms.svg",
             self.module_name,
             callback = self.dlg.show,
             checkable = False,

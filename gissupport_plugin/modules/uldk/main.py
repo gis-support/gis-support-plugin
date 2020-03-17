@@ -50,7 +50,7 @@ class Main(BaseModule):
         self.module_wms_kieg_initialized = False
         self.module_map_point_search = MapPointSearch(self, self.teryt_search_result_collector)
 
-        icon = QIcon(":/plugins/gissupport_plugin/uldk/intersect.png")
+        icon = QIcon(":/plugins/gissupport_plugin/uldk/uldk_identify.svg")
         self.identifyAction = QAction(icon=icon, parent=self.dockwidget)
         self.identifyAction.setCheckable(True)
         self.identifyAction.toggled.connect(
@@ -95,30 +95,27 @@ class Main(BaseModule):
         iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
 
         self.uldk_toolbar_action = self.parent.add_action(
-            ":/plugins/gissupport_plugin/uldk/search.png",
+            ":/plugins/gissupport_plugin/uldk/uldk.svg",
             self.module_name,
             lambda state: self.dockwidget.setHidden(not state),
             checkable = True,
             parent = iface.mainWindow(),
-            add_to_topmenu=True,
-            #toolbar_position=0
+            add_to_topmenu=True
         )
 
         self.dockwidget.visibilityChanged.connect(self.uldk_toolbar_action.setChecked)
 
         self.identify_toolbar_action = self.parent.add_action(
-            ":/plugins/gissupport_plugin/uldk/intersect.png",
+            ":/plugins/gissupport_plugin/uldk/uldk_identify.svg",
             text = "Identifykacja ULDK",
             callback = lambda toggle: self.identifyAction.trigger(),
             parent = iface.mainWindow(),
             checkable = True,
-            add_to_topmenu=False,
-            #oolbar_position=0
+            add_to_topmenu=False
         )
         self.identifyAction.toggled.connect(
             lambda changed: self.identify_toolbar_action.setChecked(changed)
         )
-        #self.parent.toolbar.insertSeparator()
         self.parent.toolbar.addSeparator()
 
         self.dockwidget.hide()

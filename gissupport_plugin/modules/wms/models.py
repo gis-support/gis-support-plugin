@@ -36,13 +36,13 @@ class ServicesTableModel(QAbstractTableModel):
         item = self.items[index.row()]
         if role == Qt.DisplayRole:
             if index.column() == 0:
-                return item['ID']
+                return item['id']
             elif index.column() == 1:
-                return item['Źródło']
+                return item['source']
             elif index.column() == 2:
-                return item['Nazwa']
+                return item['name']
             elif index.column() == 3:
-                return item['URL']
+                return item['url']
         elif role == Qt.UserRole:
             return item
         return     

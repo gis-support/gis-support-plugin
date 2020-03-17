@@ -97,7 +97,7 @@ class Main(BaseModule):
         if len(row) > 0:
             selected = row[0]
             self.curServiceData = selected.sibling(selected.row(), selected.column()).data(role=Qt.UserRole)
-            self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['Opis'])
+            self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['description'])
 
     def loadLayers(self):
         self.dlg.layersTableWidget.setRowCount(0)

@@ -333,7 +333,7 @@
         "source": "Generalna Dyrekcja Ochrony Środowiska (GDOŚ) - Geoserwis",
         "name": "Formy Ochrony Przyrody",
         "url": "https://sdi.gdos.gov.pl/wms",
-        "description": "Serwis WMS z wizualizacją danych OpenStreetMap"
+        "description": "Usługa przeglądania (Web Map Service) Generalnej Dyrekcji Ochrony Środowiska. Usługa udostępnia dane przestrzenne form ochrony przyrody."
     },
     "57": {
         "source": "Agencja Mienia Wojskowego",

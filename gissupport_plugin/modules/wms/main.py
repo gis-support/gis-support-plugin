@@ -88,17 +88,8 @@ class Main(BaseModule):
 
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """
-        servicesList = self.services
-        for wms in servicesList.items():
-            id, info = wms
-            self.servicesTableModel.insertRows(0, [{
-                'ID': int(id),
-                'Źródło': info['source'],
-                'Nazwa': info['name'],
-                'URL': info['url'],
-                'Opis': info['description']
-            }])
-            
+        self.servicesTableModel.insertRows(0, self.services)
+
     def showDescription(self):
         self.dlg.layersTableWidget.setRowCount(0)
         self.dlg.layersTableWidget.clearContents()

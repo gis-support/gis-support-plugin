@@ -19,7 +19,7 @@ class Main(BaseModule):
     module_name = "Baza krajowych usług WMS"
 
     def __init__(self, parent):
-        self.parent = parent
+        super().__init__(parent)
         
         self.canvas = iface.mapCanvas()
         self.dlg = BazaWMSDialog()

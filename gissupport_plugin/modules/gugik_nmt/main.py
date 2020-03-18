@@ -37,14 +37,8 @@ class GugikNmt(BaseModule):
     """QGIS Plugin Implementation."""
 
     def __init__(self, parent):
-        """Constructor.
-
-        :param iface: An interface instance that will be passed to this class
-            which provides the hook by which you can manipulate the QGIS
-            application at run time.
-        :type iface: QgsInterface
-        """
-        self.parent = parent
+        super().__init__(parent)
+        
         self.dockwidget = GugikNmtDockWidget()
 
         iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)

@@ -30,8 +30,7 @@ class Main(BaseModule):
     module_name = "Wyszukiwarka działek ewidencyjnych"    
 
     def __init__(self, parent):
-
-        self.parent = parent
+        super().__init__(parent)
 
         self.canvas = iface.mapCanvas()
         self.dockwidget = wyszukiwarkaDzialekDockWidget()

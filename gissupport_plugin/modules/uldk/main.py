@@ -50,14 +50,6 @@ class Main(BaseModule):
         self.module_wms_kieg_initialized = False
         self.module_map_point_search = MapPointSearch(self, self.teryt_search_result_collector)
 
-        icon = QIcon(":/plugins/gissupport_plugin/uldk/uldk_identify.svg")
-        self.identifyAction = QAction(icon=icon, parent=self.dockwidget)
-        self.identifyAction.setCheckable(True)
-        self.identifyAction.toggled.connect(
-            lambda state: self.module_map_point_search.toggle(not state)
-        )
-        self.dockwidget.btnIdentify.setDefaultAction(self.identifyAction)
-
         result_collector_factory = lambda parent, target_layer: ResultCollectorMultiple(self, target_layer)
         self.module_teryt_search = TerytSearch(self,
             self.dockwidget.tab_teryt_search_layout,
@@ -105,18 +97,18 @@ class Main(BaseModule):
 
         self.dockwidget.visibilityChanged.connect(self.uldk_toolbar_action.setChecked)
 
-        self.identify_toolbar_action = self.parent.add_action(
+        self.identify_action = self.parent.add_action(
             ":/plugins/gissupport_plugin/uldk/uldk_identify.svg",
             text = "Identifykacja ULDK",
-            callback = lambda toggle: self.identifyAction.trigger(),
+            callback = lambda toggle: iface.mapCanvas().setMapTool( self.module_map_point_search ),
             parent = iface.mainWindow(),
             checkable = True,
             add_to_topmenu=False
         )
-        self.identifyAction.toggled.connect(
-            lambda changed: self.identify_toolbar_action.setChecked(changed)
-        )
+        self.module_map_point_search.setAction( self.identify_action )
         self.parent.toolbar.addSeparator()
+
+        self.dockwidget.btnIdentify.setDefaultAction(self.identify_action)
 
         self.dockwidget.hide()
 

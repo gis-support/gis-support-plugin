@@ -61,11 +61,10 @@ class PointLayerImportWorker(QObject):
     interrupted = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
     progressed = pyqtSignal(bool, int)
     
-    def __init__(self, source_layer, selected_only, layer_name, skip_duplicates, additional_output_fields = []):
+    def __init__(self, source_layer, selected_only, layer_name, additional_output_fields = []):
         super().__init__()
         self.source_layer = source_layer
         self.selected_only = selected_only
-        self.skip_duplicates = skip_duplicates
         self.additional_output_fields = additional_output_fields
 
         self.layer_found = QgsVectorLayer(f"Polygon?crs=EPSG:{2180}", layer_name, "memory")
@@ -120,11 +119,9 @@ class PointLayerImportWorker(QObject):
             skip = False
             for found_feature in found_features:
                 if found_feature.geometry().intersects(source_feature.geometry()):
-                    if not self.skip_duplicates:
-                        self.layer_found.dataProvider().addFeature(found_feature)
                     skip = True
             if skip:
-                self.progressed.emit(True,  1 if self.skip_duplicates else 0)
+                self.progressed.emit(True,  1)
                 continue
 
             point = source_feature.geometry().asPoint()

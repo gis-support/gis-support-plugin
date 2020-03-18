@@ -53,10 +53,6 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
             "będziesz mógł korzystać z pozostałych funkcjonalności wtyczki,\n"
             "ale mogą one działać wolniej. Wyszukiwanie obiektów działa również\n"
             "po zamknięciu wtyczki."))
-        self.label_info_skip_duplicates.setPixmap(QPixmap(self.icon_info_path))
-        self.label_info_skip_duplicates.setToolTip((
-            "Gdy zaznaczone, warstwa wynikowa nie będzie zawierać duplikatów\n"
-            "działek, na których znalazło się wiele punktów z warstwy wejściowej."))      
 
         self.frame_how_it_works.setToolTip((
             "Narzędzie wyszukuje działki\n"
@@ -80,7 +76,6 @@ class PointLayerImport:
         selected_field_names = self.ui.combobox_fields_select.checkedItems()
         fields_to_copy = [ field for field in layer.dataProvider().fields()
                             if field.name() in selected_field_names ]
-        skip_duplicates = bool(self.ui.checkbox_skip_duplicates.checkState())
 
         features_iterator = layer.getSelectedFeatures() if selected_only else layer.getFeatures()
         count = sum(1 for i in features_iterator)
@@ -88,7 +83,7 @@ class PointLayerImport:
 
         self.__cleanup_before_search()
 
-        self.worker = PointLayerImportWorker(layer, selected_only, target_layer_name, skip_duplicates, fields_to_copy)
+        self.worker = PointLayerImportWorker(layer, selected_only, target_layer_name, fields_to_copy)
         self.thread = QThread()
         self.worker.moveToThread(self.thread) 
         self.worker.progressed.connect(self.__progressed)

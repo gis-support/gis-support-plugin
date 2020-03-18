@@ -337,32 +337,6 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="checkbox_skip_duplicates">
-           <property name="text">
-            <string>Pomijaj duplikaty</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLabel" name="label_info_skip_duplicates">
-           <property name="maximumSize">
-            <size>
-             <width>15</width>
-             <height>15</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string/>
-           </property>
-           <property name="text">
-            <string>i</string>
-           </property>
-           <property name="scaledContents">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
       </item>

@@ -43,10 +43,9 @@ class Main(BaseModule):
         self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
         self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
         self.dlg.servicesTableView.horizontalHeader().resizeSection(1, 100)
         self.dlg.servicesTableView.horizontalHeader().resizeSection(2, 250)
-        self.dlg.servicesTableView.horizontalHeader().resizeSection(3, 282)
 
         self.dlg.layersTableWidget.setHorizontalHeaderLabels(['Nr', 'Nazwa', 'Tytuł', 'Streszczenie'])
         self.dlg.layersTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
@@ -89,9 +88,6 @@ class Main(BaseModule):
 
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """
-        for service in self.services:
-            service['name'] = service['name'] + ', ' + service['url']
-
         self.servicesTableModel.insertRows(0, self.services)
 
     def loadLayers(self):

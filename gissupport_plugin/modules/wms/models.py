@@ -40,7 +40,7 @@ class ServicesTableModel(QAbstractTableModel):
             elif index.column() == 1:
                 return item['source']
             elif index.column() == 2:
-                return item['name']
+                return '{}, {}'.format(item['name'], item['url'])
             elif index.column() == 3:
                 return item['description']
         elif role == Qt.UserRole:

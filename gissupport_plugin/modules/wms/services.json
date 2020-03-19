@@ -387,7 +387,7 @@
     {
         "source": "Generalna Dyrekcja Ochrony Środowiska (GDOŚ) - Geoserwis",
         "name": "Formy Ochrony Przyrody",
-        "url": "https://sdi.gdos.gov.pl/wms",
+        "url": "http://sdi.gdos.gov.pl/wms",
         "description": "Usługa przeglądania (Web Map Service) Generalnej Dyrekcji Ochrony Środowiska. Usługa udostępnia dane przestrzenne form ochrony przyrody.",
         "id": 56
     },

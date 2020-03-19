@@ -13,7 +13,7 @@ from os import path
 from owslib.wms import WebMapService
 import requests.exceptions
 import urllib
-
+from lxml.etree import XMLSyntaxError
 
 class Main(BaseModule):
     module_name = "Baza krajowych usług WMS"
@@ -105,7 +105,7 @@ class Main(BaseModule):
         if self.curServiceData:
             try:
                 wmsCapabilities = WebMapService(self.curServiceData['url'])
-            except AttributeError:
+            except (AttributeError, XMLSyntaxError):
                 wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
             except requests.exceptions.ReadTimeout:
                 iface.messageBar().pushMessage(

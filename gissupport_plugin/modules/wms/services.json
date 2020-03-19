@@ -78,13 +78,6 @@
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
-        "name": "Cieniowanie i hipsometria (WMTS)",
-        "url": "http://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMTS/HypsometryAndShadedRelief",
-        "description": "Usługa przeglądania cieniowanej hipsometrii dla NMT o rozdzielczoćci 1m (dane z projektu ISOK) dla obszaru Polski. Usługa wykorzystuje interfejs WMTS OGC w wersji 1.0.0.",
-        "id": 12
-    },
-    {
-        "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Ceny nieruchomości",
         "url": "https://integracja.gugik.gov.pl/cgi-bin/KrajowaIntegracjaCenNieruchomosci",
         "description": "Usługa Krajowa Integracja Cen Nieruchomości jest usługą zbiorczą prezentacji informacji o cenach nieruchomości pochodzących bezpośrednio z jednostek szczebla powiatowego.",

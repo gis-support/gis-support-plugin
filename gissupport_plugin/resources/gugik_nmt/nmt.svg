@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="100%" height="100%" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;">
-    <g id="Layer1">
-        <rect x="0" y="0" width="24" height="24" style="fill:rgb(1,158,219);"/>
-    </g>
-    <g transform="matrix(1,0,0,1,-6.63219,-0.326927)">
-        <text x="8.253px" y="15.757px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:9.583px;fill:white;">NMT</text>
+    <rect id="Layer1" x="0" y="0" width="24" height="24" style="fill:rgb(1,158,219);"/>
+    <g transform="matrix(1,0,0,1,1.62081,15.4301)">
+        <path d="M0.711,0L0.711,-6.86L2.059,-6.86L4.866,-2.279L4.866,-6.86L6.153,-6.86L6.153,0L4.763,0L1.998,-4.473L1.998,0L0.711,0Z" style="fill:white;fill-rule:nonzero;"/>
+        <path d="M7.599,0L7.599,-6.86L9.672,-6.86L10.917,-2.181L12.147,-6.86L14.225,-6.86L14.225,0L12.938,0L12.938,-5.4L11.576,0L10.243,0L8.886,-5.4L8.886,0L7.599,0Z" style="fill:white;fill-rule:nonzero;"/>
+        <path d="M17.145,0L17.145,-5.699L15.109,-5.699L15.109,-6.86L20.56,-6.86L20.56,-5.699L18.53,-5.699L18.53,0L17.145,0Z" style="fill:white;fill-rule:nonzero;"/>
     </g>
 </svg>

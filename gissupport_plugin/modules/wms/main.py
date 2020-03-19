@@ -13,7 +13,7 @@ from os import path
 from owslib.wms import WebMapService
 import requests.exceptions
 import urllib
-from lxml.etree import XMLSyntaxError
+from owslib.etree import ParseError
 
 class Main(BaseModule):
     module_name = "Baza krajowych usług WMS"
@@ -103,7 +103,7 @@ class Main(BaseModule):
             self.curServiceData = selected.sibling(selected.row(), selected.column()).data(role=Qt.UserRole)
             try:
                 wmsCapabilities = WebMapService(self.curServiceData['url'])
-            except (AttributeError, XMLSyntaxError):
+            except (AttributeError, ParseError):
                 wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
             except requests.exceptions.ReadTimeout:
                 iface.messageBar().pushMessage(

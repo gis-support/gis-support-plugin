@@ -147,7 +147,7 @@ class Main(BaseModule):
                 "styles=&"
                 "url={}".format(
                     self.dlg.layersTableWidget.item(layerId, 4).text(),
-                    urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text()),
+                    urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:'),
                     self.curServiceData['url']
                 )
             )

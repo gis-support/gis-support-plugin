@@ -38,19 +38,19 @@ class Main(BaseModule):
         self.servicesTableModel = self.dlg.servicesTableView.model().sourceModel()
         self.dlg.servicesTableView.setSortingEnabled(False)
 
+
         #Initialize table headers
         self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
+        self.dlg.servicesTableView.horizontalHeader().resizeSection(1, 100)
+        self.dlg.servicesTableView.horizontalHeader().resizeSection(2, 250)
+        self.dlg.servicesTableView.horizontalHeader().resizeSection(3, 282)
 
-        self.dlg.servicesTableView.setColumnWidth(0, 20)
-        self.dlg.servicesTableView.setColumnWidth(1, 100)
-        self.dlg.servicesTableView.setColumnWidth(2, 300)
-
-        self.dlg.layersTableWidget.setHorizontalHeaderLabels(['Nr', 'Nazwa', 'Tytuł', 'Streszczenie', 'Układ współrzędnych'])
+        self.dlg.layersTableWidget.setHorizontalHeaderLabels(['Nr', 'Nazwa', 'Tytuł', 'Streszczenie'])
         self.dlg.layersTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.dlg.layersTableWidget.setColumnCount(5)
+        self.dlg.layersTableWidget.setColumnCount(4)
         self.dlg.layersTableWidget.setColumnWidth(0, 20)
         self.dlg.layersTableWidget.setColumnWidth(1, 70)
         self.dlg.layersTableWidget.setColumnWidth(2, 170)
@@ -58,14 +58,15 @@ class Main(BaseModule):
         self.dlg.layersTableWidget.setColumnWidth(4, 90)
 
         #Connect slots to signals
-        self.dlg.servicesTableView.selectionModel().selectionChanged.connect(self.showDescription)
         self.dlg.searchLineEdit.textChanged.connect(servicesProxyModel.setFilterRegExp)
         self.dlg.getLayersButton.clicked.connect(self.loadLayers)
+        self.dlg.servicesTableView.doubleClicked.connect(self.loadLayers)
         self.dlg.layersTableWidget.itemSelectionChanged.connect(self.enableAddToMap)
+        self.dlg.layersTableWidget.doubleClicked.connect(self.addToMap)
         self.dlg.addLayersButton.clicked.connect(self.addToMap)
 
         self.updateServicesList()
-
+        
         #Zarejestrowanie we wtyczce
 
         self.dlg.lblInfo.setPixmap(QPixmap(':/plugins/plugin/info.png'))
@@ -88,21 +89,18 @@ class Main(BaseModule):
 
     def updateServicesList(self):
         """ Fills the Table Widget with a list of WMS Services """
+        for service in self.services:
+            service['name'] = service['name'] + ', ' + service['url']
+
         self.servicesTableModel.insertRows(0, self.services)
 
-    def showDescription(self):
+    def loadLayers(self):
+        self.avaliableCrses = None
         self.dlg.layersTableWidget.setRowCount(0)
-        self.dlg.layersTableWidget.clearContents()
         row = self.dlg.servicesTableView.selectionModel().selectedRows()
         if len(row) > 0:
             selected = row[0]
             self.curServiceData = selected.sibling(selected.row(), selected.column()).data(role=Qt.UserRole)
-            self.dlg.descriptionTextEdit.setPlainText(self.curServiceData['description'])
-
-    def loadLayers(self):
-        self.dlg.layersTableWidget.setRowCount(0)
-        defaultCrs = 'EPSG:2180'
-        if self.curServiceData:
             try:
                 wmsCapabilities = WebMapService(self.curServiceData['url'])
             except AttributeError:
@@ -121,14 +119,20 @@ class Main(BaseModule):
                     level=Qgis.Critical
                 )
                 return 1
+
+            formatOptions = wmsCapabilities.getOperationByName('GetMap').formatOptions
+            self.populateFormatCb(formatOptions)
+
             for nr, layer in enumerate(list(wmsCapabilities.contents)):
                 wmsLayer = wmsCapabilities[layer]
+                if nr == 0:
+                    self.populateCrsCb(wmsLayer.crsOptions)
+
                 self.dlg.layersTableWidget.insertRow(nr)
                 self.dlg.layersTableWidget.setItem(nr, 0, QTableWidgetItem(str(nr+1)))
                 self.dlg.layersTableWidget.setItem(nr, 1, QTableWidgetItem(wmsLayer.name))
                 self.dlg.layersTableWidget.setItem(nr, 2, QTableWidgetItem(wmsLayer.title))
                 self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))
-                self.dlg.layersTableWidget.setItem(nr, 4, QTableWidgetItem(defaultCrs if defaultCrs in wmsLayer.crsOptions else wmsLayer.crsOptions[0]))
 
     def enableAddToMap(self):
         layerSelected = True if self.dlg.layersTableWidget.selectionModel().selectedRows() else False
@@ -142,11 +146,12 @@ class Main(BaseModule):
                 "crs={}&"
                 "dpiMode=7&"
                 "featureCount=10&"
-                "format=image/jpeg&"
+                "format={}&"
                 "layers={}&"
                 "styles=&"
                 "url={}".format(
-                    self.dlg.layersTableWidget.item(layerId, 4).text(),
+                    self.dlg.crsCb.currentText(),
+                    self.dlg.formatCb.currentText(),
                     urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text()),
                     self.curServiceData['url']
                 )
@@ -160,3 +165,27 @@ class Main(BaseModule):
                     'Nie udało się wczytać warstwy %s' % self.dlg.layersTableWidget.item(layerId, 2).text(),
                     level=Qgis.Warning
                 )
+
+    def populateCrsCb(self, crses):
+        self.dlg.crsCb.clear()
+        default = 'EPSG:2180'
+        project_crs = QgsProject.instance().crs().authid()
+        if project_crs:
+            crses.insert(0, project_crs)
+        elif default in crses:
+            crses.insert(0, crses.pop(crses.index(default)))
+
+        for index, crs in enumerate(crses, start=1):
+            if self.dlg.crsCb.findText(crs) == -1:
+                self.dlg.crsCb.insertItem(index, crs)
+
+    def populateFormatCb(self, formats):
+        self.dlg.formatCb.clear()
+        default = 'image/png'
+        if default not in formats:
+            formats.insert(0, default)
+        else:
+            formats.insert(0, formats.pop(formats.index(default)))
+
+        for index, format in enumerate(formats):
+            self.dlg.formatCb.insertItem(index, format)

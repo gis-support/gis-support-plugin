@@ -28,7 +28,7 @@ class ServicesTableModel(QAbstractTableModel):
             elif section == 2:
                 return 'Nazwa'
             elif section == 3:
-                return 'URL'
+                return 'Opis'
 
     def data(self, index, role):
         if not index.isValid():
@@ -42,7 +42,7 @@ class ServicesTableModel(QAbstractTableModel):
             elif index.column() == 2:
                 return item['name']
             elif index.column() == 3:
-                return item['url']
+                return item['description']
         elif role == Qt.UserRole:
             return item
         return     

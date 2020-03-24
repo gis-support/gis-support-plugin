@@ -8,5 +8,6 @@
         <file>gissupport_small.jpg</file>
         <file>gugik_nmt/index.svg</file>
         <file>gugik_nmt/nmt.svg</file>
+        <file>mapster/mapster.svg</file>
     </qresource>     
 </RCC>

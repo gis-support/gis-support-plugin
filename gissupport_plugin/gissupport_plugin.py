@@ -27,7 +27,8 @@ from PyQt5.QtCore import (QCoreApplication, Qt, QUrl)
 from PyQt5.QtGui import QDesktopServices, QIcon
 from PyQt5.QtWidgets import QAction
 from pathlib import Path
-import inspect, importlib
+import inspect
+from importlib import util
 
 from gissupport_plugin.modules.base import BaseModule
 from .key_dialog import GisSupportPluginDialog
@@ -100,11 +101,11 @@ class GISSupportPlugin:
 
         modules_path = Path( self.plugin_dir ).joinpath('modules')
         #Iteracja po modułach dodatkowych
-        for module_name in ['uldk', 'gugik_nmt', 'wms']:
+        for module_name in ['uldk', 'gugik_nmt', 'wms', 'mapster']:
             main_module = modules_path.joinpath(module_name).joinpath('main.py')
             #Załadowanie modułu
-            spec = importlib.util.spec_from_file_location('main', main_module)
-            module = importlib.util.module_from_spec(spec)
+            spec = util.spec_from_file_location('main', main_module)
+            module = util.module_from_spec(spec)
             spec.loader.exec_module(module)
             #Lista obiektów w module
             clsmembers = inspect.getmembers(module, inspect.isclass)

@@ -9,9 +9,9 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=1.2.6.4
+version=1.2.6.5
 author=GIS Support
-email=kamil.kozik@gis-support.pl
+email=info@gis-support.pl
 
 description=GIS Support Plugin: integrates features that facilitate communication with services offered by Polish institutions (eg GUGiK).
 about=Features:

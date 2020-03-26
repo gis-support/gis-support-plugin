@@ -116,13 +116,10 @@ class PointLayerImportWorker(QObject):
                 self.interrupted.emit(self.layer_found, self.layer_not_found)
                 return
 
-            skip = False
             for found_feature in found_features:
                 if found_feature.geometry().intersects(source_feature.geometry()):
-                    skip = True
-            if skip:
-                self.progressed.emit(True,  1)
-                continue
+                   self.progressed.emit(True,  1)
+                   continue
 
             point = source_feature.geometry().asPoint()
             uldk_point = ULDKPoint(point.x(), point.y(), 2180)

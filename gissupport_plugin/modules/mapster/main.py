@@ -18,7 +18,7 @@ class MapsterModule( BaseModule ):
             self.setMapsterTool,
             parent=iface.mainWindow(),
             checkable=True,
-            add_to_topmenu=False
+            add_to_topmenu=True
         )
         self.point_tool.setAction( action )
         self.point_tool.canvasClicked.connect( self.canvasClicked )

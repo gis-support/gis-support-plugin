@@ -1,0 +1,66 @@
+[
+    {
+        "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
+        "name": "Baza Danych Obiektów Topograficznych (BDOT10k)",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/BDOT10k",
+        "format": "image/png",
+        "crs": "2180",
+        "id": 1
+    },
+    {
+        "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
+        "name": "Ortofotomapa standardowa",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/ORTO",
+        "format": "image/png",
+        "crs": "2180",
+        "id": 2
+    },
+    {
+        "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
+        "name": "Ortofotomapa o wysokiej rozdzielczości",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMTS/HighResolution",
+        "format": "image/png",
+        "crs": "2180",
+        "id": 3
+    },
+    {
+        "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
+        "name": "Cieniowanie",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMTS/ShadedRelief",
+        "format": "image/png",
+        "crs": "2180",
+        "id": 4
+    },
+    {
+        "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
+        "name": "Hipsometria",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMTS/Hypsometry",
+        "format": "image/png",
+        "crs": "2180",
+        "id": 5
+    },
+    {
+        "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
+        "name": "Cieniowanie i hipsometria",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMTS/HypsometryAndShadedRelief",
+        "format": "image/png",
+        "crs": "2180",
+        "id": 6
+    },
+    {
+        "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
+        "name": "Baza Danych Obiektów Ogólnogeograficznych (BDOO)",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/BDOO",
+        "format": "image/png",
+        "crs": "2180",
+        "id": 7
+    },
+    {
+        "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
+        "name": "Rastrowa Mapa Topograficzna Polski",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/TOPO",
+        "format": "image/png",
+        "crs": "2180",
+        "id": 8
+    }
+]

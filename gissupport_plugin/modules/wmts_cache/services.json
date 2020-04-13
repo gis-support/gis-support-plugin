@@ -4,7 +4,7 @@
         "name": "Baza Danych Obiektów Topograficznych (BDOT10k)",
         "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/BDOT10k",
         "format": "image/png",
-        "crs": "2180",
+        "crs": "EPSG:2180",
         "id": 1
     },
     {
@@ -12,7 +12,7 @@
         "name": "Ortofotomapa standardowa",
         "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/ORTO",
         "format": "image/png",
-        "crs": "2180",
+        "crs": "EPSG:2180",
         "id": 2
     },
     {
@@ -20,7 +20,7 @@
         "name": "Ortofotomapa o wysokiej rozdzielczości",
         "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMTS/HighResolution",
         "format": "image/png",
-        "crs": "2180",
+        "crs": "EPSG:2180",
         "id": 3
     },
     {
@@ -28,7 +28,7 @@
         "name": "Cieniowanie",
         "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMTS/ShadedRelief",
         "format": "image/png",
-        "crs": "2180",
+        "crs": "EPSG:2180",
         "id": 4
     },
     {
@@ -36,7 +36,7 @@
         "name": "Hipsometria",
         "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMTS/Hypsometry",
         "format": "image/png",
-        "crs": "2180",
+        "crs": "EPSG:2180",
         "id": 5
     },
     {
@@ -44,7 +44,7 @@
         "name": "Cieniowanie i hipsometria",
         "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMTS/HypsometryAndShadedRelief",
         "format": "image/png",
-        "crs": "2180",
+        "crs": "EPSG:2180",
         "id": 6
     },
     {
@@ -52,7 +52,7 @@
         "name": "Baza Danych Obiektów Ogólnogeograficznych (BDOO)",
         "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/BDOO",
         "format": "image/png",
-        "crs": "2180",
+        "crs": "EPSG:2180",
         "id": 7
     },
     {

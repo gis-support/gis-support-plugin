@@ -4,7 +4,7 @@ from qgis.utils import iface
 from qgis.PyQt.QtWidgets import QMenu, QAction, QWidget, QToolButton
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtCore import QPoint
-from qgis.core import Qgis
+from qgis.core import Qgis, QgsRasterLayer, QgsProject
 from owslib.wmts import WebMapTileService
 from requests.exceptions import ConnectionError, ReadTimeout
 from os import path
@@ -19,7 +19,7 @@ class WMTSCacheModule(BaseModule):
         self.action = self.parent.add_action(
             '',
             self.module_name,
-            self.showMenu,
+            callback = lambda: None,
             parent=iface.mainWindow(),
             checkable=True,
             add_to_topmenu=False
@@ -29,7 +29,6 @@ class WMTSCacheModule(BaseModule):
         self.dialog.lbInfoCacheExpiration.setToolTip('Maksymalnie 720 godz. (30 dni)')
 
         self.actionMenu = None
-        self.wmtsCapabilitiesData = []
         self.cacheSettings = QAction('Ustawienia')
         self.cacheExpirationValue = 0
 
@@ -45,21 +44,56 @@ class WMTSCacheModule(BaseModule):
         self.actionMenu = self.action.menu()
         with open(path.join(path.dirname(__file__), 'services.json')) as file:
             services = json.load(file)
+
             for service in services:
                 try:
-                    # wmts = WebMapTileService(service['url']+'?service=WMTS&request=getCapabilities', version='1.0.0')
+                    wmts = WebMapTileService(service['url']+'?service=WMTS&request=getCapabilities')
                     menu = self.actionMenu.addMenu(service['name'])
-                    # for layer in wmts.contents:
-                    #     name = wmts[layer].name
-                    #     menu.addAction(name)           
+
+                    for layer in wmts.contents:
+                        wmts_layer = wmts[layer]
+
+                        if service['format'] not in wmts_layer.formats:
+                            service['format'] = wmts_layer.formats[0]
+                        
+                        if service['crs'] not in wmts_layer.tilematrixsetlinks.keys():
+                            service['crs'] = list(wmts_layer.tilematrixsetlinks.keys())[0]
+
+                        name = wmts_layer.name
+                        action = menu.addAction(name)
+                        service.update({'layer_name': name})
+
+                        action.setData(service)
+                        action.triggered.connect(lambda checked, action=action: self.addToProject(checked, action))
+
                 except (ConnectionError, ReadTimeout):
                     pass
 
             self.actionMenu.addSeparator()
             self.actionMenu.addAction(self.cacheSettings)
 
-    def showMenu(self):
-        pass
+    def addToProject(self, checked, menu_action):
+        params = menu_action.data()
+        wmts_url = (
+            "contextualWMSLegend=0&crs={}&dpiMode=0&"
+            "featureCount=10&format={}&layers={}&"
+            "styles=default&tileMatrixSet={}&url={}".format(
+                params['crs'],
+                params['format'],
+                params['layer_name'],
+                params['crs'],
+                params['url']+'?service%3DWMTS%26request%3DgetCapabilities'
+            )
+        )
+        layer = QgsRasterLayer(wmts_url, params['name'], 'wms')
+        if layer.isValid():
+            QgsProject.instance().addMapLayer(layer)
+        else:
+            iface.messageBar().pushMessage(
+                'WMTS Cache',
+                f'Nie udało się wczytać warstwy {params["name"]}',
+                level=Qgis.Warning
+            )
 
     def dialogAccepted(self):
         self.cacheExpirationValue = self.dialog.sbCacheExpiration.value()

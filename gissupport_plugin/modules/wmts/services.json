@@ -5,7 +5,7 @@
         "tiles_name": "BDOT10k",
         "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/BDOT10k",
         "format": "image/png",
-        "supported_crses": ["EPSG:2180", "EPSG:4326"],
+        "supported_crs": ["EPSG:2180", "EPSG:4326"],
         "id": 1
     },
     {
@@ -14,7 +14,7 @@
         "tiles_name": "ORTOFOTOMAPA",
         "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/ORTO",
         "format": "image/jpeg",
-        "supported_crses": ["EPSG:2180", "EPSG:4326"],
+        "supported_crs": ["EPSG:2180", "EPSG:4326"],
         "id": 2
     },
     {
@@ -23,7 +23,7 @@
         "tiles_name": "ORTOFOTOMAPA",
         "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMTS/HighResolution",
         "format": "image/jpeg",
-        "supported_crses": ["EPSG:2180"],
+        "supported_crs": ["EPSG:2180"],
         "id": 3
     },
     {
@@ -32,7 +32,7 @@
         "tiles_name": "ISOK_Cien",
         "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMTS/ShadedRelief",
         "format": "image/jpeg",
-        "supported_crses": ["EPSG:2180"],
+        "supported_crs": ["EPSG:2180"],
         "id": 4
     },
     {
@@ -41,7 +41,7 @@
         "tiles_name": "ISOK_Hipso",
         "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMTS/Hypsometry",
         "format": "image/jpeg",
-        "supported_crses": ["EPSG:2180"],
+        "supported_crs": ["EPSG:2180"],
         "id": 5
     },
     {
@@ -50,7 +50,7 @@
         "tiles_name": "ISOK_CienHipso",
         "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMTS/HypsometryAndShadedRelief",
         "format": "image/jpeg",
-        "supported_crses": ["EPSG:2180"],
+        "supported_crs": ["EPSG:2180"],
         "id": 6
     },
     {
@@ -59,7 +59,7 @@
         "tiles_name": "BDOO",
         "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/BDOO",
         "format": "image/png",
-        "supported_crses": ["EPSG:2180"],
+        "supported_crs": ["EPSG:2180"],
         "id": 7
     },
     {
@@ -68,7 +68,7 @@
         "tiles_name": "MAPA TOPOGRAFICZNA",
         "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/TOPO",
         "format": "image/jpeg",
-        "supported_crses": ["EPSG:2180", "EPSG:4326"],
+        "supported_crs": ["EPSG:2180", "EPSG:4326"],
         "id": 8
     }
 ]

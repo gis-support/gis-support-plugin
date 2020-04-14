@@ -57,7 +57,7 @@ class WMTSCacheModule(BaseModule):
     def addToProject(self, checked, menu_action):
         params = menu_action.data()
         project_crs = iface.mapCanvas().mapSettings().destinationCrs().authid()
-        crs = project_crs if project_crs in params['supported_crses'] else 'EPSG:2180'
+        crs = project_crs if project_crs in params['supported_crs'] else 'EPSG:2180'
         
         wmts_url = (
             "contextualWMSLegend=0&crs={}&dpiMode=0&"
@@ -73,7 +73,9 @@ class WMTSCacheModule(BaseModule):
         
         layer = QgsRasterLayer(wmts_url, params['name'], 'wms')
         if layer.isValid():
-            QgsProject.instance().addMapLayer(layer)
+            root = QgsProject.instance().layerTreeRoot()
+            QgsProject.instance().addMapLayer(layer, False)
+            root.insertLayer(len(root.children()), layer)
         else:
             iface.messageBar().pushMessage(
                 'WMTS Cache',

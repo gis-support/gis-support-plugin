@@ -101,7 +101,7 @@ class GISSupportPlugin:
 
         modules_path = Path( self.plugin_dir ).joinpath('modules')
         #Iteracja po modułach dodatkowych
-        for module_name in ['uldk', 'gugik_nmt', 'wms', 'mapster', 'wmts_cache']:
+        for module_name in ['uldk', 'gugik_nmt', 'wms', 'wmts', 'mapster']:
             main_module = modules_path.joinpath(module_name).joinpath('main.py')
             #Załadowanie modułu
             spec = util.spec_from_file_location('main', main_module)

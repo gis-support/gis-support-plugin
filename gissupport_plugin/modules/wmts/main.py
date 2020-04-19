@@ -87,6 +87,6 @@ class WMTSCacheModule(BaseModule):
         self.settings.setValue('/qgis/defaultTileExpiry', self.dialog.sbCacheExpiration.value())
 
     def showCacheSettings(self):
-        tile_expiry = self.settings.value('/qgis/defaultTileExpiry', 24)
+        tile_expiry = int(self.settings.value('/qgis/defaultTileExpiry', 24))
         self.dialog.sbCacheExpiration.setValue(tile_expiry)
         self.dialog.show()        

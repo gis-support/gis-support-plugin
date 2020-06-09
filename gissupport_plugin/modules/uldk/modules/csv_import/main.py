@@ -4,7 +4,7 @@ import os
 from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QKeySequence, QPixmap
-from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 
@@ -105,6 +105,7 @@ class CSVImport:
         self.ui.label_not_found_count.setText("")
         self.ui.button_cancel.clicked.connect(self.__stop)
         self.ui.file_select.fileChanged.connect(self.__on_file_changed)
+        self.ui.button_save_not_found.clicked.connect(self._export_table_errors_to_csv)
         self.__init_table()
 
     def __init_table(self):
@@ -183,6 +184,9 @@ class CSVImport:
 
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
             f"Import CSV: zakończono wyszukiwanie. Zapisano {found_count} {form} do warstwy <b>{self.ui.text_edit_layer_name.text()}</b>"))
+        if self.not_found_count > 0:
+            self.ui.button_save_not_found.setEnabled(True)
+
         self.__cleanup_after_search()
 
     def __handle_interrupted(self):
@@ -192,6 +196,23 @@ class CSVImport:
     def __collect_received_features(self):
         if self.features_found:
             self.result_collector.update_with_features(self.features_found)
+
+    def _export_table_errors_to_csv(self):
+        count = self.ui.table_errors.rowCount()
+        path, _ = QFileDialog.getSaveFileName(filter='*.csv')
+        if path:
+            with open(path, 'w') as f:
+                writer = csv.writer(f, delimiter=',')
+                writer.writerow([
+                    self.ui.table_errors.horizontalHeaderItem(0).text(),
+                    self.ui.table_errors.horizontalHeaderItem(1).text()
+                ])
+                for row in range(0, count):
+                    teryt = self.ui.table_errors.item(row, 0).text()
+                    error = self.ui.table_errors.item(row, 1).text()
+                    writer.writerow([teryt, error])
+                iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
+                    "Pomyślnie wyeksportowano nieznalezione działki."))
 
     def _add_table_errors_row(self, teryt, exception_message):
         row = self.ui.table_errors.rowCount()

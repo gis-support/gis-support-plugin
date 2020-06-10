@@ -2,11 +2,12 @@ import csv
 import os
 
 from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QVariant
 from PyQt5.QtGui import QKeySequence, QPixmap
 from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
+from qgis.core import QgsField
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
 
@@ -63,21 +64,31 @@ class CSVImport:
 
     def start_import(self):
         self.__cleanup_before_search()
+        
+        teryts = []
+        self.additional_attributes = {}
+        with open(self.file_path) as f:
+            teryt_column = self.ui.combobox_teryt_column.currentText()
+            csv_read = csv.DictReader(f)
+            additional_fields = [name for name in csv_read.fieldnames if name != teryt_column]
+            for row in csv_read:
+                teryt = row.pop(teryt_column)
+                teryts.append(teryt)
+                if additional_fields:
+                    if teryt in self.additional_attributes:
+                        self.additional_attributes[teryt].append(row.values())
+                    else:
+                        self.additional_attributes[teryt] = [row.values()]
 
         layer_name = self.ui.text_edit_layer_name.text()
         layer = self.layer_factory(
-            name = layer_name, custom_properties = {"ULDK": layer_name})
+            name = layer_name,
+            custom_properties = {"ULDK": layer_name},
+            additional_fields=[QgsField(field, QVariant.String) for field in additional_fields]
+        )
 
         self.result_collector = self.result_collector_factory(self.parent, layer)
         self.features_found = []
-        
-        teryts = []
-        with open(self.file_path) as f:
-            csv_read = csv.DictReader(f)
-            teryt_column = self.ui.combobox_teryt_column.currentText()
-            for row in csv_read:
-                teryt = row[teryt_column]
-                teryts.append(teryt)
         self.csv_rows_count = len(teryts)
 
         self.worker = ULDKSearchWorker(self.uldk_search, teryts)
@@ -142,7 +153,7 @@ class CSVImport:
     def __handle_found(self, uldk_response_rows):
         for row in uldk_response_rows:
             try:
-                feature = self.result_collector.uldk_response_to_qgs_feature(row)
+                feature = self.result_collector.uldk_response_to_qgs_feature(row, self.additional_attributes)
             except self.result_collector.BadGeometryException as e:
                 e = self.result_collector.BadGeometryException(e.feature, "Niepoprawna geometria")
                 self._handle_bad_geometry(e.feature, e)
@@ -229,6 +240,7 @@ class CSVImport:
     def __cleanup_before_search(self):
         self.__set_controls_enabled(False)
         self.ui.button_cancel.setEnabled(True)
+        self.ui.button_save_not_found.setEnabled(False)
         self.ui.table_errors.setRowCount(0)
         self.ui.label_status.setText("")
         self.ui.label_found_count.setText("")

@@ -39,7 +39,7 @@ from qgis.PyQt.QtCore import pyqtSignal, QVariant
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import (QgsMapLayerProxyModel, QgsField, Qgis, QgsTask, QgsApplication,
     QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsVectorLayer, 
-    QgsFeature, QgsWkbTypes, QgsGeometry)
+    QgsFeature, QgsWkbTypes, QgsGeometry, QgsExpression, QgsFeatureRequest)
 from qgis.utils import iface
 
 from ..tools import IdentifyTool, ProfileTool
@@ -196,6 +196,10 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
     def extendLayerByHeight(self):
         """ Rozszerzenie warstwy o pole z wysokością """
         layer = self.cbLayers.currentLayer()
+        exp = QgsExpression('num_geometries($geometry) > 1')
+        multipart_features = [f for f in layer.getFeatures(QgsFeatureRequest(exp))]
+        if multipart_features:
+            self.on_message.emit("Rozszerzenie nie jest możliwe, ponieważ warstwa zawiera obiekty o wieloczęściowych geometriach", Qgis.Warning, 5)
         if not layer:
             return
         if self.cbxUpdateField.isChecked():

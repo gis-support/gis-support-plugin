@@ -180,7 +180,8 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                 )
             geometry.transform(ct)
         if multi:
-            return f'{geometry.asGeometryCollection()[0].asPoint().y()}%20{geometry.asGeometryCollection()[0].asPoint().x()}'
+            point = geometry.asGeometryCollection()[0].asPoint()
+            return f'{point.y()}%20{point.x()}'
         return geometry
 
     def createNewField(self, layer):

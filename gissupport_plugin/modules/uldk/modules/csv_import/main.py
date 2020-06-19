@@ -1,5 +1,6 @@
 import csv
 import os
+from collections import defaultdict
 
 from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import QThread, pyqtSignal, QVariant
@@ -66,7 +67,7 @@ class CSVImport:
         self.__cleanup_before_search()
         
         teryts = []
-        self.additional_attributes = {}
+        self.additional_attributes = defaultdict(list)
         with open(self.file_path) as f:
             teryt_column = self.ui.combobox_teryt_column.currentText()
             csv_read = csv.DictReader(f)
@@ -75,10 +76,8 @@ class CSVImport:
                 teryt = row.pop(teryt_column)
                 teryts.append(teryt)
                 if additional_fields:
-                    if teryt in self.additional_attributes:
-                        self.additional_attributes[teryt].append(row.values())
-                    else:
-                        self.additional_attributes[teryt] = [row.values()]
+                    for value in row.values():
+                        self.additional_attributes[teryt].append(value)
 
         layer_name = self.ui.text_edit_layer_name.text()
         layer = self.layer_factory(
@@ -153,7 +152,11 @@ class CSVImport:
     def __handle_found(self, uldk_response_rows):
         for row in uldk_response_rows:
             try:
-                feature = self.result_collector.uldk_response_to_qgs_feature(row, self.additional_attributes)
+                attributes = []
+                for attribute in self.additional_attributes:
+                    teryt = row.split("|")[6]
+                    attributes.append(self.additional_attributes.get(teryt))
+                feature = self.result_collector.uldk_response_to_qgs_feature(row, attributes)
             except self.result_collector.BadGeometryException as e:
                 e = self.result_collector.BadGeometryException(e.feature, "Niepoprawna geometria")
                 self._handle_bad_geometry(e.feature, e)

@@ -37,7 +37,7 @@ class ResultCollector:
         return layer
 
     @classmethod
-    def uldk_response_to_qgs_feature(cls, response_row, additional_attributes):
+    def uldk_response_to_qgs_feature(cls, response_row, additional_attributes=[]):
         def get_sheet(teryt):
             split = teryt.split(".")
             if len(split) == 4:
@@ -66,14 +66,10 @@ class ResultCollector:
         area = geometry.area()
         attributes = [province, county, municipality, precinct, sheet, plot_id, teryt, area]
 
-        if isinstance(additional_attributes, dict):
-            attrs = additional_attributes.get(teryt, [])
-            for attr in attrs:
-                attributes += attr
-            feature.setAttributes(attributes)
-        elif isinstance(additional_attributes, list):
-            for attr in additional_attributes:
-                attributes += attr
+        for attribute in additional_attributes:
+            attributes += attribute
+
+        feature.setAttributes(attributes)
 
         if not geometry.isGeosValid():
             geometry = geometry.makeValid()

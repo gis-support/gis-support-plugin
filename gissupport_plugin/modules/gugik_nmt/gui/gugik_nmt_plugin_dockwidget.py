@@ -180,7 +180,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                 )
             geometry.transform(ct)
         if multi:
-            return f'{geometry.asPoint().y()}%20{geometry.asPoint().x()}'
+            return f'{geometry.asGeometryCollection()[0].asPoint().y()}%20{geometry.asGeometryCollection()[0].asPoint().x()}'
         return geometry
 
     def createNewField(self, layer):
@@ -188,7 +188,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         #Dodanie nowego pola o podanych parametrach
         data_provider = layer.dataProvider()
         data_provider.addAttributes([QgsField('nmt_wys', QVariant.Double)])
-        layer.reload()
+        layer.updateFields()
         #Znalezienie id pola
         field_id = data_provider.fields().indexFromName('nmt_wys')
         return field_id

@@ -152,10 +152,8 @@ class CSVImport:
     def __handle_found(self, uldk_response_rows):
         for row in uldk_response_rows:
             try:
-                attributes = []
-                for attribute in self.additional_attributes:
-                    teryt = row.split("|")[6]
-                    attributes.append(self.additional_attributes.get(teryt))
+                teryt = row.split("|")[6]
+                attributes = self.additional_attributes.get(teryt)
                 feature = self.result_collector.uldk_response_to_qgs_feature(row, attributes)
             except self.result_collector.BadGeometryException as e:
                 e = self.result_collector.BadGeometryException(e.feature, "Niepoprawna geometria")

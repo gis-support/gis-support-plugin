@@ -66,8 +66,8 @@ class ResultCollector:
         area = geometry.area()
         attributes = [province, county, municipality, precinct, sheet, plot_id, teryt, area]
 
-        for attribute in additional_attributes:
-            attributes += attribute
+        if additional_attributes:
+            attributes += additional_attributes
 
         feature.setAttributes(attributes)
 

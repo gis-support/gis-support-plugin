@@ -36,6 +36,8 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
             "W takiej sytuacji możesz wybrać z tej listy działkę której szukasz."))
         self.label_info_precinct_unknown.setPixmap(QPixmap(self.icon_info_path))
         self.label_info_precinct_unknown.setToolTip(("Wyszukanie zostaną działki na terenie całej gminy, co może być czasochłonne."))
+        self.label_info_parcel_id.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_parcel_id.setToolTip("Numer działki można podać z numerem arkusza mapy ewidencyjnej np. AR_1.2")
         self.progress_bar_precinct_unknown.hide()
         target_layout.layout().addWidget(self)
 
@@ -121,6 +123,8 @@ class TerytSearch(QObject):
     def __search(self, teryts):
         self.ui.button_search_uldk.setEnabled(False)
         self.ui.button_search_uldk.setText("Wyszukiwanie...")
+        self.ui.combobox_sheet.clear()
+        self.ui.combobox_sheet.setEnabled(False)
 
         self.uldk_search_worker = ULDKSearchWorker(self.uldk_search, teryts)
         self.thread = QThread()
@@ -301,7 +305,7 @@ class TerytSearch(QObject):
             self.ui.combobox_sheet.clear()
             for row in uldk_response_rows:
                 row_split = row.split("|")
-                sheet_name = row_split[-3]
+                sheet_name = row_split[-1].split('.')[2]
 
                 self.ui.combobox_sheet.addItem(sheet_name, row)
             self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")

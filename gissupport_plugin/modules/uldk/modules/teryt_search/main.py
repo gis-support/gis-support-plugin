@@ -123,8 +123,6 @@ class TerytSearch(QObject):
     def __search(self, teryts):
         self.ui.button_search_uldk.setEnabled(False)
         self.ui.button_search_uldk.setText("Wyszukiwanie...")
-        self.ui.combobox_sheet.clear()
-        self.ui.combobox_sheet.setEnabled(False)
 
         self.uldk_search_worker = ULDKSearchWorker(self.uldk_search, teryts)
         self.thread = QThread()
@@ -234,6 +232,9 @@ class TerytSearch(QObject):
         else:
             self.ui.lineedit_full_teryt.setText("")
 
+    def _handle_input_changed(self):
+        self.fill_lineedit_full_teryt()
+        self.ui.combobox_sheet.clear()
 
     def __init_ui(self):
         
@@ -257,10 +258,10 @@ class TerytSearch(QObject):
                 ) if i else self.ui.combobox_precinct.setCurrentIndex(0)
             )
         self.ui.combobox_precinct.currentTextChanged.connect(
-            self.fill_lineedit_full_teryt
+            self._handle_input_changed
         )
         self.ui.lineedit_plot_id.textChanged.connect(
-            self.fill_lineedit_full_teryt
+            self._handle_input_changed
         )
         self.ui.lineedit_full_teryt.textChanged.connect(
             lambda text: self._search_buttons_set_enabled(
@@ -309,6 +310,7 @@ class TerytSearch(QObject):
 
                 self.ui.combobox_sheet.addItem(sheet_name, row)
             self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
+            iface.messageBar().widgetRemoved.connect(self.__delete_message_bar)
             iface.messageBar().pushWidget(self.message_bar_item)
         else:
             result = uldk_response_rows[0]
@@ -322,7 +324,6 @@ class TerytSearch(QObject):
 
             if self.message_bar_item:
                 iface.messageBar().popWidget(self.message_bar_item)
-                self.message_bar_item = None
 
             iface.messageBar().pushSuccess("Wtyczka ULDK", "Zaaktualizowano warstwę '{}'"
                                             .format(self.result_collector.layer.sourceName()))
@@ -344,10 +345,13 @@ class TerytSearch(QObject):
         self.ui.progress_bar_precinct_unknown.setValue(self.precincts_progressed/precincts_count*100)
 
     def __on_checkbox_precinct_unknown_switched(self, new_state):
-        self.fill_lineedit_full_teryt()
+        self._handle_input_changed()
         self.ui.label_precinct.setEnabled(not new_state)
         self.ui.combobox_precinct.setEnabled(not new_state)
 
     def _search_buttons_set_enabled(self, new_state):
         self.ui.button_search_lpis.setEnabled(new_state)
         self.ui.button_search_uldk.setEnabled(new_state)
+
+    def __delete_message_bar(self):
+        self.message_bar_item = None

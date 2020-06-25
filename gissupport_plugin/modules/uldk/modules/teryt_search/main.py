@@ -232,8 +232,9 @@ class TerytSearch(QObject):
         else:
             self.ui.lineedit_full_teryt.setText("")
 
-    def _handle_input_changed(self):
-        self.fill_lineedit_full_teryt()
+    def _handle_input_changed(self, fill=True):
+        if fill:
+            self.fill_lineedit_full_teryt()
         self.ui.combobox_sheet.clear()
 
     def __init_ui(self):
@@ -268,6 +269,7 @@ class TerytSearch(QObject):
                 self.is_plot_id_valid(text)
             )
         )
+        self.ui.lineedit_full_teryt.textEdited.connect(lambda: self._handle_input_changed(False))
         self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key_Return))
         self.ui.button_search_uldk.clicked.connect(self.search)
         self.ui.checkbox_precinct_unknown.stateChanged.connect(self.__on_checkbox_precinct_unknown_switched)
@@ -275,11 +277,9 @@ class TerytSearch(QObject):
         self.ui.combobox_province.addItems([""])
 
     def __search_from_sheet(self):
-        self.ui.combobox_sheet.setEnabled(False)
         self.__handle_found([self.ui.combobox_sheet.currentData()])
 
     def _search_lpis_from_sheet(self):
-        self.ui.combobox_sheet.setEnabled(False)
         self.search_lpis(self.ui.combobox_sheet.currentData())
 
     def __handle_finished(self):

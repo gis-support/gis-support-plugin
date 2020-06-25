@@ -36,6 +36,8 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
             "W takiej sytuacji możesz wybrać z tej listy działkę której szukasz."))
         self.label_info_precinct_unknown.setPixmap(QPixmap(self.icon_info_path))
         self.label_info_precinct_unknown.setToolTip(("Wyszukanie zostaną działki na terenie całej gminy, co może być czasochłonne."))
+        self.label_info_parcel_id.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_parcel_id.setToolTip("Numer działki można podać z numerem arkusza mapy ewidencyjnej np. AR_1.2")
         self.progress_bar_precinct_unknown.hide()
         target_layout.layout().addWidget(self)
 
@@ -230,6 +232,10 @@ class TerytSearch(QObject):
         else:
             self.ui.lineedit_full_teryt.setText("")
 
+    def _handle_input_changed(self, fill=True):
+        if fill:
+            self.fill_lineedit_full_teryt()
+        self.ui.combobox_sheet.clear()
 
     def __init_ui(self):
         
@@ -253,16 +259,17 @@ class TerytSearch(QObject):
                 ) if i else self.ui.combobox_precinct.setCurrentIndex(0)
             )
         self.ui.combobox_precinct.currentTextChanged.connect(
-            self.fill_lineedit_full_teryt
+            self._handle_input_changed
         )
         self.ui.lineedit_plot_id.textChanged.connect(
-            self.fill_lineedit_full_teryt
+            self._handle_input_changed
         )
         self.ui.lineedit_full_teryt.textChanged.connect(
             lambda text: self._search_buttons_set_enabled(
                 self.is_plot_id_valid(text)
             )
         )
+        self.ui.lineedit_full_teryt.textEdited.connect(lambda: self._handle_input_changed(False))
         self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key_Return))
         self.ui.button_search_uldk.clicked.connect(self.search)
         self.ui.checkbox_precinct_unknown.stateChanged.connect(self.__on_checkbox_precinct_unknown_switched)
@@ -270,11 +277,9 @@ class TerytSearch(QObject):
         self.ui.combobox_province.addItems([""])
 
     def __search_from_sheet(self):
-        self.ui.combobox_sheet.setEnabled(False)
         self.__handle_found([self.ui.combobox_sheet.currentData()])
 
     def _search_lpis_from_sheet(self):
-        self.ui.combobox_sheet.setEnabled(False)
         self.search_lpis(self.ui.combobox_sheet.currentData())
 
     def __handle_finished(self):
@@ -301,10 +306,11 @@ class TerytSearch(QObject):
             self.ui.combobox_sheet.clear()
             for row in uldk_response_rows:
                 row_split = row.split("|")
-                sheet_name = row_split[-3]
+                sheet_name = row_split[-1].split('.')[2]
 
                 self.ui.combobox_sheet.addItem(sheet_name, row)
             self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
+            iface.messageBar().widgetRemoved.connect(self.__delete_message_bar)
             iface.messageBar().pushWidget(self.message_bar_item)
         else:
             result = uldk_response_rows[0]
@@ -318,7 +324,6 @@ class TerytSearch(QObject):
 
             if self.message_bar_item:
                 iface.messageBar().popWidget(self.message_bar_item)
-                self.message_bar_item = None
 
             iface.messageBar().pushSuccess("Wtyczka ULDK", "Zaaktualizowano warstwę '{}'"
                                             .format(self.result_collector.layer.sourceName()))
@@ -340,10 +345,13 @@ class TerytSearch(QObject):
         self.ui.progress_bar_precinct_unknown.setValue(self.precincts_progressed/precincts_count*100)
 
     def __on_checkbox_precinct_unknown_switched(self, new_state):
-        self.fill_lineedit_full_teryt()
+        self._handle_input_changed()
         self.ui.label_precinct.setEnabled(not new_state)
         self.ui.combobox_precinct.setEnabled(not new_state)
 
     def _search_buttons_set_enabled(self, new_state):
         self.ui.button_search_lpis.setEnabled(new_state)
         self.ui.button_search_uldk.setEnabled(new_state)
+
+    def __delete_message_bar(self):
+        self.message_bar_item = None

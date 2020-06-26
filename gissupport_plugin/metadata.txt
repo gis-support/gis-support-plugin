@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=1.4.3
+version=1.5
 author=GIS Support
 email=info@gis-support.pl
 
@@ -37,9 +37,10 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=WMTS: Nowy moduł do obsługi warstw WMTS
-	ULDK: Pomijanie duplikatów przy pobieraniu działek ewidencyjnych
-	Mapster: dodanie narzędzia wyszukiwania do menu
+changelog=WMTS: NMT: Poprawiona obsługa warstw z obiektami wieloczęściowymi (#7)
+	ULDK: Eksport nieznalezionych działek ewidencyjnych do pliku CSV (#10)
+	ULDK: Dodanie atrybutów do działek znalezionych na podstawie pliku CSV (#11)
+	ULDK: Poprawiona obsługa działek z arkuszem w TERYT (#12)
 
 # Tags are comma separated with spaces allowed
 tags=python

@@ -1,3 +1,9 @@
+1.5
+NMT: Poprawiona obsługa warstw z obiektami wieloczęściowymi (#7)
+ULDK: Eksport nieznalezionych działek ewidencyjnych do pliku CSV (#10)
+ULDK: Dodanie atrybutów do działek znalezionych na podstawie pliku CSV (#11)
+ULDK: Poprawiona obsługa działek z arkuszem w TERYT (#12)
+
 1.4
 WMTS: Nowy moduł do obsługi warstw WMTS
 ULDK: Pomijanie duplikatów przy pobieraniu działek ewidencyjnych

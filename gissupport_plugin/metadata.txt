@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=1.5
+version=1.5.1
 author=GIS Support
 email=info@gis-support.pl
 

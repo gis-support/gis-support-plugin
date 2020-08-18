@@ -77,6 +77,7 @@ class ULDKSearch:
                 content = u.read()
         except:
             gugik_url = url.replace(ULDKSearch.proxy_url, ULDKSearch.gugik_url)
+            self.url = gugik_url
             try:
                 with urlopen(gugik_url, timeout=40) as u:
                     content = u.read()
@@ -108,13 +109,13 @@ class ULDKSearchLogger(ULDKSearch):
         self._decorated = decorated
 
     def search(self, *args, **kwargs):
-        url = str(self._decorated.url)
-
         try:
             result = self._decorated.search(*args, **kwargs)
+            url = str(self._decorated.url)
             self.log_message("{} - pobrano".format(url))
             return result
         except Exception as e:
+            url = str(self._decorated.url)
             message = "{} - błąd {} ({})".format(url, type(e), e)
             self.log_message(message, Qgis.Critical)
             raise e

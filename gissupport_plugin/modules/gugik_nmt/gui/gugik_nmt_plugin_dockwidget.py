@@ -24,6 +24,7 @@
 
 import os, csv
 import urllib.request
+from urllib.error import URLError
 #Nie każdy instalator QGIS ma wbudowanego matplotliba, a bibliotek zewnętrznych nie można instalować
 # dla wtyczek w oficjalnym repo
 # https://github.com/gis-support/gis-support-plugin/issues/4
@@ -329,10 +330,12 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             self.dsbLineLength.setEnabled(True)
 
     def createRequest(self, parameters):
-        """ Tworzy request. W przypadku błędu zapytania przez proxy wysyłane jest zapytanie bezpośrednio do GUGIK """
+        """ Tworzy request. W przypadku braku odpowiedzi przez proxy wysyłane jest zapytanie bezpośrednio do GUGIK """
         try:
             r = urllib.request.urlopen(self.PROXY_URL + parameters)
-        except:
+        except Exception as e:
+            return {'error': str(e)}
+        except URLError:
             try:
                 r = urllib.request.urlopen(self.GUGIK_URL + parameters)
             except Exception as e:

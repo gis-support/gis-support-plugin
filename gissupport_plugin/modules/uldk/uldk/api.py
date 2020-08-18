@@ -62,24 +62,27 @@ class ULDKSearch:
     gugik_url = r"http://uldk.gugik.gov.pl/service.php"
 
     def __init__(self, target, results, method = ""):
-        self.url = URL(ULDKSearch.proxy_url, obiekt=target, wynik=results)
+        self.url = URL(self.proxy_url, obiekt=target, wynik=results)
         if method:
             self.url.set_param("request", method)
 
     @sleep_and_retry
     @RateLimitDecorator(calls = 5, period = 3)
     def search(self):
-        url = str(self.url)
+        url = self.url
         # print(url)
         # url = "http://127.0.0.1:5000/uldk_dummy"
         try:
-            with urlopen(url, timeout=10) as u:
+            with urlopen(str(url), timeout=10) as u:
                 content = u.read()
-        except:
-            gugik_url = url.replace(ULDKSearch.proxy_url, ULDKSearch.gugik_url)
-            self.url = gugik_url
+        except IncompleteRead:
+            raise RequestException("Błąd usługi ULDK")
+        except HTTPError as e:
+            raise e
+        except URLError:
+            self.url = URL(self.gugik_url, **url.params)
             try:
-                with urlopen(gugik_url, timeout=40) as u:
+                with urlopen(str(self.url), timeout=40) as u:
                     content = u.read()
             except IncompleteRead:
                 raise RequestException("Błąd usługi ULDK")

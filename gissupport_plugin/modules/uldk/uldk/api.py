@@ -58,10 +58,11 @@ class ULDKPoint:
 
 class ULDKSearch:
 
-    url = r"http://uldk.gugik.gov.pl/service.php"
+    proxy_url = r"https://gugik.gis.support/uldk/service.php"
+    gugik_url = r"http://uldk.gugik.gov.pl/service.php"
 
     def __init__(self, target, results, method = ""):
-        self.url = URL(ULDKSearch.url, obiekt=target, wynik=results)
+        self.url = URL(ULDKSearch.proxy_url, obiekt=target, wynik=results)
         if method:
             self.url.set_param("request", method)
 
@@ -72,19 +73,26 @@ class ULDKSearch:
         # print(url)
         # url = "http://127.0.0.1:5000/uldk_dummy"
         try:
-            with urlopen(url, timeout=50) as u:
+            with urlopen(url, timeout=10) as u:
                 content = u.read()
-            content = content.decode()
-            content_lines = content.split("\n")
-            status = content_lines[0]
-            if status != "0":
-                raise RequestException(status)
-        except IncompleteRead:
-            raise RequestException("Błąd usługi ULDK")
-        except HTTPError as e:
-            raise e
-        except URLError:
-            raise RequestException("Brak odpowiedzi")
+        except:
+            gugik_url = url.replace(ULDKSearch.proxy_url, ULDKSearch.gugik_url)
+            try:
+                with urlopen(gugik_url, timeout=40) as u:
+                    content = u.read()
+            except IncompleteRead:
+                raise RequestException("Błąd usługi ULDK")
+            except HTTPError as e:
+                raise e
+            except URLError:
+                raise RequestException("Brak odpowiedzi")
+        content = content.decode()
+        content_lines = content.split("\n")
+        status = content_lines[0]
+
+        if status != "0":
+            raise RequestException(status)
+
         content_lines = content_lines[1:]
         if content.endswith("\n"):
             content_lines = content_lines[:-1]

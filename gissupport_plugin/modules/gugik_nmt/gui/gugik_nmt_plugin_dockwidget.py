@@ -333,11 +333,11 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         """ Tworzy request. W przypadku braku odpowiedzi przez proxy wysyłane jest zapytanie bezpośrednio do GUGIK """
         try:
             r = urllib.request.urlopen(self.PROXY_URL + parameters)
-        except Exception as e:
-            return {'error': str(e)}
         except URLError:
             try:
                 r = urllib.request.urlopen(self.GUGIK_URL + parameters)
             except Exception as e:
                 return {'error': str(e)}
+        except Exception as e:
+            return {'error': str(e)}
         return {'data': r.read().decode()}

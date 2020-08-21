@@ -24,6 +24,7 @@
 
 import os, csv
 import urllib.request
+from urllib.error import URLError
 #Nie każdy instalator QGIS ma wbudowanego matplotliba, a bibliotek zewnętrznych nie można instalować
 # dla wtyczek w oficjalnym repo
 # https://github.com/gis-support/gis-support-plugin/issues/4
@@ -53,6 +54,8 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
     on_message = pyqtSignal(str, object, int)
+    PROXY_URL = 'https://gugik.gis.support/nmt/'
+    GUGIK_URL = 'https://services.gugik.gov.pl/nmt/'
 
     def __init__(self, parent=None):
         """Constructor."""
@@ -133,12 +136,12 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         project_crs = QgsProject.instance().crs().authid()
         point = self.transformGeometry(geom, project_crs).asPoint()
         x, y = point.y(), point.x()
-        try:
-            r = urllib.request.urlopen(f'https://services.gugik.gov.pl/nmt/?request=GetHbyXY&x={x}&y={y}')
-            return r.read().decode()
-        except Exception as e:
-            self.on_message.emit(str(e), Qgis.Critical, 5)
+        response = self.createRequest(f'?request=GetHbyXY&x={x}&y={y}')
+        if 'error' in response:
+            self.on_message.emit(response['error'], Qgis.Critical, 5)
             return
+        else:
+            return response['data']
 
     def getPointsHeights(self, feats_meta):
         """ 
@@ -149,24 +152,24 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         if isinstance(feats_meta, dict):
             feats_meta = list(feats_meta.keys())
         if len(feats_meta) <= 200:
-            url = 'https://services.gugik.gov.pl/nmt/?request=GetHByPointList&list=%s'%','.join(feats_meta)
-            try:
-                r = urllib.request.urlopen(url)
-                return r.read().decode()
-            except Exception as e:
-                self.on_message.emit(str(e), Qgis.Critical, 5)
+            response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(feats_meta))
+            if 'error' in response:
+                self.on_message.emit(response['error'], Qgis.Critical, 5)
                 return
+            else:
+                return response['data']
+
         else:
             chunks = [feats_meta[i:i + 200] for i in range(0, len(feats_meta), 200)]
             responses = []
             for chunk in chunks:
-                url = 'https://services.gugik.gov.pl/nmt/?request=GetHByPointList&list=%s'%','.join(chunk)
-                try:
-                    r = urllib.request.urlopen(url)
-                    responses.append(f'{r.read().decode()}')
-                except Exception as e:
-                    self.on_message.emit(str(e), Qgis.Critical, 5)
+                response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(chunk))
+                if 'error' in response:
+                    self.on_message.emit(response['error'], Qgis.Critical, 5)
                     return
+                else:
+                    responses.append(response['data'])
+
             responses = ','.join(responses)
             return responses
 
@@ -325,3 +328,16 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         iface.mapCanvas().setMapTool(tool)
         if tool == self.profileTool:
             self.dsbLineLength.setEnabled(True)
+
+    def createRequest(self, parameters):
+        """ Tworzy request. W przypadku braku odpowiedzi przez proxy wysyłane jest zapytanie bezpośrednio do GUGIK """
+        try:
+            r = urllib.request.urlopen(self.PROXY_URL + parameters)
+        except URLError:
+            try:
+                r = urllib.request.urlopen(self.GUGIK_URL + parameters)
+            except Exception as e:
+                return {'error': str(e)}
+        except Exception as e:
+            return {'error': str(e)}
+        return {'data': r.read().decode()}

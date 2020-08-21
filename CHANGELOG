@@ -1,3 +1,9 @@
+1.6
+ULDK: Zaktualizowany WMS LPIS
+ULDK: Naprawione niestabilne zachowanie wtyczki podczas identyfikacji działek
+ULDK, NMT: Zapytania do GUGIK wykonywane przez proxy GIS Support
+WMS, WMTS: Poprawiony błąd podczas ładowania listy serwisów
+
 1.5
 NMT: Poprawiona obsługa warstw z obiektami wieloczęściowymi (#7)
 ULDK: Eksport nieznalezionych działek ewidencyjnych do pliku CSV (#10)

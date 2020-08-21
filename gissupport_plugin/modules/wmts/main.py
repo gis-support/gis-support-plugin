@@ -43,7 +43,7 @@ class WMTSCacheModule(BaseModule):
         self.action.setMenu(QMenu())
         self.actionMenu = self.action.menu()
 
-        with open(path.join(path.dirname(__file__), 'services.json')) as file:
+        with open(path.join(path.dirname(__file__), 'services.json'), encoding='utf-8') as file:
             services = json.load(file)
 
             for service in services:

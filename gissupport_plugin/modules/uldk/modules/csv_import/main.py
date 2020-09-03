@@ -193,6 +193,8 @@ class CSVImport:
             units = found_count % 10
             if units in (2,3,4):
                 form = "obiekty"
+            else:
+                form = "obiektów"
 
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
             f"Import CSV: zakończono wyszukiwanie. Zapisano {found_count} {form} do warstwy <b>{self.ui.text_edit_layer_name.text()}</b>"))

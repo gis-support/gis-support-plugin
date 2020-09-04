@@ -149,6 +149,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         lista zostaje podzielona na mniejsze częśći i dopiero dla tych części wysyłane są
         requesty do api
         """
+        self.points_coords = [f.split('%20')[::-1] for f in feats_meta]
         if isinstance(feats_meta, dict):
             feats_meta = list(feats_meta.keys())
         if len(feats_meta) <= 200:
@@ -292,12 +293,15 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             path += '.csv'
         with open(path, 'w') as f:
             writer = csv.writer(f, delimiter=';')
-            to_write = [['Odległość', 'Wysokość npm']]
+            to_write = [['Odległość', 'Wysokość npm', 'x', 'y']]
             for row in range(rows):
                 if self.twData.item(row, 1):
-                    dist = self.twData.item(row, 0).text().replace('.', ',') + 'm'
-                    val = self.twData.item(row, 1).text().replace('.', ',')
-                    to_write.append([dist, val])
+                    dist = self.twData.item(row, 0).text() + 'm'
+                    val = self.twData.item(row, 1).text()
+                    x, y = self.points_coords[row]
+                    to_write.append([
+                        dist, val, round(float(x)), round(float(y))
+                    ])
             writer.writerows(to_write)
         self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.Success, 4)   
 

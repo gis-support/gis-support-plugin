@@ -201,12 +201,12 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
     def extendLayerByHeight(self):
         """ Rozszerzenie warstwy o pole z wysokością """
         layer = self.cbLayers.currentLayer()
+        if not layer:
+            return
         exp = QgsExpression('num_geometries($geometry) > 1')
         multipart_features = [f for f in layer.getFeatures(QgsFeatureRequest(exp))]
         if multipart_features:
             self.on_message.emit("Rozszerzenie nie jest możliwe, ponieważ warstwa zawiera obiekty o wieloczęściowych geometriach", Qgis.Warning, 5)
-        if not layer:
-            return
         if self.cbxUpdateField.isChecked():
             field_id = layer.dataProvider().fields().indexFromName(self.cbFields.currentText())
         elif 'nmt_wys' not in layer.fields().names():

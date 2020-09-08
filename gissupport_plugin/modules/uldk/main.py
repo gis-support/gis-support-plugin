@@ -139,7 +139,16 @@ class Main(BaseModule):
     def add_wms_lpis(self):
         
         if self.wms_lpis_layer is None:
-            url = ( "contextualWMSLegend=0&crs=EPSG:4326&dpiMode=7&featureCount=10&format=image/png&layers=dzialki&styles&url=https://lpis.mapawms.pl/geoserver/lpis/wms")
+            url = (
+                'contextualWMSLegend=0&'
+                'crs=EPSG:4326&'
+                'dpiMode=7&'
+                'featureCount=10&'
+                'format=image/png&'
+                'layers=02&layers=04&layers=06&layers=10&layers=08&layers=12&layers=14&layers=16&layers=18&layers=20&layers=22&layers=24&layers=26&layers=28&layers=30&layers=32&'
+                '{}'
+                'url=http://integracja.gugik.gov.pl/cgi-bin/arimr_lpis/'
+            ).format('styles&' * 16)
             layer = QgsRasterLayer(url, "Działki LPIS", "wms")
             layer.setCustomProperty("ULDK", "wms_lpis_layer")
             layer.setMinimumScale(6000)

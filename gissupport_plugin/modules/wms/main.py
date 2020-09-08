@@ -27,7 +27,7 @@ class Main(BaseModule):
 
         self.project = QgsProject.instance()
         #Load WMS services list from json file
-        with open(path.join(path.dirname(__file__), 'services.json')) as servicesJson:
+        with open(path.join(path.dirname(__file__), 'services.json'), encoding='utf-8') as servicesJson:
             self.services = json.load(servicesJson)
 
         #Models

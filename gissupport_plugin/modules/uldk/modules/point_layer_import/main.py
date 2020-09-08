@@ -32,6 +32,8 @@ def get_obiekty_form(count):
         units = count % 10
         if units in (2,3,4):
             form = "obiekty"
+        else:
+            form = "obiektów"
     return form
 
 class UI(QtWidgets.QFrame, FORM_CLASS):

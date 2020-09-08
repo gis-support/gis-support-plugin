@@ -58,33 +58,45 @@ class ULDKPoint:
 
 class ULDKSearch:
 
-    url = r"http://uldk.gugik.gov.pl/service.php"
+    proxy_url = r"https://gugik.gis.support/uldk/service.php"
+    gugik_url = r"http://uldk.gugik.gov.pl/service.php"
 
     def __init__(self, target, results, method = ""):
-        self.url = URL(ULDKSearch.url, obiekt=target, wynik=results)
+        self.url = URL(self.proxy_url, obiekt=target, wynik=results)
         if method:
             self.url.set_param("request", method)
 
     @sleep_and_retry
     @RateLimitDecorator(calls = 5, period = 3)
     def search(self):
-        url = str(self.url)
+        url = self.url
         # print(url)
         # url = "http://127.0.0.1:5000/uldk_dummy"
         try:
-            with urlopen(url, timeout=50) as u:
+            with urlopen(str(url), timeout=10) as u:
                 content = u.read()
-            content = content.decode()
-            content_lines = content.split("\n")
-            status = content_lines[0]
-            if status != "0":
-                raise RequestException(status)
         except IncompleteRead:
             raise RequestException("Błąd usługi ULDK")
         except HTTPError as e:
             raise e
         except URLError:
-            raise RequestException("Brak odpowiedzi")
+            self.url = URL(self.gugik_url, **url.params)
+            try:
+                with urlopen(str(self.url), timeout=40) as u:
+                    content = u.read()
+            except IncompleteRead:
+                raise RequestException("Błąd usługi ULDK")
+            except HTTPError as e:
+                raise e
+            except URLError:
+                raise RequestException("Brak odpowiedzi")
+        content = content.decode()
+        content_lines = content.split("\n")
+        status = content_lines[0]
+
+        if status != "0":
+            raise RequestException(status)
+
         content_lines = content_lines[1:]
         if content.endswith("\n"):
             content_lines = content_lines[:-1]
@@ -100,13 +112,13 @@ class ULDKSearchLogger(ULDKSearch):
         self._decorated = decorated
 
     def search(self, *args, **kwargs):
-        url = str(self._decorated.url)
-
         try:
             result = self._decorated.search(*args, **kwargs)
+            url = str(self._decorated.url)
             self.log_message("{} - pobrano".format(url))
             return result
         except Exception as e:
+            url = str(self._decorated.url)
             message = "{} - błąd {} ({})".format(url, type(e), e)
             self.log_message(message, Qgis.Critical)
             raise e

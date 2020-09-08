@@ -43,7 +43,6 @@ class MapPointSearch(QgsMapToolEmitPoint):
         )
 
         uldk_search = ULDKSearchLogger(uldk_search)
-
         uldk_point = ULDKPoint(x,y,srid)
         worker = ULDKSearchPointWorker(uldk_search, (uldk_point,))
         self.worker = worker
@@ -52,9 +51,7 @@ class MapPointSearch(QgsMapToolEmitPoint):
         worker.moveToThread(thread)
         thread.started.connect(self.__on_search_started)
         thread.started.connect(worker.search)
-        worker.finished.connect(worker.deleteLater)
-        worker.finished.connect(thread.deleteLater)
-        worker.finished.connect(thread.quit)
+        worker.finished.connect(lambda thread=thread, worker=worker: self.__thread_cleanup(thread, worker))
         worker.finished.connect(self.__handle_finished)
         worker.found.connect(self.__handle_found)
         worker.not_found.connect(self.__handle_not_found)
@@ -83,6 +80,12 @@ class MapPointSearch(QgsMapToolEmitPoint):
         self.search_in_progress = True
         self.setCursor(Qt.WaitCursor)
         # self.search_started.emit()
+
+    def __thread_cleanup(self, thread, worker):
+        thread.quit()
+        thread.wait()
+        thread.deleteLater()
+        worker.deleteLater()
 
     def toggle(self, enabled):
         if enabled:

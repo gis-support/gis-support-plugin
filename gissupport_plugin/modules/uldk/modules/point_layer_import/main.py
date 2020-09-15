@@ -87,7 +87,7 @@ class PointLayerImport:
 
         self.worker = PointLayerImportWorker(layer, selected_only, target_layer_name, fields_to_copy)
         self.thread = QThread()
-        self.worker.moveToThread(self.thread) 
+        self.worker.moveToThread(self.thread)
         self.worker.progressed.connect(self.__progressed)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.__handle_finished)
@@ -142,7 +142,9 @@ class PointLayerImport:
         fields = self.source_layer.dataProvider().fields()
         self.ui.combobox_fields_select.addItems(map(lambda x: x.name(), fields))
 
-    def __progressed(self, found, omitted_count):
+    def __progressed(self, found, omitted_count, saved):
+        if saved:
+            self.saved_count += 1
         if found:
             self.found_count += 1
         else:
@@ -151,7 +153,7 @@ class PointLayerImport:
         progressed_count = self.found_count + self.not_found_count
         self.ui.progress_bar.setValue(progressed_count/self.source_features_count*100)
         self.ui.label_status.setText(f"Przetworzono {progressed_count} z {self.source_features_count} obiektów")
-        found_message = f"Znaleziono: {self.found_count - self.omitted_count}"
+        found_message = f"Znaleziono: {self.saved_count}"
         if self.omitted_count:
             found_message += f" (pominięto: {self.omitted_count})"
         self.ui.label_found_count.setText(found_message)
@@ -166,7 +168,7 @@ class PointLayerImport:
             QgsProject.instance().addMapLayer(layer_not_found)
 
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
-            f"Import CSV: zakończono wyszukiwanie. Zapisano {self.found_count} {get_obiekty_form(self.found_count)} do warstwy <b>{self.ui.text_edit_target_layer_name.text()}</b>"))
+            f"Import CSV: zakończono wyszukiwanie. Zapisano {self.saved_count} {get_obiekty_form(self.saved_count)} do warstwy <b>{self.ui.text_edit_target_layer_name.text()}</b>"))
         
     def __handle_interrupted(self, layer_found, layer_not_found):
         self.__cleanup_after_search()
@@ -192,6 +194,7 @@ class PointLayerImport:
         self.found_count = 0
         self.not_found_count = 0
         self.omitted_count = 0
+        self.saved_count = 0
 
     def __set_controls_enabled(self, enabled):
         self.ui.text_edit_target_layer_name.setEnabled(enabled)

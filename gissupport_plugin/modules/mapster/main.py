@@ -2,7 +2,8 @@ from qgis.gui import QgsMapToolEmitPoint
 from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject
 from qgis.utils import iface
 from gissupport_plugin.modules.base import BaseModule
-import webbrowser
+from qgis.PyQt.QtGui import QDesktopServices
+from qgis.PyQt.QtCore import QUrl
 
 
 class MapsterModule( BaseModule ):
@@ -35,4 +36,4 @@ class MapsterModule( BaseModule ):
         
         url = 'http://igrek.amzp.pl/result.php?cmd=pt&lat={}&lon={}&hideempty=on'.format( point.y(), point.x() )
         
-        webbrowser.open( url )
+        QDesktopServices.openUrl(QUrl(url))

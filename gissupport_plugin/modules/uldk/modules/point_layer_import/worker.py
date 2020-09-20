@@ -59,7 +59,7 @@ class PointLayerImportWorker(QObject):
 
     finished = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
     interrupted = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
-    progressed = pyqtSignal(bool, int)
+    progressed = pyqtSignal(bool, int, bool)
     
     def __init__(self, source_layer, selected_only, layer_name, additional_output_fields = []):
         super().__init__()
@@ -109,21 +109,15 @@ class PointLayerImportWorker(QObject):
         uldk_search = ULDKSearchLogger(uldk_search)
 
         found_features = []
-
+        geometries = []
         for source_feature in features:
             if QThread.currentThread().isInterruptionRequested():
                 self.__commit()
                 self.interrupted.emit(self.layer_found, self.layer_not_found)
                 return
 
-            for found_feature in found_features:
-                if found_feature.geometry().intersects(source_feature.geometry()):
-                   self.progressed.emit(True,  1)
-                   continue
-
             point = source_feature.geometry().asPoint()
             uldk_point = ULDKPoint(point.x(), point.y(), 2180)
-        
             try:
                 uldk_response_row = uldk_search.search(uldk_point)
                 additional_attributes = []
@@ -131,15 +125,20 @@ class PointLayerImportWorker(QObject):
                     additional_attributes.append(source_feature[field.name()])
                 try:
                     found_feature = uldk_response_to_qgs_feature(uldk_response_row, additional_attributes)
+                    geometry_wkt = found_feature.geometry().asWkt()
                 except BadGeometryException:
                     raise BadGeometryException("Niepoprawna geometria")
-                found_features.append(found_feature)
-                self.layer_found.dataProvider().addFeature(found_feature)
-                self.progressed.emit(True, 0)
+                saved = False
+                if geometry_wkt not in geometries:
+                    saved = True
+                    found_features.append(found_feature)
+                    self.layer_found.dataProvider().addFeature(found_feature)
+                    geometries.append(geometry_wkt)
+                self.progressed.emit(True, 0, saved)
             except Exception as e:
                 not_found_feature = self.__make_not_found_feature(source_feature.geometry(), e)
                 self.layer_not_found.dataProvider().addFeature(not_found_feature)
-                self.progressed.emit(False, 0)
+                self.progressed.emit(False, 0, False)
             
         self.__commit()
         self.finished.emit(self.layer_found, self.layer_not_found)
@@ -155,4 +154,5 @@ class PointLayerImportWorker(QObject):
     def __commit(self):
         self.layer_found.commitChanges()
         self.layer_not_found.commitChanges()
+
 

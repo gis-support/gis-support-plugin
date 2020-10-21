@@ -187,6 +187,7 @@ class LayerImportWorker(QObject):
         point = source_feature.geometry().asPoint()
         uldk_point = ULDKPoint(point.x(), point.y(), 2180)
         found_parcels_geometries = []
+        saved = False
 
         try:
             uldk_response_row = self.uldk_search.search(uldk_point)
@@ -198,7 +199,6 @@ class LayerImportWorker(QObject):
                 geometry_wkt = found_feature.geometry().asWkt()
             except BadGeometryException:
                 raise BadGeometryException("Niepoprawna geometria")
-            saved = False
             if geometry_wkt not in self.geometries:
                 saved = True
                 self.layer_found.dataProvider().addFeature(found_feature)
@@ -208,6 +208,6 @@ class LayerImportWorker(QObject):
         except Exception as e:
             not_found_feature = self.__make_not_found_feature(source_feature.geometry(), e)
             self.layer_not_found.dataProvider().addFeature(not_found_feature)
-            self.progressed.emit(False, 0, False)
+            self.progressed.emit(False, 0, saved, False)
 
         self.parcels_geometry.addPartGeometry(QgsGeometry.fromMultiPolygonXY(found_parcels_geometries))

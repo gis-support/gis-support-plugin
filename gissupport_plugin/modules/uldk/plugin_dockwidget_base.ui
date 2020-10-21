@@ -238,7 +238,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_import_layer_point">
+          <widget class="QWidget" name="tab_import_layer">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -250,7 +250,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <layout class="QVBoxLayout" name="tab_import_layer_point_layout">
+             <layout class="QVBoxLayout" name="tab_import_layer_layout">
               <property name="spacing">
                <number>2</number>
               </property>

@@ -168,7 +168,7 @@ class LayerImport:
             QgsProject.instance().addMapLayer(layer_not_found)
 
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
-            f"Import CSV: zakończono wyszukiwanie. Zapisano {self.saved_count} {get_obiekty_form(self.saved_count)} do warstwy <b>{self.ui.text_edit_target_layer_name.text()}</b>"))
+            f"Import z warstwy: zakończono wyszukiwanie. Zapisano {self.saved_count} {get_obiekty_form(self.saved_count)} do warstwy <b>{self.ui.text_edit_target_layer_name.text()}</b>"))
         
     def __handle_interrupted(self, layer_found, layer_not_found):
         self.__cleanup_after_search()

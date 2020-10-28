@@ -1,3 +1,9 @@
+1.7
+ULDK, NMT: Zmienione treści komunikatów
+Mapster: Naprawiony błąd występujący podczas używania narzędzia na platformie Mac
+NMT: Dodanie współrzędnych do generowanego CSV z profilem podłużnym
+ULDK: Poprawione działanie wtyczki podczas importu działek z warstwy
+
 1.6
 ULDK: Zaktualizowany WMS LPIS
 ULDK: Naprawione niestabilne zachowanie wtyczki podczas identyfikacji działek

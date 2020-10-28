@@ -58,7 +58,7 @@ def uldk_response_to_qgs_feature(response_row, additional_attributes = []):
     return feature
 
 
-def process_feature(feature, geomtype, transformation, found_parcels_geometry=None):
+def feature_to_points(feature, geomtype, transformation, found_parcels_geometry=None):
     geometry = feature.geometry()
     features = []
     points_number = 0
@@ -151,11 +151,11 @@ class LayerImportWorker(QObject):
                 features = feature_iterator
         else:
             for f in feature_iterator:
-                points = process_feature(f, geom_type, transformation)
+                points = feature_to_points(f, geom_type, transformation)
                 while points != []:
                     for point in points:
                         self._process_feature(point)
-                    points = process_feature(f, geom_type, transformation, self.parcels_geometry)
+                    points = feature_to_points(f, geom_type, transformation, self.parcels_geometry)
                 else:
                     for point in points:
                         self._process_feature(point)
@@ -185,10 +185,12 @@ class LayerImportWorker(QObject):
             return
 
         point = source_feature.geometry().asPoint()
+        if self.parcels_geometry.contains(point):
+            return
+
         uldk_point = ULDKPoint(point.x(), point.y(), 2180)
         found_parcels_geometries = []
         saved = False
-
         try:
             uldk_response_row = self.uldk_search.search(uldk_point)
             additional_attributes = []

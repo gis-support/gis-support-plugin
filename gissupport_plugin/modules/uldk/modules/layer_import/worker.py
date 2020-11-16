@@ -144,7 +144,8 @@ class LayerImportWorker(QObject):
         if geom_type == QgsWkbTypes.Point or geom_type == QgsWkbTypes.MultiPoint:
             for f in feature_iterator:
                 point = f.geometry().asPoint()
-                point = transformation.transform(point)
+                if transformation:
+                    point = transformation.transform(point)
                 f.setGeometry(QgsGeometry.fromPointXY(point))
                 self._process_feature(f)
             else:
@@ -152,13 +153,16 @@ class LayerImportWorker(QObject):
         else:
             for f in feature_iterator:
                 points = feature_to_points(f, geom_type, transformation)
+                continue_search = True
                 while points != []:
                     for point in points:
-                        self._process_feature(point)
-                    points = feature_to_points(f, geom_type, transformation, self.parcels_geometry)
-                else:
-                    for point in points:
-                        self._process_feature(point)
+                        processed = self._process_feature(point, True)
+                        if not processed:
+                            continue_search = False
+                    if continue_search:
+                        points = feature_to_points(f, geom_type, transformation, self.parcels_geometry)
+                    else:
+                        points = []
                 self.progressed.emit(True, 0, False, True)
 
         self.__commit()
@@ -176,7 +180,7 @@ class LayerImportWorker(QObject):
         self.layer_found.commitChanges()
         self.layer_not_found.commitChanges()
 
-    def _process_feature(self, source_feature):
+    def _process_feature(self, source_feature, end_if_not_found=False):
 
         if QThread.currentThread().isInterruptionRequested():
             self.__commit()
@@ -211,5 +215,7 @@ class LayerImportWorker(QObject):
             not_found_feature = self.__make_not_found_feature(source_feature.geometry(), e)
             self.layer_not_found.dataProvider().addFeature(not_found_feature)
             self.progressed.emit(False, 0, saved, False)
+            if end_if_not_found:
+                return
 
         self.parcels_geometry.addPartGeometry(QgsGeometry.fromMultiPolygonXY(found_parcels_geometries))

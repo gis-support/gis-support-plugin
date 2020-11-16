@@ -150,7 +150,7 @@ class LayerImport:
         elif not found:
             self.not_found_count += 1
         self.omitted_count += omitted_count
-        progressed_count = self.found_count + self.not_found_count
+        progressed_count = self.found_count
         self.ui.progress_bar.setValue(progressed_count/self.source_features_count*100)
         self.ui.label_status.setText(f"Przetworzono {progressed_count} z {self.source_features_count} obiektów")
         found_message = f"Znaleziono: {self.saved_count}"

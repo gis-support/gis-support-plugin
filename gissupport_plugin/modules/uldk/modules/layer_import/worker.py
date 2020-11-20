@@ -74,7 +74,7 @@ def feature_to_points(feature, geomtype, transformation, found_parcels_geometry=
         if found_parcels_geometry.contains(geometry):
             return []
         else:
-            multi_polygon = QgsGeometry.fromMultiPolygonXY([geometry.asPolygon()])
+            multi_polygon = QgsGeometry.fromMultiPolygonXY(geometry.asMultiPolygon())
             geometry = multi_polygon.difference(found_parcels_geometry.buffer(0.001, 2))
             if not geometry:
                 return []

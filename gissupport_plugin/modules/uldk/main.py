@@ -18,7 +18,7 @@ from qgis.utils import iface
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.uldk.modules.csv_import.main import CSVImport
 from gissupport_plugin.modules.uldk.modules.map_point_search.main import MapPointSearch
-from gissupport_plugin.modules.uldk.modules.point_layer_import.main import PointLayerImport
+from gissupport_plugin.modules.uldk.modules.layer_import.main import LayerImport
 from gissupport_plugin.modules.uldk.modules.teryt_search.main import TerytSearch
 from gissupport_plugin.modules.uldk.plugin_dockwidget import wyszukiwarkaDzialekDockWidget
 from gissupport_plugin.modules.uldk.resources import resources
@@ -45,7 +45,7 @@ class Main(BaseModule):
         self.wms_layer = None
         self.module_csv_import = None
         self.module_teryt_search = None
-        self.module_point_layer_import = None
+        self.module_layer_import = None
         self.module_wms_kieg_initialized = False
         self.module_map_point_search = MapPointSearch(self, self.teryt_search_result_collector)
 
@@ -63,9 +63,9 @@ class Main(BaseModule):
             result_collector_factory,
             ResultCollectorMultiple.default_layer_factory)
 
-        self.module_point_layer_import = PointLayerImport(
+        self.module_layer_import = LayerImport(
             self,
-            self.dockwidget.tab_import_layer_point_layout)
+            self.dockwidget.tab_import_layer_layout)
 
         self.wms_kieg_layer = None
         self.dockwidget.button_wms_kieg.clicked.connect(self.add_wms_kieg)

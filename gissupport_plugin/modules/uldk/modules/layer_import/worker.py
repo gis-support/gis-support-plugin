@@ -57,48 +57,6 @@ def uldk_response_to_qgs_feature(response_row, additional_attributes = []):
 
     return feature
 
-
-def feature_to_points(feature, geom_type, transformation, found_parcels_geometry=None):
-    geometry = feature.geometry()
-    features = []
-    points_number = 0
-
-    if transformation is not None:
-        geometry.transform(transformation)
-
-    if geom_type == QgsWkbTypes.LineString or geom_type == QgsWkbTypes.MultiLineString:
-        points_number = 10
-        geometry = geometry.buffer(0.5, 2)
-
-    if found_parcels_geometry:
-        if found_parcels_geometry.contains(geometry):
-            return []
-        else:
-            if not geometry.isMultipart():
-                geometry.convertToMultiType()
-
-            multi_polygon = QgsGeometry.fromMultiPolygonXY(geometry.asMultiPolygon())
-            geometry = multi_polygon.difference(found_parcels_geometry.buffer(0.001, 2))
-            if not geometry:
-                return []
-
-    da = QgsDistanceArea()
-    da.setSourceCrs(CRS_2180, QgsProject.instance().transformContext())
-    da.setEllipsoid(QgsProject.instance().ellipsoid())
-
-    points_number = 20 if not points_number else points_number
-    area = int(da.measureArea(geometry))/10000
-    if area > 1:
-        points_number *= area
-    points = geometry.randomPointsInPolygon(points_number)
-
-    for point in points:
-        feature = QgsFeature()
-        feature.setGeometry(QgsGeometry.fromPointXY(point))
-        features.append(feature)
-
-    return features
-
 class LayerImportWorker(QObject):
 
     finished = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
@@ -250,7 +208,7 @@ class LayerImportWorker(QObject):
 
         if geom_type == QgsWkbTypes.LineString or geom_type == QgsWkbTypes.MultiLineString:
             points_number = 10
-            geometry = geometry.buffer(0.5, 2)
+            geometry = geometry.buffer(0.001, 2)
 
         if self.parcels_geometry:
             if self.parcels_geometry.contains(geometry):

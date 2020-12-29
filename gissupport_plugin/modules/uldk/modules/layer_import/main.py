@@ -142,44 +142,47 @@ class LayerImport:
         fields = self.source_layer.dataProvider().fields()
         self.ui.combobox_fields_select.addItems(map(lambda x: x.name(), fields))
 
-    def __progressed(self, found, omitted_count, saved, feature_processed):
+    def __progressed(self, layer_found, layer_not_found, found, omitted_count, saved, feature_processed):
         if saved:
             self.saved_count += 1
         if found and feature_processed:
             self.found_count += 1
         elif not found:
             self.not_found_count += 1
+        if feature_processed:
+            if layer_found.dataProvider().featureCount():
+                self.__reload_and_add_layer(layer_found)
+
+            if layer_not_found.dataProvider().featureCount():
+                self.__reload_and_add_layer(layer_not_found)
+
         self.omitted_count += omitted_count
         progressed_count = self.found_count
         if self.worker.count_not_found_as_progressed:
             progressed_count += self.not_found_count
+
         self.ui.progress_bar.setValue(progressed_count/self.source_features_count*100)
         self.ui.label_status.setText(f"Przetworzono {progressed_count} z {self.source_features_count} obiektów")
         found_message = f"Znaleziono: {self.saved_count}"
         if self.omitted_count:
             found_message += f" (pominięto: {self.omitted_count})"
+
         self.ui.label_found_count.setText(found_message)
         self.ui.label_not_found_count.setText(f"Nie znaleziono: {self.not_found_count}")
 
     def __handle_finished(self, layer_found, layer_not_found):
         self.__cleanup_after_search()
-
-        if layer_found.dataProvider().featureCount():
-            QgsProject.instance().addMapLayer(layer_found)
-        if layer_not_found.dataProvider().featureCount():
-            QgsProject.instance().addMapLayer(layer_not_found)
-
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
             f"Import z warstwy: zakończono wyszukiwanie. Zapisano {self.saved_count} {get_obiekty_form(self.saved_count)} do warstwy <b>{self.ui.text_edit_target_layer_name.text()}</b>"))
-        
+
     def __handle_interrupted(self, layer_found, layer_not_found):
         self.__cleanup_after_search()
 
         if layer_found.dataProvider().featureCount():
-            QgsProject.instance().addMapLayer(layer_found)
+            self.__reload_and_add_layer(layer_found)
         if layer_not_found.dataProvider().featureCount():
-            QgsProject.instance().addMapLayer(layer_not_found)
-        
+            self.__reload_and_add_layer(layer_not_found)
+
     def __cleanup_after_search(self):
         self.__set_controls_enabled(True)
         self.ui.button_cancel.setText("Anuluj")
@@ -207,3 +210,8 @@ class LayerImport:
         self.thread.requestInterruption()
         self.ui.button_cancel.setEnabled(False)
         self.ui.button_cancel.setText("Przerywanie...")
+
+    def __reload_and_add_layer(self, layer):
+        layer.reload()
+        if not QgsProject.instance().mapLayersByName(layer.name()):
+            QgsProject.instance().addMapLayer(layer)

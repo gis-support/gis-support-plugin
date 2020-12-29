@@ -57,11 +57,12 @@ def uldk_response_to_qgs_feature(response_row, additional_attributes = []):
 
     return feature
 
+
 class LayerImportWorker(QObject):
 
     finished = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
     interrupted = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
-    progressed = pyqtSignal(bool, int, bool, bool)
+    progressed = pyqtSignal(QgsVectorLayer, QgsVectorLayer, bool, int, bool, bool)
 
     def __init__(self, source_layer, selected_only, layer_name, additional_output_fields=None):
         super().__init__()
@@ -135,10 +136,9 @@ class LayerImportWorker(QObject):
                         points = self._feature_to_points(f, geom_type, additional_attributes)
                     else:
                         points = []
+                self.__commit()
+                self.progressed.emit(self.layer_found, self.layer_not_found, True, 0, False, True)
 
-                self.progressed.emit(True, 0, False, True)
-
-        self.__commit()
         self.finished.emit(self.layer_found, self.layer_not_found)
 
     def __make_not_found_feature(self, geometry, e):
@@ -164,12 +164,14 @@ class LayerImportWorker(QObject):
         point = source_feature.geometry().asPoint()
         if self.parcels_geometry.contains(point):
             if made_progress:
-                self.progressed.emit(True, 1, False, made_progress)
+                self.__commit()
+                self.progressed.emit(self.layer_found, self.layer_not_found, True, 1, False, made_progress)
             return
 
         uldk_point = ULDKPoint(point.x(), point.y(), 2180)
         found_parcels_geometries = []
         saved = False
+
         try:
             uldk_response_row = self.uldk_search.search(uldk_point)
             additional_attributes = []
@@ -185,17 +187,18 @@ class LayerImportWorker(QObject):
                 self.layer_found.dataProvider().addFeature(found_feature)
                 self.geometries.append(geometry_wkt)
                 found_parcels_geometries.append(found_feature.geometry().asPolygon())
-                self.progressed.emit(True, 0, saved, made_progress)
+                self.progressed.emit(self.layer_found, self.layer_not_found, True, 0, saved, made_progress)
         except Exception as e:
             geometry = source_feature.geometry()
             geometry_wkt = geometry.asWkt()
             if geometry_wkt not in self.not_found_geometries:
                 not_found_feature = self.__make_not_found_feature(geometry, e)
                 self.layer_not_found.dataProvider().addFeature(not_found_feature)
-                self.progressed.emit(False, 0, saved, made_progress)
+                self.progressed.emit(self.layer_found, self.layer_not_found, False, 0, saved, made_progress)
                 self.not_found_geometries.append(geometry_wkt)
 
         self.parcels_geometry.addPartGeometry(QgsGeometry.fromMultiPolygonXY(found_parcels_geometries))
+        self.__commit()
         return saved
 
     def _feature_to_points(self, feature, geom_type, additional_attributes):

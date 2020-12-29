@@ -198,6 +198,7 @@ class LayerImportWorker(QObject):
                 self.not_found_geometries.append(geometry_wkt)
 
         self.parcels_geometry.addPartGeometry(QgsGeometry.fromMultiPolygonXY(found_parcels_geometries))
+        self.__commit()
         return saved
 
     def _feature_to_points(self, feature, geom_type, additional_attributes):

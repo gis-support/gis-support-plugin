@@ -31,7 +31,6 @@ import inspect
 from importlib import util
 
 from gissupport_plugin.modules.base import BaseModule
-from .key_dialog import GisSupportPluginDialog
 from .resources import resources
 
 PLUGIN_NAME = "Wtyczka GIS Support"
@@ -48,12 +47,9 @@ class GISSupportPlugin:
         self.menu = self.tr(u'&Wtyczka GIS Support')
         self.toolbar = self.iface.addToolBar(PLUGIN_NAME)
         self.toolbar.addSeparator
-        
-        self.api_key_dialog = GisSupportPluginDialog()
-        
+
     def tr(self, message):
         return QCoreApplication.translate('GISSupportPlugin', message)
-
 
     def add_action(
         self,
@@ -122,14 +118,23 @@ class GISSupportPlugin:
         #Load plugin modules
         self.initModules()
 
+        self.add_action(
+            icon_path=":/plugins/gissupport_plugin/szkolenia.svg",
+            text="Szkolenia GIS Support",
+            add_to_menu=False,
+            add_to_topmenu=True,
+            callback=lambda: self.open_url("https://gis-support.pl/szkolenia-gis/"),
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=True
+        )
         self.topMenu.addSeparator()
         self.topMenu.setObjectName('gisSupportMenu')
         self.add_action(
             icon_path=None,
-            text="Klucz GIS Support",
+            text="Zapisz się na newsletter GIS Support",
             add_to_menu=False,
             add_to_topmenu=True,
-            callback=self.show_api_key_dialog,
+            callback=lambda: self.open_url("http://gis-support.pl/newsletter/"),
             parent=self.iface.mainWindow(),
             add_to_toolbar=False
         )
@@ -138,7 +143,7 @@ class GISSupportPlugin:
             text="O wtyczce",
             add_to_menu=False,
             add_to_topmenu=True,
-            callback=self.open_about,
+            callback=lambda: self.open_url("https://gis-support.pl/wtyczka-gis-support/"),
             parent=self.iface.mainWindow(),
             add_to_toolbar=False
         )
@@ -158,8 +163,5 @@ class GISSupportPlugin:
         self.topMenu.clear()
         self.topMenu.deleteLater()
 
-    def show_api_key_dialog(self):
-        self.api_key_dialog.show()
-
-    def open_about(self):
-        QDesktopServices.openUrl(QUrl("https://gis-support.pl/wtyczka-gis-support"))
+    def open_url(self, url):
+        QDesktopServices.openUrl(QUrl(url))

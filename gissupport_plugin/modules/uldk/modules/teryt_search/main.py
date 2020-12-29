@@ -75,15 +75,8 @@ class TerytSearch(QObject):
 
     def search_lpis(self):
         teryt = self.ui.lineedit_full_teryt.text()
-        key = QSettings().value('gissupport/api/key')
-        if not key:
-            messageBox = QMessageBox.warning(
-                None, 
-                "Wtyczka GIS Support", 
-                "Korzystanie z danych historycznych wymaga uzupełnienia klucza GIS Support. Więcej informacji w menu wtyczki w zakładce <b>Klucz GIS Support</b>."
-            )
-            return
-        lpis_response = lpis_api.search(teryt, key)
+        lpis_response = lpis_api.search(teryt)
+
         if len(lpis_response) == 0:
             iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono przybliżonej lokacji działki{teryt}")
         elif len(lpis_response) > 1:

@@ -2,7 +2,7 @@ from PyQt5.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsField, QgsGeometry,
                        QgsPoint, QgsVectorLayer, QgsFeature, QgsWkbTypes,
-                       QgsProject, QgsDistanceArea)
+                       QgsProject, QgsDistanceArea, QgsFields)
 
 from ...uldk.api import ULDKSearchPoint, ULDKSearchLogger, ULDKPoint
 
@@ -57,59 +57,17 @@ def uldk_response_to_qgs_feature(response_row, additional_attributes = []):
 
     return feature
 
-
-def feature_to_points(feature, geomtype, transformation, found_parcels_geometry=None):
-    geometry = feature.geometry()
-    features = []
-    points_number = 0
-
-    if transformation is not None:
-        geometry.transform(transformation)
-
-    if geomtype == QgsWkbTypes.LineString or geomtype == QgsWkbTypes.MultiLineString:
-        points_number = 10
-        geometry = geometry.buffer(0.5, 2)
-
-    if found_parcels_geometry:
-        if found_parcels_geometry.contains(geometry):
-            return []
-        else:
-            if not geometry.isMultipart():
-                geometry.convertToMultiType()
-
-            multi_polygon = QgsGeometry.fromMultiPolygonXY(geometry.asMultiPolygon())
-            geometry = multi_polygon.difference(found_parcels_geometry.buffer(0.001, 2))
-            if not geometry:
-                return []
-
-    da = QgsDistanceArea()
-    da.setSourceCrs(CRS_2180, QgsProject.instance().transformContext())
-    da.setEllipsoid(QgsProject.instance().ellipsoid())
-
-    points_number = 20 if not points_number else points_number
-    area = int(da.measureArea(geometry))/10000
-    if area > 1:
-        points_number *= area
-    points = geometry.randomPointsInPolygon(points_number)
-
-    for point in points:
-        feature = QgsFeature()
-        feature.setGeometry(QgsGeometry.fromPointXY(point))
-        features.append(feature)
-
-    return features
-
 class LayerImportWorker(QObject):
 
     finished = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
     interrupted = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
     progressed = pyqtSignal(bool, int, bool, bool)
 
-    def __init__(self, source_layer, selected_only, layer_name, additional_output_fields = []):
+    def __init__(self, source_layer, selected_only, layer_name, additional_output_fields=None):
         super().__init__()
         self.source_layer = source_layer
         self.selected_only = selected_only
-        self.additional_output_fields = additional_output_fields
+        self.additional_output_fields = additional_output_fields if additional_output_fields else []
 
         self.layer_found = QgsVectorLayer(f"Polygon?crs=EPSG:{2180}", layer_name, "memory")
         self.layer_found.setCustomProperty("ULDK", f"{layer_name} point_import_found")
@@ -142,29 +100,39 @@ class LayerImportWorker(QObject):
         self.not_found_geometries = []
         self.parcels_geometry = QgsGeometry.fromMultiPolygonXY([])
 
-        transformation = None
+        self.transformation = None
         if source_crs != CRS_2180:
-            transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext())
+            self.transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext())
         if geom_type == QgsWkbTypes.Point or geom_type == QgsWkbTypes.MultiPoint:
             self.count_not_found_as_progressed = True
 
             for index, f in enumerate(feature_iterator):
                 point = f.geometry().asPoint()
-                if transformation:
-                    point = transformation.transform(point)
+                if self.transformation:
+                    point = self.transformation.transform(point)
                 f.setGeometry(QgsGeometry.fromPointXY(point))
                 self._process_feature(f, True)
         else:
             self.count_not_found_as_progressed = False
 
+            if self.additional_output_fields:
+                self.fields_to_add = QgsFields()
+                for field in self.additional_output_fields:
+                    self.fields_to_add.append(field)
+
             for f in feature_iterator:
-                points = feature_to_points(f, geom_type, transformation)
+                additional_attributes = []
+
+                if self.additional_output_fields:
+                    additional_attributes = [f.attribute(field.name()) for field in self.additional_output_fields]
+
+                points = self._feature_to_points(f, geom_type, additional_attributes)
                 continue_search = True
 
                 while points != []:
                     saved_features = [self._process_feature(point) for point in points]
                     if any(saved_features):
-                        points = feature_to_points(f, geom_type, transformation, self.parcels_geometry)
+                        points = self._feature_to_points(f, geom_type, additional_attributes)
                     else:
                         points = []
 
@@ -229,3 +197,49 @@ class LayerImportWorker(QObject):
 
         self.parcels_geometry.addPartGeometry(QgsGeometry.fromMultiPolygonXY(found_parcels_geometries))
         return saved
+
+    def _feature_to_points(self, feature, geom_type, additional_attributes):
+        geometry = feature.geometry()
+        features = []
+        points_number = 0
+
+        if self.transformation is not None:
+            geometry.transform(self.transformation)
+
+        if geom_type == QgsWkbTypes.LineString or geom_type == QgsWkbTypes.MultiLineString:
+            points_number = 10
+            geometry = geometry.buffer(0.001, 2)
+
+        if self.parcels_geometry:
+            if self.parcels_geometry.contains(geometry):
+                return []
+            else:
+                if not geometry.isMultipart():
+                    geometry.convertToMultiType()
+
+                multi_polygon = QgsGeometry.fromMultiPolygonXY(geometry.asMultiPolygon())
+                geometry = multi_polygon.difference(self.parcels_geometry.buffer(0.001, 2))
+                if not geometry:
+                    return []
+
+        da = QgsDistanceArea()
+        da.setSourceCrs(CRS_2180, QgsProject.instance().transformContext())
+        da.setEllipsoid(QgsProject.instance().ellipsoid())
+
+        points_number = 20 if not points_number else points_number
+        area = int(da.measureArea(geometry))/10000
+        if area > 1:
+            points_number *= area
+        points = geometry.randomPointsInPolygon(points_number)
+
+        for point in points:
+            feature = QgsFeature()
+
+            if additional_attributes:
+                feature.setFields(self.fields_to_add)
+                feature.setAttributes(additional_attributes)
+
+            feature.setGeometry(QgsGeometry.fromPointXY(point))
+            features.append(feature)
+
+        return features

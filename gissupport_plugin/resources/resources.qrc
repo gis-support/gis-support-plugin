@@ -10,5 +10,6 @@
         <file>gugik_nmt/nmt.svg</file>
         <file>mapster/mapster.svg</file>
 	<file>wmts/wmts.svg</file>
-    </qresource>     
+        <file>szkolenia.svg</file>
+    </qresource>
 </RCC>

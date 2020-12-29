@@ -2,9 +2,8 @@ import requests
 
 URL = r"https://testing.qgis-api.apps.divi.pl/lpis_bbox"
 
-def search(parcel_id, key):
+def search(parcel_id):
     url = "{}/{}".format(URL, parcel_id)
-    params = {"key": key}
-    response = requests.get(url, params=params)
+    response = requests.get(url)
     parcels = response.json()
     return parcels

@@ -1,7 +1,8 @@
 from enum import Enum
 import requests
 
-from qgis.core import QgsGeometry, QgsFeature, QgsTask, QgsCoordinateReferenceSystem, QgsVectorLayer, QgsProject
+from qgis.core import QgsGeometry, QgsFeature, QgsTask, QgsCoordinateReferenceSystem, QgsVectorLayer, QgsProject, \
+    QgsMessageLog, Qgis
 from PyQt5.QtCore import QCoreApplication
 
 
@@ -12,11 +13,9 @@ class EntityOption(Enum):
     BRAK = "Brak (dla całego kraju)"
 
 
-class PRGTaskRequestException(Exception):
-    pass
-
-
 class PRGDownloadTask(QgsTask):
+
+    message_group_name = "GIS Support - PRG granice administracyjne"
 
     url = "https://uldk.gugik.gov.pl"
 
@@ -55,7 +54,8 @@ class PRGDownloadTask(QgsTask):
 
         dp = self.layer.dataProvider()
         if status != "0":
-            raise PRGTaskRequestException(status)
+            self.log_message(f"{response.url} - odpowiedź: {response_content}", level=Qgis.Critical)
+            self.cancel()
 
         features = self.response_as_features(response_content)
         if not features:
@@ -63,6 +63,8 @@ class PRGDownloadTask(QgsTask):
 
         for feature in features:
             self.layer.dataProvider().addFeature(feature)
+
+        self.log_message(f"{response.url} - pobrano", level=Qgis.Info)
 
         return True
 
@@ -110,3 +112,6 @@ class PRGDownloadTask(QgsTask):
             result.append(feature)
 
         return result
+
+    def log_message(self, message: str, level):
+        QgsMessageLog.logMessage(message, self.message_group_name, level)

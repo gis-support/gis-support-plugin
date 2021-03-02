@@ -3,7 +3,7 @@ from typing import List
 from qgis.PyQt.QtCore import Qt, QVariant
 from qgis.utils import iface
 from qgis.core import QgsVectorLayer, QgsFeature, QgsCoordinateReferenceSystem, QgsProject, QgsApplication, QgsField, \
-    QgsCoordinateTransform
+    QgsCoordinateTransform, Qgis
 
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchTeryt, ULDKSearchLogger
@@ -32,9 +32,11 @@ class PRGModule(BaseModule):
         )
 
         self.populate_dockwidget_comboboxes()
-
         self.dockwidget.entity_type_combobox.currentTextChanged.connect(self.handle_entity_type_changed)
         self.dockwidget.btn_download.clicked.connect(self.download_prg)
+
+        self.task = None
+        self.manager = QgsApplication.taskManager()
 
     def download_prg(self):
         entity_division = self.dockwidget.entity_division_combobox.currentText()
@@ -50,9 +52,9 @@ class PRGModule(BaseModule):
         dp.addAttributes([QgsField("Nazwa", QVariant.String)])
         self.layer.updateFields()
 
-        task = PRGDownloadTask("Pobieranie danych PRG", 75, self.layer, entity_division, entity_teryt)
-        QgsApplication.taskManager().addTask(task)
-        task.taskCompleted.connect(self.add_result_layer)
+        self.task = PRGDownloadTask("Pobieranie danych PRG", 75, self.layer, entity_division, entity_teryt)
+        self.manager.addTask(self.task)
+        self.task.taskCompleted.connect(self.add_result_layer)
 
     def populate_dockwidget_comboboxes(self):
         self.dockwidget.entity_division_combobox.addItem(EntityOption.WOJEWODZTWO.value)
@@ -92,7 +94,7 @@ class PRGModule(BaseModule):
         iface.mapCanvas().setExtent(extent)
 
     @staticmethod
-    def get_administratives(level, teryt=""):
+    def get_administratives(level: Qgis.MessageLevel, teryt: str = ""):
         search = ULDKSearchTeryt(level, ("nazwa", "teryt"))
         result = search.search(teryt)
         result = [r.split("|") for r in result]

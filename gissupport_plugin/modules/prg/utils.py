@@ -105,6 +105,7 @@ class PRGDownloadTask(QgsTask):
                 geometry = geometry.makeValid()
                 if not geometry.isGeosValid():
                     raise
+
             feature = QgsFeature()
             feature.setGeometry(geometry)
             feature.setAttributes([entity_name])
@@ -113,5 +114,5 @@ class PRGDownloadTask(QgsTask):
 
         return result
 
-    def log_message(self, message: str, level):
+    def log_message(self, message: str, level: Qgis.MessageLevel):
         QgsMessageLog.logMessage(message, self.message_group_name, level)

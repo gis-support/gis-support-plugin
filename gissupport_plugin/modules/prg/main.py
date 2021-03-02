@@ -23,7 +23,7 @@ class PRGModule(BaseModule):
         self.dockwidget.hide()
 
         self.action = self.parent.add_action(
-            '',
+            ':/plugins/gissupport_plugin/prg/prg.svg',
             self.module_name,
             callback=lambda state: self.dockwidget.setHidden(not state),
             parent=iface.mainWindow(),
@@ -50,6 +50,7 @@ class PRGModule(BaseModule):
 
         dp = self.layer.dataProvider()
         dp.addAttributes([QgsField("Nazwa", QVariant.String)])
+        dp.addAttributes([QgsField("Teryt", QVariant.String)])
         self.layer.updateFields()
 
         self.task = PRGDownloadTask("Pobieranie danych PRG", 75, self.layer, entity_division, entity_teryt)

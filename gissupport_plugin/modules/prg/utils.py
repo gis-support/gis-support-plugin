@@ -72,7 +72,7 @@ class PRGDownloadTask(QgsTask):
         pass
 
     def _get_parameters(self):
-        result_params = ["geom_wkt", self.result_parameter_name]
+        result_params = ["geom_wkt", self.result_parameter_name, "teryt"]
         return {
             "request": self.search_type,
             "id": self.entity_teryt,
@@ -93,7 +93,10 @@ class PRGDownloadTask(QgsTask):
                 continue
 
             ewkt = object_data.split(";")[1]
-            entity_name = object_data.split("|")[1]
+
+            additional_attributes = object_data.split("|")
+            entity_name = additional_attributes[1]
+            teryt = additional_attributes[2]
 
             if len(ewkt) == 2:
                 geom_wkt = ewkt[1]
@@ -108,7 +111,7 @@ class PRGDownloadTask(QgsTask):
 
             feature = QgsFeature()
             feature.setGeometry(geometry)
-            feature.setAttributes([entity_name])
+            feature.setAttributes([entity_name, teryt])
 
             result.append(feature)
 

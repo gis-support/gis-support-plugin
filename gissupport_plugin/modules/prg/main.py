@@ -50,7 +50,7 @@ class PRGModule(BaseModule):
 
         dp = self.layer.dataProvider()
         dp.addAttributes([QgsField("Nazwa", QVariant.String)])
-        dp.addAttributes([QgsField("Teryt", QVariant.String)])
+        dp.addAttributes([QgsField("TERYT", QVariant.String)])
         self.layer.updateFields()
 
         self.task = PRGDownloadTask("Pobieranie danych PRG", 75, self.layer, entity_division, entity_teryt)

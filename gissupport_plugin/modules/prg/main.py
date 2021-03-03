@@ -5,7 +5,6 @@ from qgis.utils import iface
 from qgis.core import QgsVectorLayer, QgsFeature, QgsCoordinateReferenceSystem, QgsProject, QgsApplication, QgsField, \
     QgsCoordinateTransform, Qgis
 
-
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchTeryt, ULDKSearchLogger
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.prg.utils import EntityOption, PRGDownloadTask
@@ -33,6 +32,7 @@ class PRGModule(BaseModule):
 
         self.populate_dockwidget_comboboxes()
         self.dockwidget.entity_type_combobox.currentTextChanged.connect(self.handle_entity_type_changed)
+        self.dockwidget.entity_division_combobox.currentTextChanged.connect(self.handle_entity_division_changed)
         self.dockwidget.btn_download.clicked.connect(self.download_prg)
 
         self.task = None
@@ -65,15 +65,26 @@ class PRGModule(BaseModule):
         self.dockwidget.entity_type_combobox.addItem(EntityOption.BRAK.value)
         self.dockwidget.entity_type_combobox.addItem(EntityOption.WOJEWODZTWO.value)
         self.dockwidget.entity_type_combobox.addItem(EntityOption.POWIAT.value)
+        self.dockwidget.entity_type_combobox.addItem(EntityOption.GMINA.value)
+
+    def handle_entity_division_changed(self, entity_division_value: str):
+        model = self.dockwidget.entity_type_combobox.model()
+        item = model.item(0, 0)
+
+        if entity_division_value == EntityOption.GMINA.value:
+            item.setEnabled(False)
+        else:
+            item.setEnabled(True)
 
     def handle_entity_type_changed(self, entity_option_value: str):
         self.dockwidget.entity_name_combobox.clear()
 
         if entity_option_value == EntityOption.WOJEWODZTWO.value:
             data = self.get_administratives("wojewodztwo")
-            self.dockwidget.entity_name_combobox.clear()
         elif entity_option_value == EntityOption.POWIAT.value:
             data = self.get_administratives("powiat")
+        elif entity_option_value == EntityOption.GMINA.value:
+            data = self.get_administratives("gmina")
         else:
             return
 
@@ -95,8 +106,8 @@ class PRGModule(BaseModule):
         iface.mapCanvas().setExtent(extent)
 
     @staticmethod
-    def get_administratives(level: Qgis.MessageLevel, teryt: str = ""):
+    def get_administratives(level: str):
         search = ULDKSearchTeryt(level, ("nazwa", "teryt"))
-        result = search.search(teryt)
+        result = search.search("")
         result = [r.split("|") for r in result]
         return result

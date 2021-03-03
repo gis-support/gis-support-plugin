@@ -105,7 +105,7 @@ class PRGDownloadTask(QgsTask):
 
             geometry = QgsGeometry.fromWkt(geom_wkt)
             if not geometry.isGeosValid():
-                geometry = geometry.makeValid()
+                geometry = geometry.buffer(0.0, 1)
                 if not geometry.isGeosValid():
                     raise
 

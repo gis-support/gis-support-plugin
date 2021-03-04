@@ -31,12 +31,29 @@ class PRGModule(BaseModule):
         )
 
         self.populate_dockwidget_comboboxes()
+        self.task = None
+        self.manager = QgsApplication.taskManager()
+
         self.dockwidget.entity_type_combobox.currentTextChanged.connect(self.handle_entity_type_changed)
         self.dockwidget.entity_division_combobox.currentTextChanged.connect(self.handle_entity_division_changed)
         self.dockwidget.btn_download.clicked.connect(self.download_prg)
+        self.dockwidget.filter_line_edit.textChanged.connect(self.filter_name_combobox)
 
-        self.task = None
-        self.manager = QgsApplication.taskManager()
+    def filter_name_combobox(self, text: str):
+        model = self.dockwidget.entity_name_combobox.model()
+        view = self.dockwidget.entity_name_combobox.view()
+
+        first_hit = 1
+        for row in range(model.rowCount()):
+            item_text = model.item(row, 0).text()
+
+            if text.lower() not in item_text.lower():
+                view.setRowHidden(row, True)
+            else:
+                if first_hit:
+                    self.dockwidget.entity_name_combobox.setCurrentIndex(row)
+                    first_hit = 0
+                view.setRowHidden(row, False)
 
     def download_prg(self):
         entity_division = self.dockwidget.entity_division_combobox.currentText()
@@ -78,6 +95,7 @@ class PRGModule(BaseModule):
 
     def handle_entity_type_changed(self, entity_option_value: str):
         self.dockwidget.entity_name_combobox.clear()
+        self.dockwidget.filter_line_edit.clear()
 
         if entity_option_value == EntityOption.WOJEWODZTWO.value:
             data = self.get_administratives("wojewodztwo")
@@ -86,10 +104,12 @@ class PRGModule(BaseModule):
         elif entity_option_value == EntityOption.GMINA.value:
             data = self.get_administratives("gmina")
         else:
+            self.dockwidget.filter_line_edit.setEnabled(False)
             return
 
         for item in data:
-            self.dockwidget.entity_name_combobox.addItem(item[0], item[1])
+            display_name = f'{item[0]} | {item[1]}'
+            self.dockwidget.entity_name_combobox.addItem(display_name, item[1])
 
     def add_result_layer(self):
         QgsProject.instance().addMapLayer(self.layer)
@@ -105,9 +125,11 @@ class PRGModule(BaseModule):
 
         iface.mapCanvas().setExtent(extent)
 
-    @staticmethod
-    def get_administratives(level: str):
+    def get_administratives(self, level: str):
+        self.dockwidget.filter_line_edit.setEnabled(True)
+
         search = ULDKSearchTeryt(level, ("nazwa", "teryt"))
         result = search.search("")
         result = [r.split("|") for r in result]
+
         return result

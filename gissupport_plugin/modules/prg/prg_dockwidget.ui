@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>410</width>
-    <height>360</height>
+    <height>377</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -35,7 +35,7 @@
       <x>10</x>
       <y>30</y>
       <width>385</width>
-      <height>301</height>
+      <height>321</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -125,6 +125,20 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Filtruj jednostki według nazwy: (opcjonalne)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="filter_line_edit">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_6">

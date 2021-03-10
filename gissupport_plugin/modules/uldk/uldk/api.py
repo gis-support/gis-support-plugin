@@ -58,7 +58,7 @@ class ULDKPoint:
 
 class ULDKSearch:
 
-    proxy_url = r"https://gugik.gis.support/uldk/service.php"
+    proxy_url = r"https://wgs.gis.support/uldk/service.php"
     gugik_url = r"http://uldk.gugik.gov.pl/service.php"
 
     def __init__(self, target, results, method = ""):

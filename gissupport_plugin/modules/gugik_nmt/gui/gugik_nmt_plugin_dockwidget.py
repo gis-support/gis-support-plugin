@@ -54,7 +54,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
     on_message = pyqtSignal(str, object, int)
-    PROXY_URL = 'https://gugik.gis.support/nmt/'
+    PROXY_URL = 'https://wgs.gis.support/nmt/'
     GUGIK_URL = 'https://services.gugik.gov.pl/nmt/'
 
     def __init__(self, parent=None):

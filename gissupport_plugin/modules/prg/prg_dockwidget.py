@@ -14,6 +14,7 @@ class PRGDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def __init__(self, parent=None):
         super(PRGDockWidget, self).__init__(parent)
         self.setupUi(self)
+        self.setWindowTitle("PRG - granice administracyjne")
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

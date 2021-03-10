@@ -12,9 +12,9 @@
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Ortofotomapa standardowa",
         "tiles_name": "ORTOFOTOMAPA",
-        "url": "https://mapy.geoportal.gov.pl/wss/service/WMTS/guest/wmts/ORTO",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMTS/StandardResolution",
         "format": "image/jpeg",
-        "supported_crs": ["EPSG:2180", "EPSG:4326"],
+        "supported_crs": ["EPSG:2180", "EPSG:4326", "EPSG:102100"],
         "id": 2
     },
     {

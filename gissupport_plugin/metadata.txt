@@ -15,20 +15,31 @@ email=info@gis-support.pl
 
 description=GIS Support Plugin: integrates features that facilitate communication with services offered by Polish institutions (eg GUGiK).
 about=Features:
-	* Wyszukiwarka działek ewidencyjnych - A tool built on the basis of the"GUGiK ULDK"  plugin. It allows you to search for current land parcel through the ULDK service launched by GUGiK. In addition, it is possible to search for locations of the "historical" cadastral parcel, i.e. LPIS (without the download geometry option).
+	* Cadastral parcel search - It allows you to search for current land parcel through the ULDK service launched by GUGiK. Additionally, it is possible to search for the location of "historical" parcels, i.e. LPIS (without the possibility of downloading geometry).
 
-	* Baza WMS -  A newer, better version of the old "Baza WMS" plugin. It is a collection of links to popular, nationwide WMS services.
+	* GUGiK NMT - a tool that uses the API GUGiK NMT for altitude data. The tool allows you to know the height above sea level for the place you clicked, add height data for objects from the point layer and create an elevation plot along the drawn line.
 
-	* GUGiK NMT - A tool using the NMT GUGiK API for altitude data. The tool allows you to know the height above sea level for the clicked place, add height data for objects from the point layer and create a height chart along the drawn line.
+	* WMS Database - a newer, better version of the old plugin "WMS Database". This is a collection of links to popular nationwide WMS services.
 
+	* WMTS quick loading tool - add WMTS from a predefined list (mainly GUGiK services).
+
+	* Mapster archive maps search - display a list of old maps collected on the Mapster website, the range of which intersects with the coordinates of the indicated point.
+
+	* PRG - administrative boundaries - download the boundaries of communes, counties and voivodships.
 
 description[pl]=Wtyczka GIS Support: zawiera narzędzia, które ułatwiają komunikację z usługami oferowanymi przez polskie instytucje (np. GUGiK).
 about[pl]=Lista narzędzi wtyczki:
 	* Wyszukiwarka działek ewidencyjnych - narzędzie zbudowane na podstawie wtyczki „Wyszukiwarka działek ewidencyjnych (GUGiK ULDK)”. Pozwala na wyszukiwanie aktualnych działek ewidencyjnych poprzez usługę ULDK uruchomioną przez GUGiK. Dodatkowo jest możliwość wyszukiwania lokalizacji działek „historycznych”, czyli LPIS (bez możliwości pobrania geometrii).
 
+	* GUGiK NMT – narzędzie wykorzystujące API NMT GUGiK do danych wysokościowych. Narzędzie pozwala na poznanie wysokości nad poziomem morza dla klikniętego miejsca, dopisanie danych o wysokości dla obiektów z warstwy punktowej oraz stworzenie wykresu wysokościowego wzdłuż narysowanej linii.
+
 	* Baza WMS - nowsza, lepsza wersja starej wtyczki „Baza WMS”. Jest to zbiór linków do popularnych, ogólnokrajowych usług WMS.
 
-	* GUGiK NMT – narzędzie wykorzystujące API NMT GUGiK do danych wysokościowych. Narzędzie pozwala na poznanie wysokości nad poziomem morza dla klikniętego miejsca, dopisanie danych o wysokości dla obiektów z warstwy punktowej oraz stworzenie wykresu wysokościowego wzdłuż narysowanej linii.
+	* Narzędzie do szybkiego wczytywania WMTS - dodaj WMTS z predefiniowanej listy (głównie usługi GUGiK).
+
+	* Wyszukiwarka archiwalnych map Mapster - wyświetl listę starych map zgromadzonych w serwisie Mapster, których zasięg przecina się ze współrzędnymi wskazanego punktu.
+
+	* PRG - granice administracyjne - pobierz granice gmin, powiatów i województw.
 
 tracker=https://github.com/gis-support/gis-support-plugin/issues
 repository=https://github.com/gis-support/gis-support-plugin

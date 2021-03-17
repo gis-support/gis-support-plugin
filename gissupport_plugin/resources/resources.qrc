@@ -11,5 +11,6 @@
         <file>mapster/mapster.svg</file>
 	<file>wmts/wmts.svg</file>
         <file>szkolenia.svg</file>
+<file>prg/prg.svg</file>
     </qresource>
 </RCC>

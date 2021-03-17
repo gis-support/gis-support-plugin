@@ -44,7 +44,7 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Ortofotomapa standardowa",
-        "url": "http://mapy.geoportal.gov.pl/wss/service/img/guest/ORTO/MapServer/WMSServer",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMS/StandardResolution",
         "description": "Umozliwia przegladanie ortofotomap dla obszaru Polski. Dane udostepniane za pomoca tej uslugi stanowia ortofotomape wykonana ze zdjec lotniczych.",
         "id": 7
     },

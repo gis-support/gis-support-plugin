@@ -114,8 +114,6 @@ class LayerImport:
         self.ui.button_start.setEnabled(False)
         if layer:
             if layer.dataProvider().featureCount() == 0:
-                iface.messageBar().pushCritical(
-                    "Wtyczka ULDK",f"Warstwa <b>{layer.sourceName()} nie zawiera żadnych obiektów.</b>")
                 return
             self.source_layer = layer
             layer.selectionChanged.connect(self.__on_layer_features_selection_changed)

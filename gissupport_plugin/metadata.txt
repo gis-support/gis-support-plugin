@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=1.11.1
+version=1.12
 author=GIS Support
 email=info@gis-support.pl
 
@@ -48,8 +48,7 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=Zaktualizowane adresy w Bazie WMS i narzędziu do wczytywania WMTS
-	Umożliwienie wyszukiwania działek na podstawie warstw z geometrią Z
+changelog=Poprawiono błąd związany z pustymi warstwami
 
 # Tags are comma separated with spaces allowed
 tags=python

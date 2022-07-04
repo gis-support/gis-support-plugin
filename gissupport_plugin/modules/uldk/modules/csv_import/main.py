@@ -68,7 +68,7 @@ class CSVImport:
         
         teryts = []
         self.additional_attributes = defaultdict(list)
-        with open(self.file_path) as f:
+        with open(self.file_path, encoding='utf-8', errors='replace') as f:
             teryt_column = self.ui.combobox_teryt_column.currentText()
             csv_read = csv.DictReader(f)
             additional_fields = [name for name in csv_read.fieldnames if name != teryt_column]
@@ -144,7 +144,7 @@ class CSVImport:
 
     def __fill_column_select(self):
         self.ui.combobox_teryt_column.clear()
-        with open(self.file_path) as f:
+        with open(self.file_path, encoding='utf-8', errors='replace') as f:
             csv_read = csv.DictReader(f)
             columns = csv_read.fieldnames
         self.ui.combobox_teryt_column.addItems(columns)
@@ -174,7 +174,7 @@ class CSVImport:
         found_count = self.found_count
         not_found_count = self.not_found_count
         progressed_count = found_count + not_found_count
-        self.ui.progress_bar.setValue(progressed_count/self.csv_rows_count*100)
+        self.ui.progress_bar.setValue(int(progressed_count/self.csv_rows_count*100))
         self.ui.label_status.setText("Przetworzono {} z {} obiektów".format(progressed_count, self.csv_rows_count))
         self.ui.label_found_count.setText("Znaleziono: {}".format(found_count))
         self.ui.label_not_found_count.setText("Nie znaleziono: {}".format(not_found_count))

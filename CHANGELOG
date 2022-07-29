@@ -1,3 +1,6 @@
+1.13
+Poprawiono błąd kodowania znaków przy imporcie pliku CSV
+
 1.12
 Poprawiono błąd związany z pustymi warstwami
 

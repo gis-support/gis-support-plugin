@@ -266,7 +266,6 @@ class TerytSearch(QObject):
         self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key_Return))
         self.ui.button_search_uldk.clicked.connect(self.search)
         self.ui.checkbox_precinct_unknown.stateChanged.connect(self.__on_checkbox_precinct_unknown_switched)
-        self.ui.button_search_lpis.clicked.connect(self.search_lpis)
         self.ui.combobox_province.addItems([""])
 
     def __search_from_sheet(self):
@@ -343,7 +342,6 @@ class TerytSearch(QObject):
         self.ui.combobox_precinct.setEnabled(not new_state)
 
     def _search_buttons_set_enabled(self, new_state):
-        self.ui.button_search_lpis.setEnabled(new_state)
         self.ui.button_search_uldk.setEnabled(new_state)
 
     def __delete_message_bar(self):

@@ -68,11 +68,9 @@ class Main(BaseModule):
             self.dockwidget.tab_import_layer_layout)
 
         self.wms_kieg_layer = None
-        self.dockwidget.button_wms_kieg.clicked.connect(self.add_wms_kieg)
         self.module_wms_kieg_initialized = True
 
         self.wms_lpis_layer = None
-        self.dockwidget.button_wms_lpis.clicked.connect(self.add_wms_lpis)
         self.module_wms_lpis_initialized = True
         
         icon_info_path = ':/plugins/plugin/info.png'
@@ -132,7 +130,6 @@ class Main(BaseModule):
             self.wms_kieg_layer = layer
             self.project.addMapLayer(self.wms_kieg_layer)
             self.project.layerWillBeRemoved[QgsMapLayer].connect(self.before_layer_removed)
-            self.dockwidget.button_wms_kieg.setEnabled(False)
         else:
             self.canvas.refresh()
 
@@ -156,15 +153,12 @@ class Main(BaseModule):
             self.wms_lpis_layer = layer
             self.project.addMapLayer(self.wms_lpis_layer)
             self.project.layerWillBeRemoved[QgsMapLayer].connect(self.before_layer_removed)
-            self.dockwidget.button_wms_lpis.setEnabled(False)
         else:
             self.canvas.refresh()
 
     def before_layer_removed(self, layer):
         if layer.customProperty("ULDK") == "wms_lpis_layer":
             self.wms_lpis_layer = None
-            self.dockwidget.button_wms_lpis.setEnabled(True)
         if layer.customProperty("ULDK") == "wms_kieg_layer":
             self.wms_kieg_layer = None
-            self.dockwidget.button_wms_kieg.setEnabled(True)
 

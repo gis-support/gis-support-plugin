@@ -95,7 +95,7 @@ class LayerImportWorker(QObject):
         self.uldk_search = ULDKSearchLogger(self.uldk_search)
 
         feature_iterator = self.source_layer.getSelectedFeatures() if self.selected_only else self.source_layer.getFeatures()
-        geom_type = self.source_layer.wkbType()
+        source_geom_type = self.source_layer.wkbType()
         source_crs = self.source_layer.sourceCrs()
         self.geometries = []
         self.not_found_geometries = []
@@ -104,13 +104,17 @@ class LayerImportWorker(QObject):
         self.transformation = None
         if source_crs != CRS_2180:
             self.transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext())
+
+        geom_type = self._get_non_z_geom_type(source_geom_type)
         if geom_type == QgsWkbTypes.Point or geom_type == QgsWkbTypes.MultiPoint:
             self.count_not_found_as_progressed = True
 
             for index, f in enumerate(feature_iterator):
                 point = f.geometry().asPoint()
+
                 if self.transformation:
                     point = self.transformation.transform(point)
+
                 f.setGeometry(QgsGeometry.fromPointXY(point))
                 self._process_feature(f, True)
         else:
@@ -127,13 +131,13 @@ class LayerImportWorker(QObject):
                 if self.additional_output_fields:
                     additional_attributes = [f.attribute(field.name()) for field in self.additional_output_fields]
 
-                points = self._feature_to_points(f, geom_type, additional_attributes)
+                points = self._feature_to_points(f, source_geom_type, additional_attributes)
                 continue_search = True
 
                 while points != []:
                     saved_features = [self._process_feature(point) for point in points]
                     if any(saved_features):
-                        points = self._feature_to_points(f, geom_type, additional_attributes)
+                        points = self._feature_to_points(f, source_geom_type, additional_attributes)
                     else:
                         points = []
                 self.__commit()
@@ -203,6 +207,10 @@ class LayerImportWorker(QObject):
 
     def _feature_to_points(self, feature, geom_type, additional_attributes):
         geometry = feature.geometry()
+
+        if QgsWkbTypes.hasZ(geom_type):
+            geometry, geom_type = self.drop_z_from_geom(geometry, geom_type)
+
         features = []
         points_number = 0
 
@@ -246,3 +254,16 @@ class LayerImportWorker(QObject):
             features.append(feature)
 
         return features
+
+    @classmethod
+    def drop_z_from_geom(cls, geom: QgsGeometry, geom_type: QgsWkbTypes):
+        target_type = cls._get_non_z_geom_type(geom_type)
+        type_to_convert = QgsWkbTypes.geometryType(target_type)
+        return geom.convertToType(type_to_convert), target_type
+
+    @staticmethod
+    def _get_non_z_geom_type(geom_type: QgsWkbTypes):
+        if not QgsWkbTypes.hasZ(geom_type):
+            return geom_type
+        else:
+            return QgsWkbTypes.dropZ(geom_type)

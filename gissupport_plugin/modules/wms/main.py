@@ -14,6 +14,8 @@ from owslib.wms import WebMapService
 import requests.exceptions
 import urllib
 from owslib.etree import ParseError
+from owslib.util import ServiceException
+
 
 class Main(BaseModule):
     module_name = "Baza krajowych usług WMS"
@@ -108,7 +110,7 @@ class Main(BaseModule):
                     level=Qgis.Critical
                 )
                 return 1
-            except requests.exceptions.SSLError:
+            except (requests.exceptions.SSLError, ServiceException):
                 iface.messageBar().pushMessage(
                     'Baza krajowych usług WMS',
                     'Błąd połączenia z serwerem WMS.',

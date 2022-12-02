@@ -1,3 +1,17 @@
+1.13
+Poprawiono błąd kodowania znaków przy imporcie pliku CSV
+
+1.12
+Poprawiono błąd związany z pustymi warstwami
+
+1.11
+Zaktualizowane adresy w Bazie WMS i narzędziu do wczytywania WMTS
+Umożliwienie wyszukiwania działek na podstawie warstw z geometrią Z
+
+1.10
+Nowe narzędzie: PRG - granice administracyjne - pobierz granice gmin, powiatów i województw
+WMS, WMTS: Zaktualizowane adresy ortofotomapy
+
 1.9
 Usunięcie kluczy GIS Support
 Dodanie informacji o szkoleniach GIS Support

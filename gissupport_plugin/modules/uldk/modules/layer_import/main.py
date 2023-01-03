@@ -159,7 +159,7 @@ class LayerImport:
         if self.worker.count_not_found_as_progressed:
             progressed_count += self.not_found_count
 
-        self.ui.progress_bar.setValue(progressed_count/self.source_features_count*100)
+        self.ui.progress_bar.setValue(int(progressed_count/self.source_features_count*100))
         self.ui.label_status.setText(f"Przetworzono {progressed_count} z {self.source_features_count} obiektów")
         found_message = f"Znaleziono: {self.saved_count}"
         if self.omitted_count:

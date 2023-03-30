@@ -334,7 +334,7 @@ class TerytSearch(QObject):
     def __handle_progress_precinct_unknown(self):
         self.precincts_progressed += 1
         precincts_count = self.ui.combobox_precinct.count()
-        self.ui.progress_bar_precinct_unknown.setValue(self.precincts_progressed/precincts_count*100)
+        self.ui.progress_bar_precinct_unknown.setValue(int(self.precincts_progressed/precincts_count*100))
 
     def __on_checkbox_precinct_unknown_switched(self, new_state):
         self._handle_input_changed()

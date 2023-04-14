@@ -70,8 +70,6 @@ class ULDKSearch:
     @RateLimitDecorator(calls = 5, period = 3)
     def search(self):
         url = self.url
-        # print(url)
-        # url = "http://127.0.0.1:5000/uldk_dummy"
         try:
             with urlopen(str(url), timeout=10) as u:
                 content = u.read()

@@ -189,7 +189,6 @@ class TerytSearch(QObject):
         # dlatego lista wstępnie wypełniona jest jednym pustym napisem, aby było możliwe jej rozwinięcie.
         # Po rozwinięciu listy następuje samoistne najechanie na element listy i wywoływana jest ta metoda
         if not self.provinces_downloaded:
-            print("fill")
             provinces = self.get_administratives("wojewodztwo")
             self.ui.combobox_province.clear()
             self.ui.combobox_province.addItems([""] + provinces)

@@ -31,7 +31,9 @@ import inspect
 from importlib import util
 
 from gissupport_plugin.modules.base import BaseModule
+from .modules.gis_box.gui.login_settings import LoginSettingsDialog
 from .resources import resources
+from .tools.gisbox_connection import GISBOX_CONNECTION
 
 PLUGIN_NAME = "Wtyczka GIS Support"
 
@@ -48,6 +50,11 @@ class GISSupportPlugin:
         self.toolbar = self.iface.addToolBar(PLUGIN_NAME)
         self.toolbar.addSeparator
 
+        self.loginSettingsDialog = LoginSettingsDialog(self)
+
+    def showLoginSettings(self):
+        self.loginSettingsDialog.show()
+
     def tr(self, message):
         return QCoreApplication.translate('GISSupportPlugin', message)
 
@@ -55,7 +62,7 @@ class GISSupportPlugin:
         self,
         icon_path,
         text,
-        callback,
+        callback=None,
         enabled_flag=True,
         add_to_menu=True,
         add_to_topmenu=False,
@@ -63,7 +70,8 @@ class GISSupportPlugin:
         status_tip=None,
         whats_this=None,
         parent=None,
-        checkable = False):
+        checkable = False,
+        enabled=True):
 
         icon = QIcon(icon_path)
         action = QAction(icon, text, parent)
@@ -88,6 +96,8 @@ class GISSupportPlugin:
         if add_to_topmenu:
             self.topMenu.addAction(action)
 
+        action.setEnabled(enabled)
+
         self.actions.append(action)
 
         return action
@@ -97,7 +107,7 @@ class GISSupportPlugin:
 
         modules_path = Path( self.plugin_dir ).joinpath('modules')
         #Iteracja po modułach dodatkowych
-        for module_name in ['uldk', 'gugik_nmt', 'wms', 'wmts', 'mapster', 'prg']:
+        for module_name in ['uldk', 'gugik_nmt', 'wms', 'wmts', 'mapster', 'prg', 'gis_box']:
             main_module = modules_path.joinpath(module_name).joinpath('main.py')
             #Załadowanie modułu
             spec = util.spec_from_file_location('main', main_module)
@@ -118,6 +128,9 @@ class GISSupportPlugin:
         #Load plugin modules
         self.initModules()
 
+        self.topMenu.addSeparator()
+        self.topMenu.setObjectName('gisSupportMenu')
+
         self.add_action(
             icon_path=":/plugins/gissupport_plugin/szkolenia.svg",
             text="Szkolenia GIS Support",
@@ -127,17 +140,40 @@ class GISSupportPlugin:
             parent=self.iface.mainWindow(),
             add_to_toolbar=True
         )
-        self.topMenu.addSeparator()
-        self.topMenu.setObjectName('gisSupportMenu')
+
         self.add_action(
-            icon_path=None,
-            text="Zapisz się na newsletter GIS Support",
+            icon_path=":/plugins/gissupport_plugin/kursy.svg",
+            text="Kursy On-line",
             add_to_menu=False,
             add_to_topmenu=True,
-            callback=lambda: self.open_url("http://gis-support.pl/newsletter/"),
+            callback=lambda: self.open_url("https://szkolenia.gis-support.pl/"),
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=True
+        )
+
+        self.topMenu.addSeparator()
+
+        self.loginSettingsAction = self.add_action(
+            None,
+            text=self.tr(u'Ustawienia logowania'),
+            callback=self.showLoginSettings,
+            parent=self.iface.mainWindow(),
+            add_to_topmenu=True,
+            add_to_toolbar=False
+        )
+
+        self.topMenu.addSeparator()
+
+        self.add_action(
+            icon_path=None,
+            text="O GIS.Box",
+            add_to_menu=False,
+            add_to_topmenu=True,
+            callback=lambda: self.open_url("https://gis-support.pl/gis-box/"),
             parent=self.iface.mainWindow(),
             add_to_toolbar=False
         )
+
         self.add_action(
             icon_path=':/plugins/gissupport_plugin/gissupport_small.jpg',
             text="O wtyczce",
@@ -148,8 +184,10 @@ class GISSupportPlugin:
             add_to_toolbar=False
         )
 
+
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
+        GISBOX_CONNECTION.disconnect()
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.menu,

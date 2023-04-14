@@ -211,6 +211,7 @@ class GisboxFeatureLayer(QObject, Logger):
         # że nadanie stylu nadpisuje `customProperties` warstwy
         self.setStyle(layer)
         self.setLayer(layer)
+        layer.setReadOnly(True)
         if group is None:
             QgsProject.instance().addMapLayer(layer)
         else:

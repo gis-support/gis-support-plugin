@@ -131,3 +131,13 @@ class BaseMapLayer(BaseLayer):
             QgsProject.instance().layerTreeRoot().insertChildNode(-1, QgsLayerTreeLayer(layer))
         else:
             group.addLayer(layer)
+        self.deleteTemporaryIcons()
+
+    def deleteTemporaryIcons(self):
+        project = QgsProject.instance()
+
+        layers = project.mapLayers().values()
+
+        for layer in layers:
+            if layer.temporalProperties():
+                layer.temporalProperties().setDisplayTempoIcon(False)

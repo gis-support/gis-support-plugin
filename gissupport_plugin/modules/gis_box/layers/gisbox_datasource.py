@@ -220,7 +220,15 @@ class GisboxFeatureLayer(QObject, Logger):
         layer.setName(toc_name)
         layer.reload()
         layer.triggerRepaint()
+        
+        self.deleteTemporaryIcons(layer)
         return layer
+
+    def deleteTemporaryIcons(self, layer):
+        node = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
+        indicators = iface.layerTreeView().indicators(node)
+        if indicators:
+            iface.layerTreeView().removeIndicator(node, indicators[0])
 
     def setStyle(self, layer):
         """ Wczytanie stylu warstwy jeśli istnieje """

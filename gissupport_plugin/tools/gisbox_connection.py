@@ -23,6 +23,7 @@ class GisboxConnection(QObject, Logger):
 
         self.token = None
         self.host = None
+        self.is_connected = False
 
         
     @classmethod
@@ -87,6 +88,7 @@ class GisboxConnection(QObject, Logger):
         if self.authenticate():
             self.log("Połączono")
             self.on_connect.emit(True)
+            self.is_connected = True
             return True
         self.on_disconnect.emit()
         return False
@@ -94,6 +96,7 @@ class GisboxConnection(QObject, Logger):
     def disconnect(self):
         self.log("Rozłączono")
         self.on_disconnect.emit()
+        self.is_connected = False
         return True
     
     def _createRequest(self, endpoint: str, content_type: str = 'application/json', with_token: bool = True) -> QNetworkRequest:

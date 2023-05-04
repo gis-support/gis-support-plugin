@@ -3,12 +3,14 @@ from typing import List
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QToolButton, QMenu
 from qgis.utils import iface
+from qgis.core import QgsProject
 
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
+from gissupport_plugin.tools.logger import Logger
 
-class GISBox(BaseModule):
+class GISBox(BaseModule, Logger):
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -43,13 +45,13 @@ class GISBox(BaseModule):
         self.toolButton = self.parent.toolbar.widgetForAction(self.addLayersAction)
         self.toolButton.setPopupMode(QToolButton.InstantPopup)
         layers_registry.on_schema.connect(self._create_layers_menu)
+        layers_registry.on_schema.connect(self.readProject)
 
     def onConnection(self, connect: bool):
         """ Połączenie/rozłączenie z serwerem """
         connected = connect and GISBOX_CONNECTION.connect()
 
         self.parent.loginSettingsAction.setEnabled( not connected )
-        self.addLayersAction.setEnabled( connected )
 
         if connected and GISBOX_CONNECTION.connect():
             # Połączono z serwerem
@@ -115,10 +117,12 @@ class GISBox(BaseModule):
         add_groups(groups, main_menu)
         add_module_layers()
         self.addLayersAction.setEnabled(True)
+        self.message('Pobrano schemat warstw')
 
     def _clear_data(self):
         """ Czyszczenie danych po rozłączeniu z serwerem """
         self.addLayersAction.setMenu(None)
+        self.addLayersAction.setEnabled(False)
 
     def _get_modules(self) -> List:
         response = GISBOX_CONNECTION.get(
@@ -145,3 +149,12 @@ class GISBox(BaseModule):
             scope_menus['masterplan_illumination'] = main_menu.addMenu('Masterplan - Obiekty do iluminacji')
         scope_menus['module'] = main_menu.addMenu('Warstwy modułów dodatkowych')
         return scope_menus
+    
+    def readProject(self):
+        if not GISBOX_CONNECTION.is_connected:
+            return
+        for layer in QgsProject.instance().mapLayers().values():
+            if layers_registry.isGisboxLayer(layer):
+                layer_class = layers_registry.layers[int(
+                    layer.customProperty('gisbox/layer_id'))]
+                layer_class.setLayer(layer, from_project=True)

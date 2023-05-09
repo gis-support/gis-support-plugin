@@ -101,6 +101,8 @@ class GisboxFeatureLayer(QObject, Logger):
         # Zarejestrowanie warstwy
         self.layers.append(layer)
         self.registerLayer(layer)
+        if from_project:
+            self._reload_layer_metadata()
         if layer is not None and len(self.layers) == 1:
             # Pobieranie obiektów warstwy (tylko za pierwszym razem)
             self.getFeatures()

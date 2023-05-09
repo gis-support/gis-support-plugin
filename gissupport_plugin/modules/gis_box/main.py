@@ -53,7 +53,7 @@ class GISBox(BaseModule, Logger):
 
         self.parent.loginSettingsAction.setEnabled( not connected )
 
-        if connected and GISBOX_CONNECTION.connect():
+        if connected:
             # Połączono z serwerem
             self.connectAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/connected.svg"))
         else:
@@ -118,7 +118,7 @@ class GISBox(BaseModule, Logger):
         add_module_layers()
         self.addLayersAction.setEnabled(True)
         self.message('Pobrano schemat warstw')
-
+        
     def _clear_data(self):
         """ Czyszczenie danych po rozłączeniu z serwerem """
         self.addLayersAction.setMenu(None)

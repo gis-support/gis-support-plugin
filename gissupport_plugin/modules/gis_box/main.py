@@ -46,6 +46,7 @@ class GISBox(BaseModule, Logger):
         self.toolButton.setPopupMode(QToolButton.InstantPopup)
         layers_registry.on_schema.connect(self._create_layers_menu)
         layers_registry.on_schema.connect(self.readProject)
+        QgsProject.instance().readProject.connect(self.readProject)
 
     def onConnection(self, connect: bool):
         """ Połączenie/rozłączenie z serwerem """

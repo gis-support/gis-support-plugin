@@ -46,9 +46,9 @@ class LayersRegistry(QObject, Logger):
         self.baselayers = {}
         self.message('Pobieranie schematu warstw...', duration=10)
         GISBOX_CONNECTION.get(
-            f'/api/qgis/layers/schema?cache={time.time()}', callback=self.on_layers.emit)
-        GISBOX_CONNECTION.get(
             '/api/dataio/data_sources/relation_values_mapping/all', callback=self._set_relation_values_mapping)
+        GISBOX_CONNECTION.get(
+            f'/api/qgis/layers/schema?cache={time.time()}', callback=self.on_layers.emit)
 
     def onLayers(self, data: dict):
         """ Zapamiętanie pobranych warstw i pobranie warstw podkładowych """

@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDi
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 from qgis.core import QgsField
+import re
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
 
@@ -154,6 +155,10 @@ class CSVImport:
             try:
                 teryt = row.split("|")[6]
                 attributes = self.additional_attributes.get(teryt)
+                if not attributes:
+                    if "AR" in teryt:
+                        match = re.sub(r'\.AR_\d+', '', teryt)
+                        attributes = self.additional_attributes.get(match)
                 feature = self.result_collector.uldk_response_to_qgs_feature(row, attributes)
             except self.result_collector.BadGeometryException as e:
                 e = self.result_collector.BadGeometryException(e.feature, "Niepoprawna geometria")

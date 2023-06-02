@@ -41,7 +41,7 @@ class GISBox(BaseModule, Logger):
             checkable=False,
             enabled=False
         )
-        self.parent.toolbar.addSeparator()
+
         self.toolButton = self.parent.toolbar.widgetForAction(self.addLayersAction)
         self.toolButton.setPopupMode(QToolButton.InstantPopup)
         layers_registry.on_schema.connect(self._create_layers_menu)

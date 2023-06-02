@@ -102,12 +102,12 @@ class GISSupportPlugin:
 
         return action
 
-    def initModules(self):
+    def initModules(self, modules: list = ['uldk', 'gugik_nmt', 'wms', 'wmts', 'mapster', 'prg']):
         """ Włączenie modułów """
 
         modules_path = Path( self.plugin_dir ).joinpath('modules')
         #Iteracja po modułach dodatkowych
-        for module_name in ['uldk', 'gugik_nmt', 'wms', 'wmts', 'mapster', 'prg', 'gis_box']:
+        for module_name in modules:
             main_module = modules_path.joinpath(module_name).joinpath('main.py')
             #Załadowanie modułu
             spec = util.spec_from_file_location('main', main_module)
@@ -140,6 +140,8 @@ class GISSupportPlugin:
             parent=self.iface.mainWindow(),
             add_to_toolbar=True
         )
+        
+        self.initModules(["gis_box"])
 
         self.add_action(
             icon_path=":/plugins/gissupport_plugin/kursy.svg",
@@ -148,7 +150,7 @@ class GISSupportPlugin:
             add_to_topmenu=True,
             callback=lambda: self.open_url("https://szkolenia.gis-support.pl/"),
             parent=self.iface.mainWindow(),
-            add_to_toolbar=True
+            add_to_toolbar=False
         )
 
         self.topMenu.addSeparator()

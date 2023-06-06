@@ -67,18 +67,18 @@ class CSVImport:
     def start_import(self):
         self.__cleanup_before_search()
         
-        teryts = []
+        teryts = {}
         self.additional_attributes = defaultdict(list)
         with open(self.file_path, encoding='utf-8', errors='replace') as f:
             teryt_column = self.ui.combobox_teryt_column.currentText()
             csv_read = csv.DictReader(f)
             additional_fields = [name for name in csv_read.fieldnames if name != teryt_column]
-            for row in csv_read:
+            for i, row in enumerate(csv_read):
                 teryt = row.pop(teryt_column)
-                teryts.append(teryt)
+                teryts[i] = {"teryt": teryt}
                 if additional_fields:
                     for value in row.values():
-                        self.additional_attributes[teryt].append(value)
+                        self.additional_attributes[i].append(value)
 
         layer_name = self.ui.text_edit_layer_name.text()
         layer = self.layer_factory(
@@ -150,22 +150,18 @@ class CSVImport:
             columns = csv_read.fieldnames
         self.ui.combobox_teryt_column.addItems(columns)
     
-    def __handle_found(self, uldk_response_rows):
-        for row in uldk_response_rows:
-            try:
-                teryt = row.split("|")[6]
-                attributes = self.additional_attributes.get(teryt)
-                if not attributes:
-                    if "AR" in teryt:
-                        match = re.sub(r'\.AR_\d+', '', teryt)
-                        attributes = self.additional_attributes.get(match)
-                feature = self.result_collector.uldk_response_to_qgs_feature(row, attributes)
-            except self.result_collector.BadGeometryException as e:
-                e = self.result_collector.BadGeometryException(e.feature, "Niepoprawna geometria")
-                self._handle_bad_geometry(e.feature, e)
-                return
-            self.features_found.append(feature)
-            self.found_count += 1
+    def __handle_found(self, uldk_response_dict):
+        for id_, uldk_response_rows in uldk_response_dict.items():
+            for row in uldk_response_rows:
+                try:
+                    attributes = self.additional_attributes.get(id_)
+                    feature = self.result_collector.uldk_response_to_qgs_feature(row, attributes)
+                except self.result_collector.BadGeometryException as e:
+                    e = self.result_collector.BadGeometryException(e.feature, "Niepoprawna geometria")
+                    self._handle_bad_geometry(e.feature, e)
+                    return
+                self.features_found.append(feature)
+                self.found_count += 1
 
     def __handle_not_found(self, teryt, exception):
         self._add_table_errors_row(teryt, str(exception))

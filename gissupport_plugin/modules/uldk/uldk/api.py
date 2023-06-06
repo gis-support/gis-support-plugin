@@ -150,7 +150,7 @@ class ULDKSearchPoint(ULDKSearch):
 
 class ULDKSearchWorker(QObject):
 
-    found = pyqtSignal(list)
+    found = pyqtSignal(dict)
     not_found = pyqtSignal(str, Exception)
     finished = pyqtSignal()
     interrupted = pyqtSignal()
@@ -161,13 +161,13 @@ class ULDKSearchWorker(QObject):
 
     @pyqtSlot()
     def search(self):
-        for teryt in self.teryt_ids:
+        for k, teryt in self.teryt_ids.items():
             if QThread.currentThread().isInterruptionRequested():
                 self.interrupted.emit()
                 return
             try:
                 result = self.uldk_search.search(teryt)
-                self.found.emit(result)
+                self.found.emit({k: result})
             except (HTTPError, RequestException) as e:  
                 self.not_found.emit(teryt, e)
         self.finished.emit()

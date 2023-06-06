@@ -9,7 +9,6 @@ from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDi
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 from qgis.core import QgsField
-import re
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
 

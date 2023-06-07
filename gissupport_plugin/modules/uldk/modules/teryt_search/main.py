@@ -150,7 +150,6 @@ class TerytSearch(QObject):
         municipality_name = self.ui.combobox_municipality.currentText().split(" | ")[0]
         plots_teryts = {}
         for i in range(1, combobox.count()):
-            print("i", i)
             municipality_teryt = combobox.itemText(i).split(" | ")[1]
             plot_teryt = f"{municipality_teryt}.{plot_id}"
             plots_teryts[i] = plot_teryt
@@ -161,7 +160,6 @@ class TerytSearch(QObject):
         self.result_collector_precinct_unknown = self.result_collector_precinct_unknown_factory(self.parent, layer)
         self.ui.button_search_uldk.hide()
         self.ui.progress_bar_precinct_unknown.show()
-        print("plots_teryts", plots_teryts)
         self.__search(plots_teryts)
 
     @classmethod
@@ -191,7 +189,6 @@ class TerytSearch(QObject):
         # dlatego lista wstępnie wypełniona jest jednym pustym napisem, aby było możliwe jej rozwinięcie.
         # Po rozwinięciu listy następuje samoistne najechanie na element listy i wywoływana jest ta metoda
         if not self.provinces_downloaded:
-            print("fill")
             provinces = self.get_administratives("wojewodztwo")
             self.ui.combobox_province.clear()
             self.ui.combobox_province.addItems([""] + provinces)

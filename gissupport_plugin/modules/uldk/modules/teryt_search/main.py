@@ -71,7 +71,7 @@ class TerytSearch(QObject):
             self.__search_without_precinct()
         else:
             teryt = self.ui.lineedit_full_teryt.text()
-            self.__search({0: teryt})
+            self.__search({0: {"teryt": teryt}})
 
     def search_lpis(self):
         teryt = self.ui.lineedit_full_teryt.text()
@@ -148,11 +148,12 @@ class TerytSearch(QObject):
         combobox = self.ui.combobox_precinct
         plot_id = self.ui.lineedit_plot_id.text()
         municipality_name = self.ui.combobox_municipality.currentText().split(" | ")[0]
-        plots_teryts = []
+        plots_teryts = {}
         for i in range(1, combobox.count()):
+            print("i", i)
             municipality_teryt = combobox.itemText(i).split(" | ")[1]
             plot_teryt = f"{municipality_teryt}.{plot_id}"
-            plots_teryts.append(plot_teryt)
+            plots_teryts[i] = plot_teryt
 
         layer_name = f"{municipality_name} - Działki '{plot_id}'"
         layer = self.layer_factory(
@@ -160,6 +161,7 @@ class TerytSearch(QObject):
         self.result_collector_precinct_unknown = self.result_collector_precinct_unknown_factory(self.parent, layer)
         self.ui.button_search_uldk.hide()
         self.ui.progress_bar_precinct_unknown.show()
+        print("plots_teryts", plots_teryts)
         self.__search(plots_teryts)
 
     @classmethod

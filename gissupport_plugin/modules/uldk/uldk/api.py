@@ -70,6 +70,7 @@ class ULDKSearch:
     @RateLimitDecorator(calls = 5, period = 3)
     def search(self):
         url = self.url
+        print("url", url)
         # print(url)
         # url = "http://127.0.0.1:5000/uldk_dummy"
         try:
@@ -161,7 +162,8 @@ class ULDKSearchWorker(QObject):
 
     @pyqtSlot()
     def search(self):
-        for k, teryt in self.teryt_ids.items():
+        for k, v in self.teryt_ids.items():
+            teryt = v.get("teryt")
             if QThread.currentThread().isInterruptionRequested():
                 self.interrupted.emit()
                 return

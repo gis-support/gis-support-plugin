@@ -132,7 +132,7 @@ class GisboxConnection(QObject, Logger):
         data = json.dumps(payload).encode()
 
         reply = self.MANAGER.post(request, data)
-        response = json.loads(bytearray(reply.content()))
+        response = reply.readAll()
 
         if callback:
             random_uuid = self.generate_random_uuid()

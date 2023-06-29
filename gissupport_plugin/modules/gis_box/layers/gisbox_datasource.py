@@ -1,12 +1,12 @@
 import time
 
-from typing import List, Iterable
+from typing import List, Iterable, Any
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
                        QgsAttributeEditorContainer, QgsAttributeEditorField, QgsMapLayer, NULL, QgsFieldConstraints,
                        QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest)
 from qgis.utils import iface
 from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtCore import QObject, pyqtSignal
+from qgis.PyQt.QtCore import QObject, pyqtSignal, QDate, QDateTime, QTime
 
 from . import DATA_SOURCE_REGISTRY, RELATION_VALUES_MAPPING_REGISTRY
 
@@ -31,6 +31,7 @@ class GisboxFeatureLayer(QObject, Logger):
     """ Bazowa klasa dla warstw wektorowych """
 
     on_features = pyqtSignal(dict)
+    on_reload = pyqtSignal(bool)
     features_loaded = pyqtSignal(object)
 
     def __init__(self, data: dict, parent=None):
@@ -116,6 +117,7 @@ class GisboxFeatureLayer(QObject, Logger):
         """ Zarejestrowanie warstwy """
         # Odznaczenie pozycji w menu w przypadku usunięcia warstwy z QGIS
         layer.willBeDeleted.connect(self.setLayer)
+        layer.beforeCommitChanges.connect(self.manageFeatures)
         self.checkLayer(True)
         # Usunięcie z legendy ikony warstwy tymczasowej
         node = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
@@ -160,6 +162,7 @@ class GisboxFeatureLayer(QObject, Logger):
     def connectSignals(self):
         """ Podłączanie sygnałów """
         self.on_features.connect(self.onFeatures)
+        self.on_reload.connect(self.onReload)
 
     def _reload_layer_metadata(self):
         self.datasource = self._get_datasource(self.datasource_name)
@@ -213,7 +216,6 @@ class GisboxFeatureLayer(QObject, Logger):
         # że nadanie stylu nadpisuje `customProperties` warstwy
         self.setStyle(layer)
         self.setLayer(layer)
-        layer.setReadOnly(True)
         if group is None:
             QgsProject.instance().addMapLayer(layer)
         else:
@@ -255,6 +257,11 @@ class GisboxFeatureLayer(QObject, Logger):
         QgsApplication.taskManager().addTask(self.task)
         self.message(
             f'Pomyślnie wczytano dane warstwy: {self.layers[0].name()}, czas: {time.time() - self.time}', level=Qgis.Success, duration=5)
+    
+    def onReload(self, data: dict):
+        self._reload_layer_metadata()
+        GISBOX_CONNECTION.get(
+            f'/api/qgis/layers/features_layers/{self.id}/features?cache={time.time()}', callback=self.on_features.emit)
 
     def parseFeatures(self, task: QgsTask, data: dict):
         """ Parsowanie danych z serwera i dodanie obiektów do warstwy """
@@ -401,3 +408,114 @@ class GisboxFeatureLayer(QObject, Logger):
         setup = QgsEditorWidgetSetup(
             'ValueMap', {'map': value_map})
         layer.setEditorWidgetSetup(field_id, setup)
+
+    def getFeaturesDbIds(self, qgis_ids, layer):
+        return [f[self.datasource.id_column_name] for f in layer.getFeatures(qgis_ids)]
+        
+    def manageFeatures(self):
+        layer = self.sender()
+        edit_buffer = layer.editBuffer()
+
+        payload = {'data_source_name': self.datasource_name, 'layer_id': self.id}
+
+        to_add = self.addFeatures(edit_buffer)
+        if to_add:
+            payload['insert'] = to_add
+
+        to_update = self.updateFeatures(layer, edit_buffer)
+        if to_update:
+            payload['update'] = to_update
+
+        to_delete = self.deleteFeatures(layer, edit_buffer)
+        if to_delete:
+            payload['delete'] = to_delete
+
+        edit_buffer.rollBack()
+
+        if to_delete:
+            payload['delete']['features_ids'] = self.getFeaturesDbIds(
+                to_delete['qgis_features_ids'], layer)
+
+        GISBOX_CONNECTION.post(
+            f"/api/dataio/data_sources/{self.datasource_name}/features/edit?layer_id={self.id}",
+            {"data": payload}, callback=self.afterModify
+        )
+    
+    def afterModify(self, data: dict):
+        if data.get("data"):
+            self.message(f'Pomyślnie zmodyfikowano dane warstwy: {self.layers[0].name()}', 
+                         level=Qgis.Success, duration=5)
+            self.on_reload.emit(True)
+        
+    def addFeatures(self, edit_buffer):
+        """ Dodanie nowych obiektów do warstwy użytkownika """
+        added_features = edit_buffer.addedFeatures().values()
+
+        features_data = []
+
+        for feature in added_features:
+            f = feature.__geo_interface__
+            if f['geometry']['type'].lower() != self.geometry_type.lower():
+                f['geometry']['type'] = self.geometry_type
+                f['geometry']['coordinates'] = [f['geometry']['coordinates']]
+            properties = {k: self.sanetize_data_type(v) if v != NULL else None for k,
+                          v in f['properties'].items()}
+            geometry = f['geometry']
+            geometry.update({'crs': {
+                'type': 'name',
+                'properties': {
+                    'name': f'EPSG:{self.srid}'
+                }
+            }})
+            properties.update({self.datasource.geom_column_name: geometry})
+            features_data.append(properties)
+
+        return features_data
+
+    def deleteFeatures(self, layer, edit_buffer):
+        qgis_deleted_features_ids = edit_buffer.deletedFeatureIds()
+        if not qgis_deleted_features_ids:
+            return {}
+
+        return {'qgis_features_ids': qgis_deleted_features_ids}
+
+    def updateFeatures(self, layer, edit_buffer):
+        changed_attributes = edit_buffer.changedAttributeValues()
+        changed_geometries = edit_buffer.changedGeometries()
+
+        fids = list(set(list(changed_attributes.keys()) +
+                    list(changed_geometries.keys())))
+
+        features = []
+
+        for feature in layer.getFeatures(fids):
+            f = feature.__geo_interface__
+            if f['geometry']['type'].lower() != self.geometry_type.lower():
+                f['geometry']['type'] = self.geometry_type
+                f['geometry']['coordinates'] = [f['geometry']['coordinates']]
+            properties = {k: self.sanetize_data_type(v) if v != NULL else None for k,
+                          v in f['properties'].items()}
+            geometry = f['geometry']
+            geometry.update({'crs': {
+                'type': 'name',
+                'properties': {
+                    'name': f'EPSG:{self.srid}'
+                }
+            }})
+            properties.update({self.datasource.geom_column_name: geometry})
+            features.append({
+                'properties': properties,
+                'fid': f['properties'].pop(self.datasource.id_column_name),
+                'qgis_id': feature.id()
+            })
+
+        return features
+    
+    def sanetize_data_type(self, value: Any) -> Any:
+        if isinstance(value, QDateTime):
+            value = value.toString('yyyy-MM-dd hh:mm:ss')
+        elif isinstance(value, QDate):
+            value = value.toString('yyyy-MM-dd')
+        elif isinstance(value, QTime):
+            value = value.toString('hh:mm:ss')
+        return value

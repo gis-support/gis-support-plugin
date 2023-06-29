@@ -41,6 +41,18 @@ class GISBox(BaseModule, Logger):
             checkable=False,
             enabled=False
         )
+        
+        self.refreshLayerAction = self.parent.add_action(
+            icon_path=':/plugins/gissupport_plugin/gis_box/refresh.svg',
+            text='Odśwież warstwy',
+            callback=self.refreshLayer,
+            parent=iface.mainWindow(),
+            add_to_menu=False,
+            add_to_topmenu=False,
+            add_to_toolbar=True,
+            checkable=False,
+            enabled=False
+        )
 
         self.toolButton = self.parent.toolbar.widgetForAction(self.addLayersAction)
         self.toolButton.setPopupMode(QToolButton.InstantPopup)
@@ -57,11 +69,13 @@ class GISBox(BaseModule, Logger):
         if connected:
             # Połączono z serwerem
             self.connectAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/connected.svg"))
+            self.refreshLayerAction.setEnabled(True)
         else:
             # Rozłączono z serwerem lub błąd połączenia
             self.connectAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/connection.svg"))
             self._clear_data()
             self.connectAction.setChecked(False)
+            self.refreshLayerAction.setEnabled(False)
 
     def _create_layers_menu(self, groups: list):
         modules_layer_custom_id = -99
@@ -159,3 +173,15 @@ class GISBox(BaseModule, Logger):
                 layer_class = layers_registry.layers[int(
                     layer.customProperty('gisbox/layer_id'))]
                 layer_class.setLayer(layer, from_project=True)
+                
+    def refreshLayer(self):
+        if not GISBOX_CONNECTION.is_connected:
+            return
+        active_layer = iface.activeLayer()
+        if active_layer:
+            if layers_registry.isGisboxLayer(active_layer):
+                layer_id = active_layer.customProperty('gisbox/layer_id')
+                layer_class = layers_registry.layers.get(int(layer_id))
+                if not layer_class:
+                    return
+                layer_class.on_reload.emit(True)

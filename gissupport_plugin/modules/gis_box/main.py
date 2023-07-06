@@ -177,10 +177,9 @@ class GISBox(BaseModule, Logger):
     def refreshLayer(self):
         if not GISBOX_CONNECTION.is_connected:
             return
-        active_layer = iface.activeLayer()
-        if active_layer:
-            if layers_registry.isGisboxLayer(active_layer):
-                layer_id = active_layer.customProperty('gisbox/layer_id')
+        for layer in QgsProject.instance().mapLayers().values():
+            if layers_registry.isGisboxLayer(layer):
+                layer_id = layer.customProperty('gisbox/layer_id')
                 layer_class = layers_registry.layers.get(int(layer_id))
                 if not layer_class:
                     return

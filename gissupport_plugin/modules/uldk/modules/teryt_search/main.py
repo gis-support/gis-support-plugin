@@ -71,7 +71,7 @@ class TerytSearch(QObject):
             self.__search_without_precinct()
         else:
             teryt = self.ui.lineedit_full_teryt.text()
-            self.__search([teryt])
+            self.__search({0: {"teryt": teryt}})
 
     def search_lpis(self):
         teryt = self.ui.lineedit_full_teryt.text()
@@ -148,11 +148,11 @@ class TerytSearch(QObject):
         combobox = self.ui.combobox_precinct
         plot_id = self.ui.lineedit_plot_id.text()
         municipality_name = self.ui.combobox_municipality.currentText().split(" | ")[0]
-        plots_teryts = []
+        plots_teryts = {}
         for i in range(1, combobox.count()):
             municipality_teryt = combobox.itemText(i).split(" | ")[1]
             plot_teryt = f"{municipality_teryt}.{plot_id}"
-            plots_teryts.append(plot_teryt)
+            plots_teryts[i] = plot_teryt
 
         layer_name = f"{municipality_name} - Działki '{plot_id}'"
         layer = self.layer_factory(
@@ -189,7 +189,6 @@ class TerytSearch(QObject):
         # dlatego lista wstępnie wypełniona jest jednym pustym napisem, aby było możliwe jej rozwinięcie.
         # Po rozwinięciu listy następuje samoistne najechanie na element listy i wywoływana jest ta metoda
         if not self.provinces_downloaded:
-            print("fill")
             provinces = self.get_administratives("wojewodztwo")
             self.ui.combobox_province.clear()
             self.ui.combobox_province.addItems([""] + provinces)
@@ -286,39 +285,40 @@ class TerytSearch(QObject):
         self.ui.button_search_uldk.show()
         self.ui.progress_bar_precinct_unknown.hide()
 
-    def __handle_found(self, uldk_response_rows):
-        uldk_response_rows = validators.duplicate_rows(uldk_response_rows)
-        if len(uldk_response_rows) > 1:
-            try:    
-                self.ui.combobox_sheet.activated.disconnect()
-            except TypeError:
-                pass #w przypadku braku przypiętych slotów rzuca wyjątkiem
-            self.ui.combobox_sheet.activated.connect(self.__search_from_sheet)
-            self.ui.combobox_sheet.setEnabled(True)
-            self.ui.combobox_sheet.clear()
-            for row in uldk_response_rows:
-                row_split = row.split("|")
-                sheet_name = row_split[-1].split('.')[2]
+    def __handle_found(self, uldk_response_dict):
+        for _, uldk_response_rows in uldk_response_dict.items():
+            uldk_response_rows = validators.duplicate_rows(uldk_response_rows)
+            if len(uldk_response_rows) > 1:
+                try:    
+                    self.ui.combobox_sheet.activated.disconnect()
+                except TypeError:
+                    pass #w przypadku braku przypiętych slotów rzuca wyjątkiem
+                self.ui.combobox_sheet.activated.connect(self.__search_from_sheet)
+                self.ui.combobox_sheet.setEnabled(True)
+                self.ui.combobox_sheet.clear()
+                for row in uldk_response_rows:
+                    row_split = row.split("|")
+                    sheet_name = row_split[-1].split('.')[2]
 
-                self.ui.combobox_sheet.addItem(sheet_name, row)
-            self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
-            iface.messageBar().widgetRemoved.connect(self.__delete_message_bar)
-            iface.messageBar().pushWidget(self.message_bar_item)
-        else:
-            result = uldk_response_rows[0]
-            
-            try:
-                added_feature = self.result_collector.update(result)
-            except self.result_collector.BadGeometryException:
-                iface.messageBar().pushCritical("Wtyczka ULDK", f"Działka posiada niepoprawną geometrię")
-                return
-            self.result_collector.zoom_to_feature(added_feature)
+                    self.ui.combobox_sheet.addItem(sheet_name, row)
+                self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
+                iface.messageBar().widgetRemoved.connect(self.__delete_message_bar)
+                iface.messageBar().pushWidget(self.message_bar_item)
+            else:
+                result = uldk_response_rows[0]
+                
+                try:
+                    added_feature = self.result_collector.update(result)
+                except self.result_collector.BadGeometryException:
+                    iface.messageBar().pushCritical("Wtyczka ULDK", f"Działka posiada niepoprawną geometrię")
+                    return
+                self.result_collector.zoom_to_feature(added_feature)
 
-            if self.message_bar_item:
-                iface.messageBar().popWidget(self.message_bar_item)
+                if self.message_bar_item:
+                    iface.messageBar().popWidget(self.message_bar_item)
 
-            iface.messageBar().pushSuccess("Wtyczka ULDK", "Zaaktualizowano warstwę '{}'"
-                                            .format(self.result_collector.layer.sourceName()))
+                iface.messageBar().pushSuccess("Wtyczka ULDK", "Zaaktualizowano warstwę '{}'"
+                                                .format(self.result_collector.layer.sourceName()))
     
     def __handle_not_found(self, teryt, exception):
         iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")

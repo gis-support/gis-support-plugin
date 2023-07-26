@@ -31,7 +31,6 @@ import inspect
 from importlib import util
 
 from gissupport_plugin.modules.base import BaseModule
-from .modules.gis_box.gui.login_settings import LoginSettingsDialog
 from .resources import resources
 from .tools.gisbox_connection import GISBOX_CONNECTION
 
@@ -49,11 +48,6 @@ class GISSupportPlugin:
         self.menu = self.tr(u'&Wtyczka GIS Support')
         self.toolbar = self.iface.addToolBar(PLUGIN_NAME)
         self.toolbar.addSeparator
-
-        self.loginSettingsDialog = LoginSettingsDialog(self)
-
-    def showLoginSettings(self):
-        self.loginSettingsDialog.show()
 
     def tr(self, message):
         return QCoreApplication.translate('GISSupportPlugin', message)
@@ -154,27 +148,6 @@ class GISSupportPlugin:
         )
 
         self.topMenu.addSeparator()
-
-        self.loginSettingsAction = self.add_action(
-            None,
-            text=self.tr(u'Ustawienia logowania'),
-            callback=self.showLoginSettings,
-            parent=self.iface.mainWindow(),
-            add_to_topmenu=True,
-            add_to_toolbar=False
-        )
-
-        self.topMenu.addSeparator()
-
-        self.add_action(
-            icon_path=None,
-            text="O GIS.Box",
-            add_to_menu=False,
-            add_to_topmenu=True,
-            callback=lambda: self.open_url("https://gis-support.pl/gis-box/"),
-            parent=self.iface.mainWindow(),
-            add_to_toolbar=False
-        )
 
         self.add_action(
             icon_path=':/plugins/gissupport_plugin/gissupport_small.jpg',

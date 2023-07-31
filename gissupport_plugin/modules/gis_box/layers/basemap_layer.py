@@ -1,6 +1,6 @@
 #coding: UTF-8
 
-from qgis.core import QgsProject, QgsRasterLayer, QgsLayerTreeLayer
+from qgis.core import QgsProject, QgsRasterLayer, QgsLayerTreeLayer, QgsVectorLayer
 from owslib.wmts import WebMapTileService
 from owslib.wms import WebMapService
 from owslib.etree import ParseError
@@ -139,5 +139,5 @@ class BaseMapLayer(BaseLayer):
         layers = project.mapLayers().values()
 
         for layer in layers:
-            if layer.temporalProperties():
+            if layer.temporalProperties() and isinstance(layer, QgsVectorLayer):
                 layer.temporalProperties().setDisplayTempoIcon(False)

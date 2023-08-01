@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=1.14.1
+version=1.14.2
 author=GIS Support
 email=info@gis-support.pl
 
@@ -48,7 +48,7 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=Poprawienie błędu podczas pobierania wielu obiektów
+changelog=Poprawienie przypisywania atrybutów przy imporcie działek z listy
 
 # Tags are comma separated with spaces allowed
 tags=python

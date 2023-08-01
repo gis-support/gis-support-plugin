@@ -1,6 +1,7 @@
 #coding: UTF-8
 
 from qgis.core import QgsProject, QgsRasterLayer, QgsLayerTreeLayer, QgsVectorLayer
+from qgis.utils import iface
 from owslib.wmts import WebMapTileService
 from owslib.wms import WebMapService
 from owslib.etree import ParseError
@@ -131,13 +132,10 @@ class BaseMapLayer(BaseLayer):
             QgsProject.instance().layerTreeRoot().insertChildNode(-1, QgsLayerTreeLayer(layer))
         else:
             group.addLayer(layer)
-        self.deleteTemporaryIcons()
+        self.deleteTemporaryIcons(layer)
 
-    def deleteTemporaryIcons(self):
-        project = QgsProject.instance()
-
-        layers = project.mapLayers().values()
-
-        for layer in layers:
-            if layer.temporalProperties() and isinstance(layer, QgsVectorLayer):
-                layer.temporalProperties().setDisplayTempoIcon(False)
+    def deleteTemporaryIcons(self, layer):
+        node = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
+        indicators = iface.layerTreeView().indicators(node)
+        if indicators:
+            iface.layerTreeView().removeIndicator(node, indicators[0])

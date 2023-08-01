@@ -11,6 +11,13 @@
         <file>mapster/mapster.svg</file>
 	<file>wmts/wmts.svg</file>
         <file>szkolenia.svg</file>
+        <file>kursy.svg</file>
 <file>prg/prg.svg</file>
+<file>gis_box/connected.svg</file>
+<file>gis_box/connection.svg</file>
+<file>gis_box/dodaj_warstwy.svg</file>
+<file>gis_box/refresh.svg</file>
+<file>gis_box/connected.png</file>
+<file>gis_box/disconnected.png</file>
     </qresource>
 </RCC>

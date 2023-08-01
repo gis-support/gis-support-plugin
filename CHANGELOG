@@ -1,3 +1,9 @@
+2.0
+Dodanie obsługi systemu GIS.Box, więcej na https://gis-support.pl/qgis-gis-box
+
+1.14.2
+Poprawienie przypisywania atrybutów przy imporcie działek z listy
+
 1.14.1
 Poprawienie błędu podczas pobierania wielu obiektów
 

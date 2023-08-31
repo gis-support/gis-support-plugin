@@ -30,14 +30,14 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Państwowy Rejestr Granic - Adresy",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/KrajowaIntegracjaNumeracjiAdresowej",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/KrajowaIntegracjaNumeracjiAdresowej",
         "description": "Usługa przeglądania WMS Krajowa Integracja Numeracji Adresowej umożliwiająca pobieranie obrazów mapowych utworzonych na podstawie danych przestrzennych z Państwowego Rejestru Granic w zakresie ewidencji ulic i adresów.",
         "id": 5
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Państwowy Rejestr Granic - Jednostki Terytorialne",
-        "url": "http://mapy.geoportal.gov.pl/wss/service/PZGiK/PRG/WMS/Boundaries",
+        "url": "http://mapy.geoportal.gov.pl/wss/service/PZGIK/PRG/WMS/AdministrativeBoundaries",
         "description": "Dane udostepniane za pomoca tej uslugi stanowiace Panstwowy Rejestr Granic (PRG) sa mapa wektorowa. PRG opiera sie na danych pochodzacych z operatow ewidencji gruntow i prowadzony jest w formie bazy Access-owej. Jest to wlasciwie baza danych wspolrzednych punktow zalamania granicy. Wspolrzedne przechowywane sa jako wspolrzedne geograficzne, a dodatkowo wyrazone sa w takim ukladzie, w jakim przechowywane sa w zasobie geodezyjno-kartograficznym. Cala struktura bazy opiera sie o punkty tworzace linie graniczne. Linie biegna od wezla do wezla. Wezly stanowia trojgranice jednostek administracyjnych.",
         "id": 6
     },
@@ -65,7 +65,7 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Ortofotomapa archiwalna",
-        "url": "http://mapy.geoportal.gov.pl/wss/service/img/guest/ORTO_TIME/MapServer/WMSServer",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMS/StandardResolutionTime",
         "description": "Usługa ta pozwala na przeglądanie dostępnych ortofotomap o różnej aktualności czasowej, a więc obrazów z poszczególnych lat.",
         "id": 10
     },
@@ -135,7 +135,7 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Państwowy Rejestr Nazw Geograficznych",
-        "url": "http://mapy.geoportal.gov.pl/wss/service/pub/guest/G2_PRNG_WMS/MapServer/WMSServer",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGiK/PRNG/WMS/GeographicalNames",
         "description": "Dane udostepniane za pomoca tej uslugi to Panstwowy Rejestr Nazw Geograficznych dla obszaru Polski.",
         "id": 20
     },
@@ -191,28 +191,28 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Skorowidz map - Osnowa",
-        "url": "http://mapy.geoportal.gov.pl/wss/service/pub/guest/G2_SKOROWIDZE_OSNOWA/MapServer/WMSServer",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMS/SkorowidzeWgRozdzielczosci",
         "description": "-",
         "id": 28
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Skorowidz map - Zdjęcia lotnicze",
-        "url": "http://mapy.geoportal.gov.pl/wss/service/pub/guest/G2_SKOROWIDZE_ZDJECIA/MapServer/WMSServer",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/ZDJ/WMS/SkorWgAktualnosci",
         "description": "-",
         "id": 29
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Skorowidz map - Baza Danych Ogólnogeograficznych (BDO)",
-        "url": "http://mapy.geoportal.gov.pl/wss/service/pub/guest/G2_SKOROWIDZE_BDO/MapServer/WMSServer",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/BDOO/WMS/PobieranieBDOO",
         "description": "-",
         "id": 30
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Skorowidz map - Baza Danych Obiektów Topograficznych (BDOT)",
-        "url": "http://mapy.geoportal.gov.pl/wss/service/pub/guest/G2_SKOROWIDZE_BDOT/MapServer/WMSServer",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/pub/guest/Skorowidze_BDOT10k/MapServer/WMSServer",
         "description": "-",
         "id": 31
     },
@@ -226,14 +226,14 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Skorowidz map - Mapa topograficzna",
-        "url": "http://mapy.geoportal.gov.pl/wss/service/pub/guest/G2_SKOROWIDZE_TOPO/MapServer/WMSServer",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/mapy/WMS/SkorowidzMapTopograficznych",
         "description": "-",
         "id": 33
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Sekcje mapy w układzie 2000",
-        "url": "http://integracja.gugik.gov.pl/cgi-bin/puwg2000",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PUWG2000",
         "description": "-",
         "id": 34
     },
@@ -247,7 +247,7 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Sekcje mapy w układzie 1965",
-        "url": "http://integracja.gugik.gov.pl/cgi-bin/puwg1965",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PUWG1965",
         "description": "-",
         "id": 36
     },
@@ -268,28 +268,28 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Strefy układu 2000",
-        "url": "http://integracja.gugik.gov.pl/cgi-bin/strefy2000",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/strefy2000",
         "description": "Granice stref układu 2000",
         "id": 39
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Strefy układu 1965",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/strefy65",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/strefy65",
         "description": "Granice stref układu 1965",
         "id": 40
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Model różnic wysokości",
-        "url": "http://integracja.gugik.gov.pl/cgi-bin/RozniceWysokosci_Kronsztad86_EVRF2007",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/RozniceWysokosci_Kronsztad86_EVRF2007",
         "description": "Model różnic wysokości pomiędzy układami wysokościowymi PL-EVRF2007-NH i PL-KRON86-NH. Usługa publikowana na podstawie modeli danych udostępnionych na stronie http://www.gugik.gov.pl/bip/prawo/modele-danych w ramach infrastruktury Głównego Urzędu Geodezji i Kartografii",
         "id": 41
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Stan wdrażania układu EVRF2007",
-        "url": "http://integracja.gugik.gov.pl/cgi-bin/StanWdrazaniaUkladuEVRF2007",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/StanWdrazaniaUkladuEVRF2007",
         "description": "Stan wdrażania układu PL-EVRF2007-NH. Usługa publikowana w ramach infrastruktury informatycznej Głównego Urzędu Geodezji i Kartografii.",
         "id": 42
     },
@@ -303,7 +303,7 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Powiatowe portale mapowe",
-        "url": "http://integracja.gugik.gov.pl/cgi-bin/PortaleMapowe",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/PortaleMapowe",
         "description": "Stan informatyzacji powiatów. Portale mapowe jednostek samorządu terytorialnego.",
         "id": 44
     },
@@ -331,21 +331,21 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Informatyzacja ZUD",
-        "url": "http://integracja.gugik.gov.pl/cgi-bin/StanInformatyzacjiZUD",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/StanInformatyzacjiZUD",
         "description": "Stan informatyzacji powiatów. Stan elektronicznej obsługi Zespołów Uzgdniania Dokumentacji w powiatach. Usługa publikowana w ramach infrastruktury informatycznej Głównego Urzędu Geodezji i Kartografii.",
         "id": 48
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Obiekty użyteczności publicznej - Zdrowie",
-        "url": "http://integracja.gugik.gov.pl/cgi-bin/zdrowie",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/GUGIK/Zdrowie",
         "description": "Rejestr szpitali, szpitalnych oddziałów ratunkowych (SOR), punktów nocnej i świątecznej opieki zdrowotnej oraz aptek ogólnodostępnych, punktów aptecznych, aptek szpitalnych, aptek zakładowych oraz działów farmacji szpitalnej. Usługa publikowana na podstawie danych Ministerstwa Zdrowia i Centrum Systemów Informacyjnych Ochrony Zdrowia w ramach infrastruktury Głównego Urzędu Geodezji i Kartografii.",
         "id": 49
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Obiekty użyteczności publicznej - Edukacja",
-        "url": "http://integracja.gugik.gov.pl/cgi-bin/edukacja",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/GUGiK/Edukacja",
         "description": "Wykaz szkół i placówek oświatowych",
         "id": 50
     },
@@ -359,14 +359,14 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Tereny zamknięte - Ministerstwo Energii",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/TerenyZamknieteMinisterstwoEnergii",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/BGKMieszkaniePlus",
         "description": "Tereny Zamknięte Ministerstwa Energii. Usługa publikowana w ramach infrastruktury informatycznej Głównego Urzędu Geodezji i Kartografii.",
         "id": 52
     },
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Tereny zamknięte - Ministerstwo Infrastruktury",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/TerenyZamknieteMinisterstwoInfrastruktury",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/SklepyWielkopowierzchniowe",
         "description": "Tereny Zamknięte. Usługa publikowana w ramach infrastruktury informatycznej Głównego Urzędu Geodezji i Kartografii.",
         "id": 53
     },
@@ -380,7 +380,7 @@
     {
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Wybory Parlamentarne 2019",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/wybory",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/OkregiWyborcze",
         "description": "Wybory. Usługa publikowana w ramach infrastruktury Głównego Urzędu Geodezji i Kartografii.",
         "id": 55
     },
@@ -401,7 +401,7 @@
     {
         "source": "Agencja Mienia Wojskowego",
         "name": "Nieruchomości AMW",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/NieruchomosciAMW",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/NieruchomosciAMW",
         "description": "Nieruchomości Agencji Mienia Wojskowego - działki. Usługa WMS publikowana na podstawie danych Agencji Mienia Wojskowego. Usługa publikowana jest w infrastrukturze Głównego Urzędu Geodezji i Kartografii.",
         "id": 58
     },
@@ -415,7 +415,7 @@
     {
         "source": "Instytut Meteorologii i Gospodarki Wodnej",
         "name": "Dane synoptyczne",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/imgw",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/imgw",
         "description": "Usługa WMS publikowana na podstawie danych Instytutu Meteorologii i Gospodarki Wodnej publikowanych w serwisie www.dane.gov.pl. Usługa publikowana jest w infrastrukturze Głównego Urzędu Geodezji i Kartografii.",
         "id": 60
     },
@@ -548,288 +548,246 @@
     {
         "source": "Główny Urząd Statystyczny",
         "name": "Jednostki statystyczne (BREC 2017)",
-        "url": "https://geo.stat.gov.pl/gprest/WMS/PGS_BREC",
+        "url": "https://geo.stat.gov.pl/wss/wms_inspire/wms?version=1.3.0",
         "description": "Usługa przeglądania danych INSPIRE tematu Jednostki statystyczne dla obszaru Polski. Publikowany jest podział Polski na rejony statystyczne i obwody spisowe. Usługa spełnia wymagania specyfikacji INSPIRE dla usług przeglądania (INSPIRE View Service). Usługa wykorzystuje interfejs WMS OGC w wersji 1.3.0.",
         "id": 79
-    },
-    {
-        "source": "Główny Urząd Statystyczny",
-        "name": "BREC 2011 - granice rejonów statystycznych i obwodów spisowych wg stanu na 1.01.2011 r.",
-        "url": "https://geo.stat.gov.pl/gprest/WMS/WMS_SU",
-        "description": "Granice rejonów statystycznych i owodów spisowych wg stanu na 1.01.2011 udostępnione przez Portal Geostatystyczny",
-        "id": 80
-    },
-    {
-        "source": "Główny Urząd Statystyczny",
-        "name": "NTS 2011 - granice jednostek statystycznych NTS wg stanu na 1.01.2011 r.",
-        "url": "https://geo.stat.gov.pl/gprest/WMS/WMS_SU_NTS_2011",
-        "description": "Granice  Nomenklatury Jednostek Terytorialnych udostępnione przez Portal Geostatystyczny",
-        "id": 81
-    },
-    {
-        "source": "Główny Urząd Statystyczny",
-        "name": "BREC 2012 - granice rejonów statystycznych i obwodów spisowych wg stanu na 1.01.2012 r.",
-        "url": "https://geo.stat.gov.pl/gprest/WMS/WMS_SU_2012",
-        "description": "Granice rejonów statystycznych i owodów spisowych wg stanu na 1.01.2012 udostępnione przez Portal Geostatystyczny",
-        "id": 82
-    },
-    {
-        "source": "Główny Urząd Statystyczny",
-        "name": "NTS 2012 - granice jednostek statystycznych NTS wg stanu na 1.01.2012 r.",
-        "url": "https://geo.stat.gov.pl/gprest/WMS/WMS_SU_NTS_2012",
-        "description": "Granice  Nomenklatury Jednostek Terytorialnych udostępnione przez Portal Geostatystyczny",
-        "id": 83
-    },
-    {
-        "source": "Główny Urząd Statystyczny",
-        "name": "Prezentacje danych demograficznych z roku 2011 w odniesieniu do jednostek statystycznych NTS",
-        "url": "https://geo.stat.gov.pl/gprest/WMS/WMS_PD_NTS_2011",
-        "description": "Dane demograficznie z roku 2011, w odniesieniu do granic jednostek Nomenklatury Jednostek Terytorialnych do Celów Statystycznych",
-        "id": 84
-    },
-    {
-        "source": "Główny Urząd Statystyczny",
-        "name": "Prezentacje danych demograficznych z roku 2012 w odniesieniu do jednostek statystycznych NTS",
-        "url": "https://geo.stat.gov.pl/gprest/WMS/WMS_PD_NTS_2012",
-        "description": "Dane demograficznie z roku 2012, w odniesieniu do granic jednostek Nomenklatury Jednostek Terytorialnych do Celów Statystycznych",
-        "id": 85
     },
     {
         "source": "Narodowy Instytut Dziedzictwa (NID)",
         "name": "Pomniki historii (INSPIRE)",
         "url": "http://usluga.zabytek.gov.pl/INSPIRE_MHD/service.svc/get",
         "description": "Usługa przeglądania (Web Map Service, WMS) umożliwiająca przeglądanie danych Pomników Historii",
-        "id": 86
+        "id": 80
     },
     {
         "source": "Narodowy Instytut Dziedzictwa (NID)",
         "name": "Rejestr zabytków archeologicznych (INSPIRE)",
         "url": "http://usluga.zabytek.gov.pl/INSPIRE_AMD/service.svc/get",
         "description": "Usługa przeglądania (Web Map Service, WMS) umożliwiająca przeglądanie danych Rejestrowe Zabytki Archeologiczne",
-        "id": 87
+        "id": 81
     },
     {
         "source": "Narodowy Instytut Dziedzictwa (NID)",
         "name": "Rejestr zabytków nieruchomych (INSPIRE)",
         "url": "http://usluga.zabytek.gov.pl/INSPIRE_IMD/service.svc/get",
         "description": "Usługa przeglądania (Web Map Service, WMS) umożliwiająca przeglądanie danych Rejestrowe Zabytki Nieruchome",
-        "id": 88
+        "id": 82
     },
     {
         "source": "Narodowy Instytut Dziedzictwa (NID)",
         "name": "Światowe Dziedzictwo UNESCO (INSPIRE)",
         "url": "http://usluga.zabytek.gov.pl/INSPIRE_WHD/service.svc/get",
         "description": "Usługa przeglądania (Web Map Service, WMS) umożliwiająca przeglądanie danych Światowe Dziedzictwo UNESCO",
-        "id": 89
+        "id": 83
     },
     {
         "source": "Narodowy Instytut Dziedzictwa (NID)",
         "name": "Służba konserwatorska Polski - delegatury",
         "url": "http://usluga.zabytek.gov.pl/DELEGATURY/service.svc/get",
         "description": "Dane zgromadzone i udostępniane przez Narodowy Instytut Dziedzictwa",
-        "id": 90
+        "id": 84
     },
     {
         "source": "Narodowy Instytut Dziedzictwa (NID)",
         "name": "Zasięg zabytków nieruchomych",
         "url": "http://usluga.zabytek.gov.pl/ZN_ZASIEGI/service.svc/get",
         "description": "Dane zgromadzone i udostępniane przez Narodowy Instytut Dziedzictwa",
-        "id": 91
+        "id": 85
     },
     {
         "source": "Ministerstwo Zdrowia",
         "name": "Lotnicze Pogotowie Ratunkowe",
         "url": "https://mapy.geoportal.gov.pl/wss/service/sdi/LPR/get",
         "description": "Usługa WMS z danymi Lotniczego Pogotowia Ratunkowego",
-        "id": 92
+        "id": 86
     },
     {
         "source": "Urząd Transportu Kolejowego",
         "name": "Przejazdy kolejowe",
         "url": "https://mapy.geoportal.gov.pl/wss/service/sdi/Przejazdy/get",
         "description": "Zintegrowana Usługa WMS przejazdów kolejowych dla Urzędu Transportu Kolejowego utrzymywana przez GUGiK.",
-        "id": 93
+        "id": 87
     },
     {
         "source": "Polskie Linie Kolejowe S.A.",
         "name": "Infrastruktura kolejowa",
-        "url": "http://mapa.plk-sa.pl:8080/geoserver/SILK/wms",
+        "url": "https://mapa.plk-sa.pl:8443/geoserver/SILK/wms",
         "description": "ARiMR: maksymalny kwalifikowalny obszar",
-        "id": 94
+        "id": 88
     },
     {
         "source": "Agencja Restrukturyzacji i Modernizacji Rolnictwa",
         "name": "Maksymalny kwalifikowany obszar",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/arimr_mko",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/arimr_mko",
         "description": "ARiMR: maksymalny kwalifikowalny obszar",
-        "id": 95
+        "id": 89
     },
     {
         "source": "Agencja Restrukturyzacji i Modernizacji Rolnictwa",
         "name": "Obiekty pokrycia terenu",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/arimr_pokrycie",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/arimr_pokrycie",
         "description": "Usługa publikowana w ramach infrastruktury informatycznej Głównego Urzędu Geodezji i Kartografii, na podstawie danych Agencji Restrukturyzacji i Modernizacji Rolnictwa. Informacje publikowane w usłudze są odzwierciedleniem aktualnego stanu danych systemu identyfikacji działek rolnych.",
-        "id": 96
+        "id": 90
     },
     {
         "source": "Agencja Restrukturyzacji i Modernizacji Rolnictwa",
         "name": "Działki referencyjne LPIS",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/arimr_lpis",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/arimr_lpis",
         "description": "Usługa publikowana w ramach infrastruktury informatycznej Głównego Urzędu Geodezji i Kartografii, na podstawie danych Agencji Restrukturyzacji i Modernizacji Rolnictwa. Informacje publikowane w usłudze są odzwierciedleniem aktualnego stanu danych systemu identyfikacji działek rolnych (LPIS). Usługa zawiera: wyznaczony obszar geograficzny z niepowtarzalnym numerem identyfikacyjnym zarejestrowany w systemie identyfikacji działek rolnych (LPIS)",
-        "id": 97
+        "id": 91
     },
     {
         "source": "Krajowy Zasób Nieruchomości",
         "name": "Mieszkanie + (potencjalne lokalizacje)",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/MieszkaniePlus",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/ZasobKZN",
         "description": "Mieszkanie+ - Usługa WMS publikowana na podstawie danych Krajowego Zasobu Nieruchomości. Usługa publikowana jest w infrastrukturze Głównego Urzędu Geodezji i Kartografii.",
-        "id": 98
+        "id": 92
     },
     {
         "source": "Ministerstwo Infrastruktury",
         "name": "Polskie Sieci Elektroenergetyczne S.A",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/PSE",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/ZasobKZN",
         "description": "Usługa WMS publikowana na podstawie danych sieci najwyższego napięcia przekazanych przez Polskie Sieci Elektroenergetyczne S.A. Usługa publikowana jest w infrastrukturze Głównego Urzędu Geodezji i Kartografii.",
-        "id": 99
+        "id": 93
     },
     {
         "source": "Zakład Ubezpieczeń Społecznych",
         "name": "Zasięgi i placówki ZUS",
-        "url": "https://integracja.gugik.gov.pl/cgi-bin/ZUS",
+        "url": "https://mapy.geoportal.gov.pl/wss/ext/ZUS",
         "description": "Zakład Ubezpieczeń Społecznych - lokalizacja placówek. Usługa publikowana w ramach infrastruktury Głównego Urzędu Geodezji i Kartografii.",
-        "id": 100
+        "id": 94
     },
     {
         "source": "PGW Wody Polskie (dawniej KZGW)",
         "name": "Jednolite części wód",
         "url": "https://integracja.gugik.gov.pl/cgi-bin/wodypolskie",
         "description": "Baza danych przestrzennych aktualizacji planów gospodarowania wodami (aPGW) stanowi narzędzie wspierające proces wdrażania Ramowej Dyrektywy Wodnej 2000/60/WE (RDW) z dnia 23 października 2000 r. w Rzeczypospolitej Polskiej. Informacje dotyczące gospodarki wodnej ujęte w bazie danych przestrzennych składają się z ekoregionów, głównych jezior, głównych rzek, jednolitych części wód (JCW) podziemnych i powierzchniowych (jeziornych, przejściowych, przybrzeżnych, rzecznych), zlewni jednolitych części wód powierzchniowych, regionów wodnych, obszarów dorzeczy oraz charakterystyk JCW takich jak ocena stanu, status, cele środowiskowe. Zbiór informacji dotyczących gospodarki wodnej jest zapisany w postaci wektorowych warstw tematycznych wraz z relacyjną bazą danych. Usługa publikowana na podstawie danych Państwowego Gospodarstwa Wodnego Wody Polskie pochodzących z serwisu https://danepubliczne.gov.pl w ramach infrastruktury Głównego Urzędu Geodezji i Kartografii.",
-        "id": 101
+        "id": 95
     },
     {
         "source": "PGW Wody Polskie (dawniej KZGW)",
         "name": "Mapa zagrożenia powodziowego",
-        "url": "http://integracja.gugik.gov.pl/cgi-bin/MapaZagrozeniaPowodziowego?SERVICE=WMS&REQUEST=GetCapabilities",
+        "url": "https://wody.isok.gov.pl/gpservices/KZGW/MZP20_ObszarySzczegolnegoZagrozeniaPowodzia/MapServer/WMSServer",
         "description": "Usługa przeglądania obszarów szczególnego zagrożenia powodzią, o których mowa w art. 169 ust. 2 pkt 2 ustawy z dnia 20 lipca 2017 r. – Prawo wodne, przedstawionych na mapach zagrożenia powodziowego.Usługa zawiera: obszary szczególnego zagrożenia powodzią od rzek, na których prawdopodobieństwo wystąpienia powodzi jest wysokie i wynosi 10% (częstotliwość: raz na 10 lat);- obszary szczególnego zagrożenia powodzią od rzek, na których prawdopodobieństwo wystąpienia powodzi jest średnie i wynosi 1% (częstotliwość: raz na 100 lat); - obszary szczególnego zagrożenia powodzią od morza, w tym morskich wód wewnętrznych, na których prawdopodobieństwo wystąpienia powodzi jest średnie 1% (częstotliwość: raz na 100 lat). Mapy zagrożenia powodziowego i mapy ryzyka powodziowego są opublikowane w postaci plików pdf na portalu mapowym dostępnym pod adresem: http://mapy.isok.gov.pl Mapy zagrożenia powodziowego i mapy ryzyka powodziowego zostały opracowane w ramach projektu „Informatyczny System Osłony Kraju przed nadzwyczajnymi zagrożeniami” (ISOK) współfinansowanego ze środków Europejskiego Funduszu Rozwoju Regionalnego w ramach Programu Operacyjnego Innowacyjna Gospodarka.",
-        "id": 102
+        "id": 96
     },
     {
         "source": "Lasy Państwowe (LP) - Bank Danych o Lasach",
         "name": "Usługa przeglądania (WMS) danych Banku Danych o Lasach:",
         "url": "https://mapserver.bdl.lasy.gov.pl/ArcGIS/services/WMS_BDL/mapserver/WMSServer",
         "description": "-",
-        "id": 103
+        "id": 97
     },
     {
         "source": "Lasy Państwowe (LP) - Bank Danych o Lasach",
         "name": "Usługa przeglądania (WMS) danych Banku Danych o Lasach wg kategorii własności:",
         "url": "https://mapserver.bdl.lasy.gov.pl/ArcGIS/services/WMS_BDL_kat_wlasnosci/MapServer/WMSServer",
         "description": "-",
-        "id": 104
+        "id": 98
     },
     {
         "source": "Lasy Państwowe (LP) - Bank Danych o Lasach",
         "name": "Zakazy wstępu do lasu",
         "url": "https://mapserver.bdl.lasy.gov.pl/ArcGIS/services/WMS_zakazy_wstepu_do_lasu/MapServer/WMSServer",
         "description": "-",
-        "id": 105
+        "id": 99
     },
     {
         "source": "Lasy Państwowe (LP) - Bank Danych o Lasach",
         "name": "Zagrożenie pożarowe w lasach",
         "url": "https://mapserver.bdl.lasy.gov.pl/ArcGIS/services/WMS_zagrozenie_pozarowe_w_lasach/MapServer/WMSServer",
         "description": "-",
-        "id": 106
+        "id": 100
     },
     {
         "source": "Cartomatic - Historyczny GIS",
         "name": "WIG Mapa Polski i Krajów Ościennych 1:500 000 (EPSG:2180)",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/wig500k?maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
+        "url": "https://pastmaps.cenagis.edu.pl/geoserver/ihpan/wms/",
+        "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
+        "id": 101
+    },
+    {
+        "source": "Cartomatic - Historyczny GIS",
+        "name": "WIG Mapa operacyjna 1:300 000 (EPSG:2180)",
+        "url": "https://pastmaps.cenagis.edu.pl/geoserver/ihpan/wms/",
+        "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
+        "id": 102
+    },
+    {
+        "source": "Cartomatic - Historyczny GIS",
+        "name": "WIG Polska mapa taktyczna 1:100 000 (EPSG:2180)",
+        "url": "https://pastmaps.cenagis.edu.pl/geoserver/ihpan/wms/",
+        "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
+        "id": 103
+    },
+    {
+        "source": "Cartomatic - Historyczny GIS",
+        "name": "WIG Mapa szczegółowa 1:25 000 (EPSG:2180)",
+        "url": "https://pastmaps.cenagis.edu.pl/geoserver/ihpan/wms/",
+        "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
+        "id": 104
+    },
+    {
+        "source": "Cartomatic - Historyczny GIS",
+        "name": "Meßtischblätter 1:25 000 (EPSG:2180)",
+        "url": "https://pastmaps.cenagis.edu.pl/geoserver/ihpan/wms/",
+        "description": "Archiwum Map Zachodniej Polski",
+        "id": 105
+    },
+    {
+        "source": "Cartomatic - Historyczny GIS",
+        "name": "Übersichtskarte von Mitteleuropa 1:300 000 (EPSG:2180)",
+        "url": "https://pastmaps.cenagis.edu.pl/geoserver/ihpan/wms/",
+        "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
+        "id": 106
+    },
+    {
+        "source": "Cartomatic - Historyczny GIS",
+        "name": "Karte des Deutschen Reiches 1:100 000 (EPSG:2180)",
+        "url": "https://pastmaps.cenagis.edu.pl/geoserver/ihpan/wms/",
         "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
         "id": 107
     },
     {
         "source": "Cartomatic - Historyczny GIS",
-        "name": "WIG Mapa operacyjna 1:300 000 (EPSG:2180)",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/wig300k?maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
+        "name": "Karte des westlichen Rußlands 1:100 000 (EPSG:2180)",
+        "url": "https://pastmaps.cenagis.edu.pl/geoserver/ihpan/wms/",
         "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
         "id": 108
     },
     {
         "source": "Cartomatic - Historyczny GIS",
-        "name": "WIG Polska mapa taktyczna 1:100 000 (EPSG:2180)",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/wig100k?maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
+        "name": "Grossblatt 1:100 000 Karte des Deutschen Reiches, Karte des westlichen Rußlands (EPSG:2180)",
+        "url": "https://pastmaps.cenagis.edu.pl/geoserver/ihpan/wms/",
         "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
         "id": 109
     },
     {
         "source": "Cartomatic - Historyczny GIS",
-        "name": "WIG Mapa szczegółowa 1:25 000 (EPSG:2180)",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/wig25k?maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
+        "name": "Administrativ Karte von den Königreichen Galizien und Lodomerien mit dem Grossherzogthume Krakau und den Herzogthümern Auschwitz, Zator und Bukowina in 60 Blättern, C.R. von Kummersberg 1:115 000 (EPSG:2180)",
+        "url": "https://pastmaps.cenagis.edu.pl/geoserver/ihpan/wms/",
         "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
         "id": 110
-    },
-    {
-        "source": "Cartomatic - Historyczny GIS",
-        "name": "Meßtischblätter 1:25 000 (EPSG:2180)",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/m25k?maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
-        "description": "Archiwum Map Zachodniej Polski",
-        "id": 111
-    },
-    {
-        "source": "Cartomatic - Historyczny GIS",
-        "name": "Übersichtskarte von Mitteleuropa 1:300 000 (EPSG:2180)",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/ukvme?maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
-        "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
-        "id": 112
-    },
-    {
-        "source": "Cartomatic - Historyczny GIS",
-        "name": "Karte des Deutschen Reiches 1:100 000 (EPSG:2180)",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/kdr?maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
-        "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
-        "id": 113
-    },
-    {
-        "source": "Cartomatic - Historyczny GIS",
-        "name": "Karte des westlichen Rußlands 1:100 000 (EPSG:2180)",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/kdwr?maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
-        "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
-        "id": 114
-    },
-    {
-        "source": "Cartomatic - Historyczny GIS",
-        "name": "Grossblatt 1:100 000 Karte des Deutschen Reiches, Karte des westlichen Rußlands (EPSG:2180)",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/kdr_gb?maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
-        "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
-        "id": 115
-    },
-    {
-        "source": "Cartomatic - Historyczny GIS",
-        "name": "Administrativ Karte von den Königreichen Galizien und Lodomerien mit dem Grossherzogthume Krakau und den Herzogthümern Auschwitz, Zator und Bukowina in 60 Blättern, C.R. von Kummersberg 1:115 000 (EPSG:2180)",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/kummersberg?maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
-        "description": "Archiwum Map Wojskowego Instytutu Geograficznego",
-        "id": 116
     },
     {
         "source": "geoportal.gov.pl",
         "name": "Baza Danych Obiektów Topograficznych BDOT10k",
         "url": "http://mapy.geoportal.gov.pl/wss/service/pub/guest/kompozycja_BDOT10k_WMS/MapServer/WMSServer",
         "description": "Usługa przeglądania danych Bazy Danych Obiektów Topograficznych (BDOT10k) dla obszaru Polski. Baza Danych Obiektów Topograficznych jest spójnym pojęciowo w skali kraju systemem gromadzenia, zarządzania i udostępniania danych topograficznych. Usługa oferuje wsparcie dla interfejsu WMS 1.3.0.",
-        "id": 117
+        "id": 111
     },
     {
         "source": "hgis.cartomatic.pl",
         "name": "HGIS cartomatic: WIG 500k",
-        "url": "http://wms.hgis.cartomatic.pl/topo/2180/wig500k&maxHeight=256&maxWidth=256&IgnoreGetMapUrl=1",
+        "url": "https://clc.gios.gov.pl/arcgis/services/CLC/CLC2018/MapServer/WMSServer",
         "description": "Mapa historyczna w skali 1:500k (Mapa Polski i Krajów Ościennych) z Archiwum Map Wojskowego Instytutu Geograficznego",
-        "id": 118
+        "id": 112
     },
 	{
         "source": "Główny Inspektorat Ochrony Środowiska",
         "name": "Corine Land Cover 2018",
         "url": "https://clc.gios.gov.pl/arcgis/services/CLC/CLC2018/MapServer/WMSServer",
         "description": "Usługa przeglądania WMS dla Corine Land Cover 2018. Mapa pokrycia terenu",
-        "id": 119
+        "id": 113
     }
 ]

@@ -84,7 +84,7 @@
         "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
         "name": "Baza Danych Obiektów Ogólnogeograficznych 2021 (BDOO)",
         "tiles_name": "BDOO",
-        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/BDOO/WMTS/2021",
+        "url": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/BDOO/WMTS/aktualne",
         "format": "image/jpeg",
         "supported_crs": ["EPSG:2180"],
         "id": 10

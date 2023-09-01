@@ -103,7 +103,7 @@ class GisboxConnection(QObject, Logger):
         host = self._getHost()
         request = QNetworkRequest(QUrl(host + endpoint))
         request.setHeader(QNetworkRequest.ContentTypeHeader, content_type)
-        request.setHeader(QNetworkRequest.UserAgentHeader, 'qgis')
+        request.setHeader(QNetworkRequest.UserAgentHeader, 'qgis_gs')
         if with_token:
             request.setRawHeader(b'X-Access-Token', bytes(self.token.encode()))
 

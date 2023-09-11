@@ -16,6 +16,7 @@ from qgis.gui import QgsMessageBar
 from qgis.utils import iface
 
 from gissupport_plugin.modules.base import BaseModule
+from gissupport_plugin.modules.uldk.modules.check_layer.main import CheckLayer
 from gissupport_plugin.modules.uldk.modules.csv_import.main import CSVImport
 from gissupport_plugin.modules.uldk.modules.map_point_search.main import MapPointSearch
 from gissupport_plugin.modules.uldk.modules.layer_import.main import LayerImport
@@ -66,6 +67,10 @@ class Main(BaseModule):
         self.module_layer_import = LayerImport(
             self,
             self.dockwidget.tab_import_layer_layout)
+        
+        self.module_layer_import = CheckLayer(
+            self,
+            self.dockwidget.tab_check_layer_layout)
 
         self.wms_kieg_layer = None
         self.module_wms_kieg_initialized = True

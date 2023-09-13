@@ -2,17 +2,28 @@ import os
 from urllib.request import urlopen
 
 from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QVariant
 from PyQt5.QtGui import QKeySequence, QPixmap
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsMapLayerProxyModel,
-                       QgsProject)
+                       QgsProject, QgsVectorLayer, QgsField, QgsFeature)
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
 ))
+
+PLOTS_LAYER_DEFAULT_FIELDS = [
+    QgsField("wojewodztwo", QVariant.String),
+    QgsField("powiat", QVariant.String),
+    QgsField("gmina", QVariant.String),
+    QgsField("obreb", QVariant.String),
+    QgsField("arkusz", QVariant.String),
+    QgsField("nr_dzialki", QVariant.String),
+    QgsField("teryt", QVariant.String),
+    QgsField("pow_m2", QVariant.String),
+]
 
 CRS_2180 = QgsCoordinateReferenceSystem()
 CRS_2180.createFromSrid(2180)
@@ -74,8 +85,8 @@ class CheckLayer:
 
 
     def __init_ui(self):
-        # self.ui.button_start.clicked.connect(self.search)
-        # self.ui.button_cancel.clicked.connect(self.__stop)
+        self.ui.button_start.clicked.connect(self.search)
+        self.ui.button_cancel.clicked.connect(self.__stop)
         self.__on_layer_changed(self.ui.layer_select.currentLayer())
         self.ui.layer_select.layerChanged.connect(self.__on_layer_changed)
         self.ui.label_status.setText("")
@@ -91,8 +102,7 @@ class CheckLayer:
             self.source_layer = layer
             layer.selectionChanged.connect(self.__on_layer_features_selection_changed)
             self.ui.button_start.setEnabled(True)
-            current_layer_name = layer.sourceName()
-            suggested_target_layer_name = f"{current_layer_name} - Działki ULDK"
+            suggested_target_layer_name = "Wyniki sprawdzenia ULDK"
             self.ui.text_edit_target_layer_name.setText(suggested_target_layer_name)
             self.ui.button_start.setEnabled(True)
         else:
@@ -104,3 +114,35 @@ class CheckLayer:
         if not self.source_layer:
             selected_features = []
         self.ui.checkbox_selected_only.setText(f"Tylko zaznaczone obiekty [{len(selected_features)}]")
+
+    def __stop(self):
+        #self.thread.requestInterruption()
+        self.ui.button_cancel.setEnabled(False)
+        self.ui.button_cancel.setText("Przerywanie...")
+
+    def search(self):
+        
+        crs = self.source_layer.crs().toWkt()
+
+        output_layer = QgsVectorLayer(f"Polygon?crs={crs}", self.ui.text_edit_target_layer_name.text(), "memory")
+        output_data_provider = output_layer.dataProvider()
+        output_data_provider.addAttributes(self.source_layer.fields().toList() + PLOTS_LAYER_DEFAULT_FIELDS)
+
+        output_layer.updateFields()
+
+        features = self.source_layer.getSelectedFeatures() if bool(self.ui.checkbox_selected_only.checkState()) else self.source_layer.getFeatures()
+        for feature in features:
+            output_feature = QgsFeature(feature)
+
+            query_point = output_feature.geometry().pointOnSurface() 
+            source_crs = self.source_layer.sourceCrs()
+            if source_crs != CRS_2180:
+                transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext()) 
+                query_point.transform(transformation)
+
+            print(query_point.asPoint().x(), ", ", query_point.asPoint().y())
+
+
+            output_data_provider.addFeatures([output_feature])
+
+        QgsProject.instance().addMapLayer(output_layer)

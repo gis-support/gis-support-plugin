@@ -67,10 +67,12 @@ class Main(BaseModule):
         self.module_layer_import = LayerImport(
             self,
             self.dockwidget.tab_import_layer_layout)
-        
-        self.module_layer_import = CheckLayer(
-            self,
-            self.dockwidget.tab_check_layer_layout)
+
+        self.check_layer_result_collector = ResultCollectorSingle(self)
+        self.module_layer_check = CheckLayer(self,
+            self.dockwidget.tab_check_layer_layout,
+            self.teryt_search_result_collector)
+
 
         self.wms_kieg_layer = None
         self.module_wms_kieg_initialized = True

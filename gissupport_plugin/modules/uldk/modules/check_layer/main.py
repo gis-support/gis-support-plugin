@@ -10,6 +10,8 @@ from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 
+from gissupport_plugin.modules.uldk.uldk.api import ULDKPoint, ULDKSearchLogger, ULDKSearchPoint
+
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
 ))
@@ -85,7 +87,7 @@ class CheckLayer:
 
 
     def __init_ui(self):
-        self.ui.button_start.clicked.connect(self.search)
+        self.ui.button_start.clicked.connect(self.__search)
         self.ui.button_cancel.clicked.connect(self.__stop)
         self.__on_layer_changed(self.ui.layer_select.currentLayer())
         self.ui.layer_select.layerChanged.connect(self.__on_layer_changed)
@@ -120,7 +122,7 @@ class CheckLayer:
         self.ui.button_cancel.setEnabled(False)
         self.ui.button_cancel.setText("Przerywanie...")
 
-    def search(self):
+    def __search(self):
         
         crs = self.source_layer.crs().toWkt()
 
@@ -129,6 +131,8 @@ class CheckLayer:
         output_data_provider.addAttributes(self.source_layer.fields().toList() + PLOTS_LAYER_DEFAULT_FIELDS)
 
         output_layer.updateFields()
+
+        output_features = []
 
         features = self.source_layer.getSelectedFeatures() if bool(self.ui.checkbox_selected_only.checkState()) else self.source_layer.getFeatures()
         for feature in features:
@@ -140,9 +144,17 @@ class CheckLayer:
                 transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext()) 
                 query_point.transform(transformation)
 
-            print(query_point.asPoint().x(), ", ", query_point.asPoint().y())
+            output_features.append(output_feature)
+
+            uldk_search = ULDKSearchPoint(
+                "dzialka",
+                ("geom_wkt", "wojewodztwo", "powiat", "gmina", "obreb","numer","teryt")
+            )
+            uldk_search = ULDKSearchLogger(uldk_search)
+            uldk_point = ULDKPoint(query_point.asPoint().x(), query_point.asPoint().y(), 2180)
+            
 
 
-            output_data_provider.addFeatures([output_feature])
-
+        
+        output_data_provider.addFeatures(output_features)
         QgsProject.instance().addMapLayer(output_layer)

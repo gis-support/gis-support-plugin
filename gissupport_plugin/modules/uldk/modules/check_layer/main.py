@@ -127,7 +127,7 @@ class CheckLayer:
         self.ui.checkbox_selected_only.setText(f"Tylko zaznaczone obiekty [{len(selected_features)}]")
 
     def __stop(self):
-        #self.thread.requestInterruption()
+        self.thread.requestInterruption()
         self.ui.button_cancel.setEnabled(False)
         self.ui.button_cancel.setText("Przerywanie...")
 
@@ -135,6 +135,7 @@ class CheckLayer:
         if self.search_in_progress:
             return
 
+        self.output = []
         self.output_features = []
         self.query_points = []
 
@@ -146,7 +147,6 @@ class CheckLayer:
 
         features = self.source_layer.getSelectedFeatures() if bool(self.ui.checkbox_selected_only.checkState()) else self.source_layer.getFeatures()
         for feature in features:
-            print(feature)
             output_feature = QgsFeature(feature)
 
             query_point = output_feature.geometry().pointOnSurface() 
@@ -160,7 +160,6 @@ class CheckLayer:
             uldk_point = ULDKPoint(query_point.asPoint().x(), query_point.asPoint().y(), 2180)
             self.query_points.append(uldk_point)
 
-        print(self.query_points)
         worker = ULDKSearchPointWorker(uldk_search, self.query_points)
         self.worker = worker
         thread= QThread()
@@ -198,10 +197,18 @@ class CheckLayer:
     def search(self):
 
         crs = self.source_layer.crs().toWkt()
+        output_fields = self.source_layer.fields()
+        for field in PLOTS_LAYER_DEFAULT_FIELDS:
+            output_fields.append(field)
 
         output_layer = QgsVectorLayer(f"Polygon?crs={crs}", self.ui.text_edit_target_layer_name.text(), "memory")
         output_data_provider = output_layer.dataProvider()
-        output_data_provider.addAttributes(self.source_layer.fields().toList() + PLOTS_LAYER_DEFAULT_FIELDS)
+        output_layer.startEditing()
+        output_data_provider.addAttributes(output_fields)
+        output_layer.updateFields()
+        output_layer.commitChanges()
+
+        #print(f"len self.output: {len(self.output)}\n len self.output_features: {len(self.output_features)}\n len self.query_points: {len(self.query_points)}\n")
 
         for i in range(0, len(self.output)):
             # print(f"OBIEKT NR {i}\n\t\t", end='')
@@ -213,6 +220,7 @@ class CheckLayer:
                 continue
 
             current_input_feature = self.output_features[i]
+            current_input_feature.setFields(output_fields, initAttributes=False)
 
             current_uldk_feature = ResultCollector.uldk_response_to_qgs_feature(self.output[i])
 
@@ -229,7 +237,7 @@ class CheckLayer:
             else:
                 area_difference_percent = 0
 
-            if area_difference_percent < area_difference_tolerance:
+            if area_difference_percent <= area_difference_tolerance:
                 current_input_feature["wojewodztwo"] = current_uldk_feature["wojewodztwo"]
                 current_input_feature["powiat"] = current_uldk_feature["powiat"]
                 current_input_feature["gmina"] = current_uldk_feature["gmina"]
@@ -240,10 +248,9 @@ class CheckLayer:
                 current_input_feature["pow_m2"] = current_uldk_feature["pow_m2"]
                 output_layer.updateFeature(current_input_feature)
 
-            print(geometry.area(), current_uldk_feature.geometry().area(), area_difference_percent, area_difference)
+            #print(geometry.area(), current_uldk_feature.geometry().area(), area_difference_percent, area_difference)
             output_data_provider.addFeatures([current_input_feature])
 
-        output_layer.updateFields()
         #output_data_provider.addFeatures(self.output_features)
         QgsProject.instance().addMapLayer(output_layer)
-        self.output = []
+

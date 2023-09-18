@@ -90,8 +90,8 @@ class CheckLayer:
         self.__init_ui()
 
         self.result_collector = result_collector
-        self.output = []
-        self.output_features = []
+        self.output_responses = []
+        self.output_responses_features = []
         self.query_points = []
 
         self.search_in_progress = False
@@ -135,8 +135,8 @@ class CheckLayer:
         if self.search_in_progress:
             return
 
-        self.output = []
-        self.output_features = []
+        self.output_responses = []
+        self.output_responses_features = []
         self.query_points = []
 
         uldk_search = ULDKSearchPoint(
@@ -155,14 +155,14 @@ class CheckLayer:
                 transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext()) 
                 query_point.transform(transformation)
 
-            self.output_features.append(output_feature)
+            self.output_responses_features.append(output_feature)
 
             uldk_point = ULDKPoint(query_point.asPoint().x(), query_point.asPoint().y(), 2180)
             self.query_points.append(uldk_point)
 
         worker = ULDKSearchPointWorker(uldk_search, self.query_points)
         self.worker = worker
-        thread= QThread()
+        thread = QThread()
         self.thread = thread
         worker.moveToThread(thread)
 
@@ -173,20 +173,45 @@ class CheckLayer:
         worker.finished.connect(self.__handle_finished)
         worker.found.connect(self.__handle_found)
         worker.not_found.connect(self.__handle_not_found)
+        worker.interrupted.connect(self.__handle_interrupted)
+        worker.interrupted.connect(lambda thread=thread, worker=worker: self.__thread_cleanup(thread, worker))
 
         thread.start()
 
     def __handle_found(self, uldk_response_row):
-        self.output.append(uldk_response_row)
+        self.output_responses.append(uldk_response_row)
+        self.progressed_count += 1
+        self.found_count += 1
+        self.ui.progress_bar.setValue(int(self.progressed_count / len(self.query_points) * 100))
+        self.ui.label_status.setText(f"Przetworzono {self.progressed_count} z {len(self.query_points)} obiektów")
+        self.ui.label_found_count.setText(f"Znaleziono: {self.found_count}")
 
     def __handle_not_found(self, uldk_point, exception):
-        self.output.append('')
+        self.output_responses.append('')
+        self.progressed_count += 1
+        self.not_found_count += 1
+        self.ui.progress_bar.setValue(int(self.progressed_count / len(self.query_points) * 100))
+        self.ui.label_status.setText(f"Przetworzono {self.progressed_count} z {len(self.query_points)} obiektów")
+        self.ui.label_not_found_count.setText(f"Nie znaleziono: {self.not_found_count}")
 
     def __handle_finished(self):
         self.search_in_progress = False
+        self.ui.button_start.setEnabled(True)
+        self.ui.button_cancel.setEnabled(False)
+        self.ui.progress_bar.setValue(0)
 
     def __on_search_started(self):
         self.search_in_progress = True
+        self.ui.button_start.setEnabled(False)
+        self.ui.button_cancel.setEnabled(True)
+        self.ui.progress_bar.setValue(0)
+        self.progressed_count = 0
+        self.found_count = 0
+        self.not_found_count = 0
+
+        self.ui.label_status.setText(f"Przetworzono {self.progressed_count} z {len(self.query_points)} obiektów")
+        self.ui.label_found_count.setText(f"Znaleziono: {self.found_count}")
+        self.ui.label_not_found_count.setText(f"Nie znaleziono: {self.not_found_count}")
 
     def __thread_cleanup(self, thread, worker):
         thread.quit()
@@ -194,37 +219,37 @@ class CheckLayer:
         thread.deleteLater()
         worker.deleteLater()
 
+    def __handle_interrupted(self):
+        self.search_in_progress = False
+        self.ui.button_start.setEnabled(True)
+        self.ui.button_cancel.setText("Anuluj")
+        self.ui.button_cancel.setEnabled(False)
+        self.ui.progress_bar.setValue(0)
+
     def search(self):
 
         crs = self.source_layer.crs().toWkt()
-        output_fields = self.source_layer.fields()
-        for field in PLOTS_LAYER_DEFAULT_FIELDS:
-            output_fields.append(field)
 
         output_layer = QgsVectorLayer(f"Polygon?crs={crs}", self.ui.text_edit_target_layer_name.text(), "memory")
         output_data_provider = output_layer.dataProvider()
-        output_layer.startEditing()
-        output_data_provider.addAttributes(output_fields)
+        output_data_provider.addAttributes(self.source_layer.fields().toList())
+        output_data_provider.addAttributes(PLOTS_LAYER_DEFAULT_FIELDS)
         output_layer.updateFields()
-        output_layer.commitChanges()
 
-        #print(f"len self.output: {len(self.output)}\n len self.output_features: {len(self.output_features)}\n len self.query_points: {len(self.query_points)}\n")
-
-        for i in range(0, len(self.output)):
-            # print(f"OBIEKT NR {i}\n\t\t", end='')
-            # print(f"PUNKT: {self.query_points[i]}")
-            # print(f"ULDK: {self.output[i]}\n\t\t", end='')
-            # print(f"QGIS: {self.output_features[i].attributes()}\n", end='')
-            # print("========================================")
-            if self.output[i] == '':
+        for feature_idx in range(0, len(self.output_responses)):
+            if self.output_responses[feature_idx] == '':
                 continue
 
-            current_input_feature = self.output_features[i]
-            current_input_feature.setFields(output_fields, initAttributes=False)
+            current_feature = self.output_responses_features[feature_idx]
+            current_uldk_feature = ResultCollector.uldk_response_to_qgs_feature(self.output_responses[feature_idx])
 
-            current_uldk_feature = ResultCollector.uldk_response_to_qgs_feature(self.output[i])
+            fields = output_layer.fields()
+            current_feature.setFields(fields, False)
+            current_feature.setAttributes(
+                current_feature.attributes() + [None for _ in range(len(PLOTS_LAYER_DEFAULT_FIELDS))]
+            )
 
-            geometry = current_input_feature.geometry()
+            geometry = current_feature.geometry()
             source_crs = self.source_layer.sourceCrs()
             if source_crs != CRS_2180:
                 transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext())
@@ -238,19 +263,11 @@ class CheckLayer:
                 area_difference_percent = 0
 
             if area_difference_percent <= area_difference_tolerance:
-                current_input_feature["wojewodztwo"] = current_uldk_feature["wojewodztwo"]
-                current_input_feature["powiat"] = current_uldk_feature["powiat"]
-                current_input_feature["gmina"] = current_uldk_feature["gmina"]
-                current_input_feature["obreb"] = current_uldk_feature["obreb"]
-                current_input_feature["arkusz"] = current_uldk_feature["arkusz"]
-                current_input_feature["nr_dzialki"] = current_uldk_feature["nr_dzialki"]
-                current_input_feature["teryt"] = current_uldk_feature["teryt"]
-                current_input_feature["pow_m2"] = current_uldk_feature["pow_m2"]
-                output_layer.updateFeature(current_input_feature)
+                for field in PLOTS_LAYER_DEFAULT_FIELDS:
+                    field_index = current_feature.fields().indexFromName(field.name())
+                    uldk_field_index = current_uldk_feature.fields().indexFromName(field.name())
+                    current_feature[field_index] = current_uldk_feature[uldk_field_index]
 
-            #print(geometry.area(), current_uldk_feature.geometry().area(), area_difference_percent, area_difference)
-            output_data_provider.addFeatures([current_input_feature])
+            output_data_provider.addFeature(current_feature)
 
-        #output_data_provider.addFeatures(self.output_features)
         QgsProject.instance().addMapLayer(output_layer)
-

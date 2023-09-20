@@ -1,13 +1,11 @@
 import os
-from urllib.request import urlopen
 
-from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QVariant
-from PyQt5.QtGui import QKeySequence, QPixmap
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtCore import QThread, QVariant
+from PyQt5.QtGui import QPixmap
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsMapLayerProxyModel,
-                       QgsProject, QgsVectorLayer, QgsField, QgsFeature)
-from qgis.gui import QgsMessageBarItem
+                       QgsProject, QgsVectorLayer, QgsField, QgsFeature, NULL)
 from qgis.utils import iface
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKPoint, ULDKSearchLogger, ULDKSearchPoint, ULDKSearchPointWorker
@@ -28,26 +26,7 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("pow_m2", QVariant.String),
 ]
 
-CRS_2180 = QgsCoordinateReferenceSystem()
-CRS_2180.createFromSrid(2180)
-
-
-def get_obiekty_form(count):
-    form = "obiekt"
-    count = count
-    if count == 1:
-        pass
-    elif 2 <= count <= 4:
-        form = "obiekty"
-    elif 5 <= count <= 20:
-        form = "obiektów"
-    else:
-        units = count % 10
-        if units in (2,3,4):
-            form = "obiekty"
-        else:
-            form = "obiektów"
-    return form
+CRS_2180 = QgsCoordinateReferenceSystem(2180, QgsCoordinateReferenceSystem.EpsgCrsId)
 
 
 class UI(QtWidgets.QFrame, FORM_CLASS):
@@ -166,7 +145,7 @@ class CheckLayer:
         self.thread = thread
         worker.moveToThread(thread)
 
-        worker.finished.connect(self.search)
+        worker.finished.connect(self.process_results)
         thread.started.connect(self.__on_search_started)
         thread.started.connect(worker.search)
         worker.finished.connect(lambda thread=thread, worker=worker: self.__thread_cleanup(thread, worker))
@@ -226,7 +205,7 @@ class CheckLayer:
         self.ui.button_cancel.setEnabled(False)
         self.ui.progress_bar.setValue(0)
 
-    def search(self):
+    def process_results(self):
 
         crs = self.source_layer.crs().toWkt()
 
@@ -235,6 +214,9 @@ class CheckLayer:
         output_data_provider.addAttributes(self.source_layer.fields().toList())
         output_data_provider.addAttributes(PLOTS_LAYER_DEFAULT_FIELDS)
         output_layer.updateFields()
+        fields = output_layer.fields()
+
+        area_difference_tolerance = self.ui.input_percent.value()
 
         for feature_idx in range(0, len(self.output_responses)):
             if self.output_responses[feature_idx] == '':
@@ -243,10 +225,9 @@ class CheckLayer:
             current_feature = self.output_responses_features[feature_idx]
             current_uldk_feature = ResultCollector.uldk_response_to_qgs_feature(self.output_responses[feature_idx])
 
-            fields = output_layer.fields()
             current_feature.setFields(fields, False)
             current_feature.setAttributes(
-                current_feature.attributes() + [None for _ in range(len(PLOTS_LAYER_DEFAULT_FIELDS))]
+                current_feature.attributes() + [NULL for _ in range(len(PLOTS_LAYER_DEFAULT_FIELDS))]
             )
 
             geometry = current_feature.geometry()
@@ -256,15 +237,11 @@ class CheckLayer:
                 geometry.transform(transformation)
 
             area_difference = abs(geometry.area() - current_uldk_feature.geometry().area())
-            area_difference_tolerance = self.ui.input_percent.value()
-            if area_difference > 0:
-                area_difference_percent = (area_difference / geometry.area()) * 100
-            else:
-                area_difference_percent = 0
+            area_difference_percent = (area_difference / geometry.area()) * 100
 
             if area_difference_percent <= area_difference_tolerance:
                 for field in PLOTS_LAYER_DEFAULT_FIELDS:
-                    field_index = current_feature.fields().indexFromName(field.name())
+                    field_index = fields.indexFromName(field.name())
                     uldk_field_index = current_uldk_feature.fields().indexFromName(field.name())
                     current_feature[field_index] = current_uldk_feature[uldk_field_index]
 

@@ -124,14 +124,15 @@ class CheckLayer:
         )
         uldk_search = ULDKSearchLogger(uldk_search)
 
+        source_crs = self.source_layer.sourceCrs()
+        transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext()) 
+
         features = self.source_layer.getSelectedFeatures() if bool(self.ui.checkbox_selected_only.checkState()) else self.source_layer.getFeatures()
         for feature in features:
             output_feature = QgsFeature(feature)
 
             query_point = output_feature.geometry().pointOnSurface() 
-            source_crs = self.source_layer.sourceCrs()
             if source_crs != CRS_2180:
-                transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext()) 
                 query_point.transform(transformation)
 
             self.output_responses_features.append(output_feature)
@@ -216,14 +217,17 @@ class CheckLayer:
         output_layer.updateFields()
         fields = output_layer.fields()
 
+        source_crs = self.source_layer.sourceCrs()
+        transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext())
+
         area_difference_tolerance = self.ui.input_percent.value()
 
-        for feature_idx in range(0, len(self.output_responses)):
-            if self.output_responses[feature_idx] == '':
+        for idx, feature in enumerate(self.output_responses):
+            if self.output_responses[idx] == '':
                 continue
 
-            current_feature = self.output_responses_features[feature_idx]
-            current_uldk_feature = ResultCollector.uldk_response_to_qgs_feature(self.output_responses[feature_idx])
+            current_feature = self.output_responses_features[idx]
+            current_uldk_feature = ResultCollector.uldk_response_to_qgs_feature(feature)
 
             current_feature.setFields(fields, False)
             current_feature.setAttributes(
@@ -231,9 +235,8 @@ class CheckLayer:
             )
 
             geometry = current_feature.geometry()
-            source_crs = self.source_layer.sourceCrs()
+
             if source_crs != CRS_2180:
-                transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext())
                 geometry.transform(transformation)
 
             area_difference = abs(geometry.area() - current_uldk_feature.geometry().area())

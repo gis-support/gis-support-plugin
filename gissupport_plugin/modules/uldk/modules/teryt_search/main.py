@@ -152,7 +152,7 @@ class TerytSearch(QObject):
         for i in range(1, combobox.count()):
             municipality_teryt = combobox.itemText(i).split(" | ")[1]
             plot_teryt = f"{municipality_teryt}.{plot_id}"
-            plots_teryts[i] = plot_teryt
+            plots_teryts[i] = {"teryt": plot_teryt}
 
         layer_name = f"{municipality_name} - Działki '{plot_id}'"
         layer = self.layer_factory(
@@ -286,6 +286,9 @@ class TerytSearch(QObject):
         self.ui.progress_bar_precinct_unknown.hide()
 
     def __handle_found(self, uldk_response_dict):
+        if isinstance(uldk_response_dict, list):
+            uldk_response_dict = {0: uldk_response_dict}
+            
         for _, uldk_response_rows in uldk_response_dict.items():
             uldk_response_rows = validators.duplicate_rows(uldk_response_rows)
             if len(uldk_response_rows) > 1:
@@ -324,7 +327,8 @@ class TerytSearch(QObject):
         iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")
 
     def __handle_found_precinct_unknown(self, uldk_response_rows):
-        for row in uldk_response_rows:
+        for _, value in uldk_response_rows.items():
+            row = value[0]
             try:
                 feature = self.result_collector_precinct_unknown.uldk_response_to_qgs_feature(row)
             except self.result_collector_precinct_unknown.BadGeometryException:

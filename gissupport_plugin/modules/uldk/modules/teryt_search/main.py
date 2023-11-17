@@ -1,11 +1,9 @@
 import os
-from urllib.request import urlopen
+from itertools import chain
 
-from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject, QSettings
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject
 from PyQt5.QtGui import QKeySequence, QPixmap
-from qgis.core import QgsNetworkAccessManager
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 
@@ -268,7 +266,7 @@ class TerytSearch(QObject):
         self.ui.combobox_province.addItems([""])
 
     def __search_from_sheet(self):
-        self.__handle_found([self.ui.combobox_sheet.currentData()])
+        self.__handle_found({0:[self.ui.combobox_sheet.currentData()]})
 
     def _search_lpis_from_sheet(self):
         self.search_lpis(self.ui.combobox_sheet.currentData())
@@ -286,10 +284,8 @@ class TerytSearch(QObject):
         self.ui.progress_bar_precinct_unknown.hide()
 
     def __handle_found(self, uldk_response_dict):
-        if isinstance(uldk_response_dict, list):
-            uldk_response_dict = {0: uldk_response_dict}
             
-        for _, uldk_response_rows in uldk_response_dict.items():
+        for uldk_response_rows in uldk_response_dict.values():
             uldk_response_rows = validators.duplicate_rows(uldk_response_rows)
             if len(uldk_response_rows) > 1:
                 try:    
@@ -327,11 +323,11 @@ class TerytSearch(QObject):
         iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")
 
     def __handle_found_precinct_unknown(self, uldk_response_rows):
-        for _, value in uldk_response_rows.items():
-            row = value[0]
+        # Iteracja po zagnieżdżonych listach
+        for row in chain.from_iterable(uldk_response_rows.values()):
             try:
                 feature = self.result_collector_precinct_unknown.uldk_response_to_qgs_feature(row)
-            except self.result_collector_precinct_unknown.BadGeometryException:
+            except self.result_collector_precinct_unknown.BadGeometryException as e:
                 return
             self.plots_found.append(feature)
 

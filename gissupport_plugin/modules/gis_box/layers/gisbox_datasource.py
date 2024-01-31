@@ -198,9 +198,10 @@ class GisboxFeatureLayer(QObject, Logger):
                 if data_type.get('name', 'string') in ('decimal', 'float'):
                     fields_table.append('%s:real(20,%s)' % (
                         field['name'], field.get('decimal_places', 3)))
-                elif data_type.get('name') == 'text':
-                    fields_table.append('%s:%s(-1)' %
-                                        (field['name'], 'string'))
+                elif data_type.get('name') in ('text', 'hyperlink'):
+                    fields_table.append('%s:%s(%s)' %
+                                        (field['name'], 'string',
+                                         data_type.get("max_length", '-1') or '-1'))
                 else:
                     fields_table.append('%s:%s' %
                                         (field['name'], field['data_type']['name']))

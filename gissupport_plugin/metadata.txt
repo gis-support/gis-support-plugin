@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=2.1.1
+version=2.1.2
 author=GIS Support
 email=info@gis-support.pl
 
@@ -52,7 +52,7 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=Poprawione wyszukiwanie bez wskazania obrębu
+changelog=Poprawiona obsługa długich tekstów i typu hyperlink
 
 # Tags are comma separated with spaces allowed
 tags=python

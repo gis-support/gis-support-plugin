@@ -152,7 +152,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         self.points_coords = [f.split('%20')[::-1] for f in feats_meta]
         if isinstance(feats_meta, dict):
             feats_meta = list(feats_meta.keys())
-        if len(feats_meta) <= 200:
+        if len(feats_meta) <= 100:
             response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(feats_meta))
             if 'error' in response:
                 self.on_message.emit(response['error'], Qgis.Critical, 5)
@@ -161,7 +161,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                 return response['data']
 
         else:
-            chunks = [feats_meta[i:i + 200] for i in range(0, len(feats_meta), 200)]
+            chunks = [feats_meta[i:i + 100] for i in range(0, len(feats_meta), 100)]
             responses = []
             for chunk in chunks:
                 response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(chunk))
@@ -192,7 +192,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         """ Utworzenie nowego pola i zwrócenie jego id """
         #Dodanie nowego pola o podanych parametrach
         data_provider = layer.dataProvider()
-        data_provider.addAttributes([QgsField('nmt_wys', QVariant.Double)])
+        data_provider.addAttributes([QgsField('nmt_wys', QVariant.Double, "double", 23, 1)])
         layer.updateFields()
         #Znalezienie id pola
         field_id = data_provider.fields().indexFromName('nmt_wys')

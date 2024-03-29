@@ -96,7 +96,7 @@ class GISSupportPlugin:
 
         return action
 
-    def initModules(self, modules: list = ['uldk', 'gugik_nmt', 'wms', 'wmts', 'mapster', 'prg']):
+    def initModules(self, modules: list = ['uldk', 'gugik_nmt', 'wms', 'wmts', 'mapster', 'data_downloader']):
         """ Włączenie modułów """
 
         modules_path = Path( self.plugin_dir ).joinpath('modules')

@@ -12,7 +12,7 @@
 	<file>wmts/wmts.svg</file>
         <file>szkolenia.svg</file>
         <file>kursy.svg</file>
-<file>prg/prg.svg</file>
+<file>data_downloader/dane_do_pobrania.svg</file>
 <file>gis_box/connected.svg</file>
 <file>gis_box/connection.svg</file>
 <file>gis_box/dodaj_warstwy.svg</file>

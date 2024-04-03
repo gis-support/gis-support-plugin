@@ -6,7 +6,7 @@ from qgis.core import QgsTask, QgsMessageLog, Qgis
 class BDOT10kDownloadTask(QgsTask):
 
     message_group_name = "GIS Support - BDOT10k Baza Danych Obiektów Topograficznych"
-    progress_updated = pyqtSignal(int)
+    progress_updated = pyqtSignal(float)
     download_finished = pyqtSignal(bool)
 
     def __init__(self, description: str, teryt_woj: str, teryt_pow: str, filepath: str):
@@ -26,7 +26,7 @@ class BDOT10kDownloadTask(QgsTask):
             for data in response.iter_content(chunk_size=1024):
                 file.write(data)
                 bytes_received += len(data)
-                progress = int((bytes_received / total_size) * 100)
+                progress = (bytes_received / total_size) * 100
                 self.progress_updated.emit(progress)
 
         self.log_message(f"{full_filepath} - pobrano", level=Qgis.Info)

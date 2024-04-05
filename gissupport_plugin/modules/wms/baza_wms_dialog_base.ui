@@ -33,6 +33,9 @@
       </widget>
      </item>
      <item>
+      <widget class="QComboBox" name="layerTypeCb"/>
+     </item>
+     <item>
       <widget class="QLabel" name="lblInfo">
        <property name="maximumSize">
         <size>

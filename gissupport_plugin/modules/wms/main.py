@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import owslib.crs
+from qgis._core import QgsVectorLayer
+
 from gissupport_plugin.modules.wms.baza_wms_dialog import BazaWMSDialog
 from gissupport_plugin.modules.base import BaseModule
 #from .resources import *
@@ -11,6 +14,7 @@ from gissupport_plugin.modules.wms.models import ServicesTableModel, ServicesPro
 import json
 from os import path
 from owslib.wms import WebMapService
+from owslib.wfs import WebFeatureService
 import requests.exceptions
 import urllib
 from owslib.etree import ParseError
@@ -26,6 +30,7 @@ class Main(BaseModule):
         self.canvas = iface.mapCanvas()
         self.dlg = BazaWMSDialog()
         self.curServiceData = None
+        self.layerType = None
 
         self.project = QgsProject.instance()
         #Load WMS services list from json file
@@ -44,10 +49,11 @@ class Main(BaseModule):
         #Initialize table headers
         self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(4, QHeaderView.Stretch)
         self.dlg.servicesTableView.horizontalHeader().resizeSection(1, 100)
-        self.dlg.servicesTableView.horizontalHeader().resizeSection(2, 250)
+        self.dlg.servicesTableView.horizontalHeader().resizeSection(3, 250)
 
         self.dlg.layersTableWidget.setHorizontalHeaderLabels(['Nr', 'Nazwa', 'Tytuł', 'Streszczenie'])
         self.dlg.layersTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
@@ -58,6 +64,8 @@ class Main(BaseModule):
         self.dlg.layersTableWidget.setColumnWidth(3, 170)
         self.dlg.layersTableWidget.setColumnWidth(4, 90)
 
+        self.dlg.layerTypeCb.addItems(["WMS/WFS", "WMS", "WFS"])
+
         #Connect slots to signals
         self.dlg.searchLineEdit.textChanged.connect(servicesProxyModel.setFilterRegExp)
         self.dlg.getLayersButton.clicked.connect(self.loadLayers)
@@ -65,6 +73,7 @@ class Main(BaseModule):
         self.dlg.layersTableWidget.itemSelectionChanged.connect(self.enableAddToMap)
         self.dlg.layersTableWidget.doubleClicked.connect(self.addToMap)
         self.dlg.addLayersButton.clicked.connect(self.addToMap)
+        self.dlg.layerTypeCb.currentIndexChanged.connect(self.changeLayerTypeCb)
 
         self.updateServicesList()
         
@@ -99,38 +108,78 @@ class Main(BaseModule):
         if len(row) > 0:
             selected = row[0]
             self.curServiceData = selected.sibling(selected.row(), selected.column()).data(role=Qt.UserRole)
-            try:
-                wmsCapabilities = WebMapService(self.curServiceData['url'])
-            except (AttributeError, ParseError):
-                wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
-            except requests.exceptions.ReadTimeout:
-                iface.messageBar().pushMessage(
-                    'Baza krajowych usług WMS',
-                    'Serwer WMS nie odpowiada. Spróbuj ponownie później.',
-                    level=Qgis.Critical
-                )
+
+            if self.curServiceData['type'] == 'WMS':
+                self.layerType = "WMS"
+                try:
+                    wmsCapabilities = WebMapService(self.curServiceData['url'])
+                except (AttributeError, ParseError):
+                    wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
+                except requests.exceptions.ReadTimeout:
+                    iface.messageBar().pushMessage(
+                        'Baza krajowych usług WMS',
+                        'Serwer WMS nie odpowiada. Spróbuj ponownie później.',
+                        level=Qgis.Critical
+                    )
+                    return 1
+                except (requests.exceptions.SSLError, ServiceException):
+                    iface.messageBar().pushMessage(
+                        'Baza krajowych usług WMS',
+                        'Błąd połączenia z serwerem WMS.',
+                        level=Qgis.Critical
+                    )
+                    return 1
+
+                formatOptions = wmsCapabilities.getOperationByName('GetMap').formatOptions
+                self.populateFormatCb(formatOptions)
+
+                for nr, layer in enumerate(list(wmsCapabilities.contents)):
+                    wmsLayer = wmsCapabilities[layer]
+                    if nr == 0:
+                        self.populateCrsCb(wmsLayer.crsOptions)
+
+                    self.dlg.layersTableWidget.insertRow(nr)
+                    self.dlg.layersTableWidget.setItem(nr, 0, QTableWidgetItem(str(nr+1)))
+                    self.dlg.layersTableWidget.setItem(nr, 1, QTableWidgetItem(wmsLayer.name))
+                    self.dlg.layersTableWidget.setItem(nr, 2, QTableWidgetItem(wmsLayer.title))
+                    self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))
+            elif self.curServiceData['type'] == 'WFS':
+                self.layerType = "WFS"
+                try:
+                    wfsCapabilities = WebFeatureService(self.curServiceData['url'])
+                except (AttributeError, ParseError, TypeError):
+                    wfsCapabilities = WebFeatureService(self.curServiceData['url'], version='2.0.0')
+                except requests.exceptions.ReadTimeout:
+                    iface.messageBar().pushMessage(
+                        'Baza krajowych usług WFS',
+                        'Serwer WFS nie odpowiada. Spróbuj ponownie później.',
+                        level=Qgis.Critical
+                    )
+                    return 1
+                except (requests.exceptions.SSLError, ServiceException):
+                    iface.messageBar().pushMessage(
+                        'Baza krajowych usług WFS',
+                        'Błąd połączenia z serwerem WFS.',
+                        level=Qgis.Critical
+                    )
+                    return 1
+
+                print(dir(wfsCapabilities))
+                formatOptions = wfsCapabilities.getOperationByName('GetFeature').formatOptions
+                print(dir(formatOptions[0]))
+                self.populateFormatCb(formatOptions)
+
+                for nr, layer in enumerate(list(wfsCapabilities.contents)):
+                    wfsLayer = wfsCapabilities[layer]
+                    if nr == 0:
+                        self.populateCrsCb([code.getcode() for code in wfsLayer.crsOptions])
+
+                    self.dlg.layersTableWidget.insertRow(nr)
+                    self.dlg.layersTableWidget.setItem(nr, 0, QTableWidgetItem(str(nr+1)))
+                    self.dlg.layersTableWidget.setItem(nr, 1, QTableWidgetItem(wfsLayer.id))
+                    self.dlg.layersTableWidget.setItem(nr, 2, QTableWidgetItem(wfsLayer.title))
+                    self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wfsLayer.abstract))
                 return 1
-            except (requests.exceptions.SSLError, ServiceException):
-                iface.messageBar().pushMessage(
-                    'Baza krajowych usług WMS',
-                    'Błąd połączenia z serwerem WMS.',
-                    level=Qgis.Critical
-                )
-                return 1
-
-            formatOptions = wmsCapabilities.getOperationByName('GetMap').formatOptions
-            self.populateFormatCb(formatOptions)
-
-            for nr, layer in enumerate(list(wmsCapabilities.contents)):
-                wmsLayer = wmsCapabilities[layer]
-                if nr == 0:
-                    self.populateCrsCb(wmsLayer.crsOptions)
-
-                self.dlg.layersTableWidget.insertRow(nr)
-                self.dlg.layersTableWidget.setItem(nr, 0, QTableWidgetItem(str(nr+1)))
-                self.dlg.layersTableWidget.setItem(nr, 1, QTableWidgetItem(wmsLayer.name))
-                self.dlg.layersTableWidget.setItem(nr, 2, QTableWidgetItem(wmsLayer.title))
-                self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))
 
     def enableAddToMap(self):
         layerSelected = True if self.dlg.layersTableWidget.selectionModel().selectedRows() else False
@@ -138,31 +187,64 @@ class Main(BaseModule):
 
     def addToMap(self):
         selectedRows = [i.row() for i in self.dlg.layersTableWidget.selectionModel().selectedRows()]
-        for layerId in selectedRows:
-            url = (
-                "contextualWMSLegend=0&"
-                "crs={}&"
-                "dpiMode=7&"
-                "featureCount=10&"
-                "format={}&"
-                "layers={}&"
-                "styles=&"
-                "url={}".format(
-                    self.dlg.crsCb.currentText(),
-                    self.dlg.formatCb.currentText(),
-                    urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:'),
-                    self.curServiceData['url']
+        if self.layerType == 'WMS':
+            for layerId in selectedRows:
+                url = (
+                    "contextualWMSLegend=0&"
+                    "crs={}&"
+                    "dpiMode=7&"
+                    "featureCount=10&"
+                    "format={}&"
+                    "layers={}&"
+                    "styles=&"
+                    "url={}".format(
+                        self.dlg.crsCb.currentText(),
+                        self.dlg.formatCb.currentText(),
+                        urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:'),
+                        self.curServiceData['url']
+                    )
                 )
-            )
-            wmsLayer = QgsRasterLayer(url, self.dlg.layersTableWidget.item(layerId, 2).text(), 'wms')
-            if wmsLayer.isValid():
-                QgsProject.instance().addMapLayer(wmsLayer)
-            else:
-                iface.messageBar().pushMessage(
-                    'Baza krajowych usług WMS',
-                    'Nie udało się wczytać warstwy %s' % self.dlg.layersTableWidget.item(layerId, 2).text(),
-                    level=Qgis.Warning
-                )
+
+                wmsLayer = QgsRasterLayer(url, self.dlg.layersTableWidget.item(layerId, 2).text(), 'wms')
+
+                if wmsLayer.isValid():
+                    QgsProject.instance().addMapLayer(wmsLayer)
+                else:
+                    iface.messageBar().pushMessage(
+                        'Baza krajowych usług WMS',
+                        'Nie udało się wczytać warstwy %s' % self.dlg.layersTableWidget.item(layerId, 2).text(),
+                        level=Qgis.Warning
+                    )
+
+        elif self.layerType == 'WFS':
+            for layerId in selectedRows:
+                # url = """url='{}' service='wfs' version='2.0.0' request='GetFeature' srsName='{}' typeNames='{}'""".format(
+                #     self.curServiceData['url'],
+                #     self.dlg.crsCb.currentText(),
+                #     urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:')
+                # )
+                url = (
+                        "{}?"
+                        "SERVICE=WFS&"
+                        "REQUEST=GetFeature&"
+                        "SRSNAME={}&"
+                        "VERSION=2.0.0&"
+                        "TYPENAME={}&").format(
+                            self.curServiceData['url'],
+                            self.dlg.crsCb.currentText(),
+                            urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:')
+                    )
+
+                wfsLayer = QgsVectorLayer(url, self.dlg.layersTableWidget.item(layerId, 2).text(), 'wfs')
+
+                if wfsLayer.isValid():
+                    QgsProject.instance().addMapLayer(wfsLayer)
+                else:
+                    iface.messageBar().pushMessage(
+                        'Baza krajowych usług WFS',
+                        'Nie udało się wczytać warstwy %s' % self.dlg.layersTableWidget.item(layerId, 2).text(),
+                        level=Qgis.Warning
+                    )
 
     def populateCrsCb(self, crses):
         self.dlg.crsCb.clear()
@@ -179,11 +261,25 @@ class Main(BaseModule):
 
     def populateFormatCb(self, formats):
         self.dlg.formatCb.clear()
-        default = 'image/png'
-        if default not in formats:
-            formats.insert(0, default)
-        else:
-            formats.insert(0, formats.pop(formats.index(default)))
+        if self.layerType == 'WMS':
+            default = 'image/png'
+
+            if default not in formats:
+                formats.insert(0, default)
+            else:
+                formats.insert(0, formats.pop(formats.index(default)))
 
         for index, format in enumerate(formats):
             self.dlg.formatCb.insertItem(index, format)
+
+    def changeLayerTypeCb(self):
+        index = self.dlg.layerTypeCb.currentIndex()
+        self.servicesTableModel.removeRows()
+        if index == 1:
+            services = [service for service in self.services if service['type'] == 'WMS']
+            self.servicesTableModel.insertRows(0, services)
+        elif index == 2:
+            services = [service for service in self.services if service['type'] == 'WFS']
+            self.servicesTableModel.insertRows(0, services)
+        else:
+            self.servicesTableModel.insertRows(0, self.services)

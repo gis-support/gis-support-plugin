@@ -25,7 +25,7 @@
      <widget class="QLabel" name="moreinfoLabel">
       <property name="font">
        <font>
-        <pointsize>10</pointsize>
+        <pointsize>8</pointsize>
         <italic>false</italic>
         <bold>false</bold>
         <kerning>true</kerning>
@@ -118,7 +118,7 @@
         <widget class="QLabel" name="gugikLabel">
          <property name="font">
           <font>
-           <pointsize>10</pointsize>
+           <pointsize>8</pointsize>
           </font>
          </property>
          <property name="text">

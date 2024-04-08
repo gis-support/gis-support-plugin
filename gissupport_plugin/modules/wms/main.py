@@ -164,9 +164,8 @@ class Main(BaseModule):
                     )
                     return 1
 
-                print(dir(wfsCapabilities))
                 formatOptions = wfsCapabilities.getOperationByName('GetFeature').formatOptions
-                print(dir(formatOptions[0]))
+
                 self.populateFormatCb(formatOptions)
 
                 for nr, layer in enumerate(list(wfsCapabilities.contents)):
@@ -229,10 +228,12 @@ class Main(BaseModule):
                         "REQUEST=GetFeature&"
                         "SRSNAME={}&"
                         "VERSION=2.0.0&"
-                        "TYPENAME={}&").format(
+                        "TYPENAME={}&"
+                        "FORMAT={}").format(
                             self.curServiceData['url'],
                             self.dlg.crsCb.currentText(),
-                            urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:')
+                            urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:'),
+                            self.dlg.formatCb.currentText()
                     )
 
                 wfsLayer = QgsVectorLayer(url, self.dlg.layersTableWidget.item(layerId, 2).text(), 'wfs')

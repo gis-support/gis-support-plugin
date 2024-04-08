@@ -217,11 +217,6 @@ class Main(BaseModule):
 
         elif self.layerType == 'WFS':
             for layerId in selectedRows:
-                # url = """url='{}' service='wfs' version='2.0.0' request='GetFeature' srsName='{}' typeNames='{}'""".format(
-                #     self.curServiceData['url'],
-                #     self.dlg.crsCb.currentText(),
-                #     urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:')
-                # )
                 url = (
                         "{}?"
                         "SERVICE=WFS&"

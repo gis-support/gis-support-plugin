@@ -947,7 +947,7 @@
         "source": "Powiat pruszkowski",
         "type": "WFS",
         "name": "Ewidencja gruntów i budynków (EGIB)",
-        "url": "http://usluga.zabytek.gov.pl/WFS_AZP/service.svc/get",
+        "url": "https://wms.epodgik.pl/cgi-bin/pruszkow",
         "description": "Usługa WFS dostarczana przez powiat pruszkowski.",
         "id": 119
     }

@@ -22,7 +22,7 @@ from owslib.util import ServiceException
 
 
 class Main(BaseModule):
-    module_name = "Baza krajowych usług WMS"
+    module_name = "Baza krajowych usług WMS/WFS"
 
     def __init__(self, parent):
         super().__init__(parent)

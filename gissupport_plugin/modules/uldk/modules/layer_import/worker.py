@@ -17,8 +17,7 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("pow_m2", QVariant.String),
 ]
 
-CRS_2180 = QgsCoordinateReferenceSystem()
-CRS_2180.createFromSrid(2180)
+CRS_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
 class BadGeometryException(Exception):
     pass

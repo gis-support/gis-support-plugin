@@ -16,8 +16,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
 ))
 
-CRS_2180 = QgsCoordinateReferenceSystem()
-CRS_2180.createFromSrid(2180)
+CRS_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
 def get_obiekty_form(count):
     form = "obiekt"

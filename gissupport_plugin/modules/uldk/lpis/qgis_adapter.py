@@ -3,8 +3,7 @@ from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsFeature, QgsGeometry,
                        QgsPointXY, QgsWkbTypes)
 
-crs_2180 = QgsCoordinateReferenceSystem()
-crs_2180.createFromSrid(2180)
+crs_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
 def extract_lpis_bbox(lpis_response, target_crs, response_crs = crs_2180):
 

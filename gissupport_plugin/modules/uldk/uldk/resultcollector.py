@@ -111,8 +111,7 @@ class ResultCollectorSingle(ResultCollector):
         return feature
 
     def zoom_to_feature(self, feature):
-        crs_2180 = QgsCoordinateReferenceSystem()
-        crs_2180.createFromSrid(2180)
+        crs_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
         canvas_crs = self.canvas.mapSettings().destinationCrs()
         transformation = QgsCoordinateTransform(crs_2180, canvas_crs, QgsCoordinateTransformContext())
         target_bbox = transformation.transformBoundingBox(feature.geometry().boundingBox())

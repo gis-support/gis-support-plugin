@@ -26,7 +26,7 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("pow_m2", QVariant.String),
 ]
 
-CRS_2180 = QgsCoordinateReferenceSystem(2180, QgsCoordinateReferenceSystem.EpsgCrsId)
+CRS_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
 
 class UI(QtWidgets.QFrame, FORM_CLASS):

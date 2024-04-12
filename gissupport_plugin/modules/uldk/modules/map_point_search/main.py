@@ -7,8 +7,7 @@ from qgis.utils import iface
 
 from ...uldk.api import ULDKSearchLogger, ULDKSearchPoint, ULDKSearchPointWorker, ULDKPoint
 
-CRS_2180 = QgsCoordinateReferenceSystem()
-CRS_2180.createFromSrid(2180)
+CRS_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
 class MapPointSearch(QgsMapToolEmitPoint):
 

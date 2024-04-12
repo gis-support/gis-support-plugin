@@ -13,6 +13,7 @@ class PRGDownloader:
     def __init__(self):
         self.prg_dockwidget = PRGDockWidget()
         self.layer = None
+        self.task = None
 
         self.populate_dockwidget_comboboxes()
         self.prg_dockwidget.entity_type_combobox.currentTextChanged.connect(self.handle_entity_type_changed)
@@ -51,8 +52,7 @@ class PRGDownloader:
         entity_division = self.prg_dockwidget.entity_division_combobox.currentText()
         entity_teryt = self.prg_dockwidget.entity_name_combobox.currentData()
 
-        crs = QgsCoordinateReferenceSystem()
-        crs.createFromSrid(2180)
+        crs = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
         self.layer = QgsVectorLayer("MultiPolygon", "Obiekty PRG", "memory")
         self.layer.setCrs(crs)
@@ -62,12 +62,12 @@ class PRGDownloader:
         dp.addAttributes([QgsField("TERYT", QVariant.String)])
         self.layer.updateFields()
 
-        task = PRGDownloadTask("Pobieranie danych PRG", 75, self.layer,
+        self.task = PRGDownloadTask("Pobieranie danych PRG", 75, self.layer,
                                     entity_division, entity_teryt)
         
         manager = QgsApplication.taskManager()
-        manager.addTask(task)
-        task.taskCompleted.connect(self.add_result_layer)
+        manager.addTask(self.task)
+        self.task.taskCompleted.connect(self.add_result_layer)
 
     def populate_dockwidget_comboboxes(self):
         self.prg_dockwidget.entity_division_combobox.addItem(EntityOption.WOJEWODZTWO.value)

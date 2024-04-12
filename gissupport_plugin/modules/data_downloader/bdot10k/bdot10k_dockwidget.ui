@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>405</width>
-    <height>341</height>
+    <width>341</width>
+    <height>371</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -85,32 +85,24 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
-         <item>
-          <widget class="QLabel" name="wojLabel">
-           <property name="text">
-            <string>Województwo</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="wojComboBox"/>
-         </item>
-        </layout>
+        <widget class="QLabel" name="wojLabel">
+         <property name="text">
+          <string>Województwo</string>
+         </property>
+        </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,2">
-         <item>
-          <widget class="QLabel" name="powLabel">
-           <property name="text">
-            <string>Powiat</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="powComboBox"/>
-         </item>
-        </layout>
+        <widget class="QComboBox" name="wojComboBox"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="powLabel">
+         <property name="text">
+          <string>Powiat</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="powComboBox"/>
        </item>
        <item>
         <widget class="QPushButton" name="downloadButton">

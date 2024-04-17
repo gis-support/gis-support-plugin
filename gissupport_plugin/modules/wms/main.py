@@ -223,12 +223,10 @@ class Main(BaseModule):
                         "REQUEST=GetFeature&"
                         "SRSNAME={}&"
                         "VERSION=2.0.0&"
-                        "TYPENAME={}&"
-                        "FORMAT={}").format(
+                        "TYPENAME={}").format(
                             self.curServiceData['url'],
                             self.dlg.crsCb.currentText(),
                             urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:'),
-                            self.dlg.formatCb.currentText()
                     )
 
                 wfsLayer = QgsVectorLayer(url, self.dlg.layersTableWidget.item(layerId, 2).text(), 'wfs')
@@ -258,6 +256,9 @@ class Main(BaseModule):
     def populateFormatCb(self, formats):
         self.dlg.formatCb.clear()
         if self.layerType == 'WMS':
+            self.dlg.formatLabel.show()
+            self.dlg.formatCb.show()
+
             default = 'image/png'
 
             if default not in formats:
@@ -265,8 +266,11 @@ class Main(BaseModule):
             else:
                 formats.insert(0, formats.pop(formats.index(default)))
 
-        for index, format in enumerate(formats):
-            self.dlg.formatCb.insertItem(index, format)
+            for index, format in enumerate(formats):
+                self.dlg.formatCb.insertItem(index, format)
+        else:
+            self.dlg.formatLabel.hide()
+            self.dlg.formatCb.hide()
 
     def changeLayerTypeCb(self):
         index = self.dlg.layerTypeCb.currentIndex()

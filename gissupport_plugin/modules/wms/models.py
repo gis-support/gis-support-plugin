@@ -10,7 +10,7 @@ class ServicesTableModel(QAbstractTableModel):
         return len(self.items)
     
     def columnCount(self, parent=QModelIndex()):
-        return 4
+        return 5
 
     def insertRows(self, position, rows, parent=QModelIndex()):
         self.beginInsertRows(parent, position, position + len(rows) - 1)
@@ -18,6 +18,16 @@ class ServicesTableModel(QAbstractTableModel):
             self.items.insert(position + i, item)
         self.endInsertRows()
         return True
+
+    def removeRows(self, row=None, count=None, parent=QModelIndex()):
+        if count == None:
+            count = len(self.items)
+        if row == None:
+            row = 0
+        self.beginRemoveRows(parent, row, row+count-1)
+        for i in reversed(list(range(row, row+count))):
+            del self.items[i]
+        self.endRemoveRows()
     
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:    
@@ -26,8 +36,10 @@ class ServicesTableModel(QAbstractTableModel):
             elif section == 1:
                 return 'Źródło'
             elif section == 2:
-                return 'Nazwa'
+                return 'Typ'
             elif section == 3:
+                return 'Nazwa'
+            elif section == 4:
                 return 'Opis'
 
     def data(self, index, role):
@@ -40,8 +52,10 @@ class ServicesTableModel(QAbstractTableModel):
             elif index.column() == 1:
                 return item['source']
             elif index.column() == 2:
-                return '{}, {}'.format(item['name'], item['url'])
+                return item['type']
             elif index.column() == 3:
+                return '{}, {}'.format(item['name'], item['url'])
+            elif index.column() == 4:
                 return item['description']
         elif role == Qt.UserRole:
             return item
@@ -55,7 +69,7 @@ class ServicesProxyModel(QSortFilterProxyModel):
             return True
         index = self.sourceModel().index(source_row, 0, source_parent)
         value = self.sourceModel().data(index, role=Qt.UserRole)
-        for key in ['source', 'name', 'description']:
+        for key in ['source', 'type', 'name', 'description']:
             if value[key].casefold().__contains__(pattern.casefold()):
                 return True
         return False

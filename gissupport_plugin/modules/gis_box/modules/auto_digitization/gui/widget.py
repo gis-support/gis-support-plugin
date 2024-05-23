@@ -135,7 +135,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
         GISBOX_CONNECTION.post(
             "/api/automatic_digitization/classification_contours",
-            data, srid=2180, callback=self.createShapefile
+            data, srid='2180', callback=self.createShapefile
         )
 
     def createShapefile(self, data):

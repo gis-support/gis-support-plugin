@@ -127,10 +127,10 @@ class GisboxConnection(QObject, Logger):
         
         return reply
     
-    def post(self, endpoint: str, payload: dict, callback: any = None, srid: int = None):
+    def post(self, endpoint: str, payload: dict, callback: any = None, srid: str = None):
         request = self._createRequest(endpoint)
         if srid:
-            request.setRawHeader(b'X-Response-SRID', bytes(srid))
+            request.setRawHeader(b'X-Response-SRID', srid.encode())
 
         data = json.dumps(payload).encode()
 

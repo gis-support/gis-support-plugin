@@ -14,7 +14,6 @@ from qgis.utils import iface
 
 
 class SelectRectangleTool(QgsMapTool):
-    """ Narzędzie identyfikacji wysokości """
     rectangleChanged = pyqtSignal(float)
     rectangleEnded = pyqtSignal(float, QgsGeometry)
 
@@ -69,19 +68,16 @@ class SelectRectangleTool(QgsMapTool):
         czyszczenie całości
         """
         if e.key() == Qt.Key_Escape:
-            self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
-            self.startPoint = None
-
+            self.reset()
 
     def reset(self):
-        """ Czyszczenie narzędzia """
         self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
         self.startPoint = None
+        iface.mapCanvas().unsetMapTool(self)
 
     def deactivate(self):
-        """ Reagowanie zmiany aktywności narzędzia """
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
-        self.startPoint = None
+        self.reset()
+
 
 
 def set_cursor(tool):

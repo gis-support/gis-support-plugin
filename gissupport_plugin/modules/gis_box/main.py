@@ -156,7 +156,10 @@ class GISBox(BaseModule, Logger):
             self.connectAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/connection.svg"))
             self.connectAction.setText('Rozłącz z GIS.Box')
             self.refreshLayerAction.setEnabled(True)
-            self.autoDigitalizationAction.setEnabled(True)
+
+            GISBOX_CONNECTION.get(
+                "/api/settings/automatic_digitization_module_enabled?value_only=true", callback=self.enableDigitization
+            )
 
         else:
             # Rozłączono z serwerem lub błąd połączenia
@@ -248,3 +251,7 @@ class GISBox(BaseModule, Logger):
     def open_url(self, url):
         """ Otwarcie linku w przeglądarce """
         QDesktopServices.openUrl(QUrl(url))
+
+    def enableDigitization(self, data):
+        if data["data"]:
+            self.autoDigitalizationAction.setEnabled(True)

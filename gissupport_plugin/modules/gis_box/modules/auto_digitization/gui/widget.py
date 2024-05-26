@@ -2,10 +2,14 @@
 import json
 import os
 
+from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QColor
 from qgis.PyQt import QtGui, uic
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import pyqtSignal
+from qgis.core import Qgis
+from qgis.core import QgsPointXY
+from qgis.core import QgsVectorLayer, QgsField, QgsFeature
 from qgis.core import QgsCoordinateTransform, QgsCoordinateTransformContext
 from qgis.core import QgsCoordinateReferenceSystem
 from qgis.core import QgsProject
@@ -44,7 +48,6 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
     def menageSignals(self):
         """ Zarządzanie sygnałami """
-        # self.btnSelectArea.clicked.connect(self.selectArea)
         self.btnExecute.clicked.connect(self.execute)
         self.selectRectangleTool.rectangleChanged.connect(self.areaChanged)
         self.selectRectangleTool.rectangleEnded.connect(self.areaEnded)
@@ -104,6 +107,8 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.selectRectangleTool.reset()
 
     def execute(self):
+        iface.messageBar().pushMessage(
+            "Automatyczna wektoryzacja", "Rozpoczęto automatyczną wektoryzację dla zadanego obszaru.", level=Qgis.Info)
         current_crs = QgsProject.instance().crs()
         crs_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
         if current_crs != crs_2180:
@@ -128,15 +133,62 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
             }
         }
 
-        # GISBOX_CONNECTION.get(
-        #     f"/api/automatic_digitization/classification_contours?background=false",
-        #     False, callback=self.createShapefile
-        # )
+        options = self.options["data"]
+        current_text = self.digitizationOptions.currentText()
+        current_option = list(options.keys())[list(options.values()).index(current_text)]
 
         GISBOX_CONNECTION.post(
-            "/api/automatic_digitization/classification_contours",
+            f"/api/automatic_digitization/{current_option}?background=false",
             data, srid='2180', callback=self.createShapefile
         )
 
     def createShapefile(self, data):
-        print("done")
+        if data.get("data"):
+            iface.messageBar().pushMessage(
+                "Automatyczna wektoryzacja", "Trwa zapisywanie danych do warstwy tymczasowej.", level=Qgis.Info)
+            crs = QgsCoordinateReferenceSystem.fromEpsgId(2180)
+
+            layer = QgsVectorLayer("MultiPolygon", self.digitizationOptions.currentText(), "memory")
+            layer.setCrs(crs)
+
+            dp = layer.dataProvider()
+            dp.addAttributes([QgsField("best_label", QVariant.String)])
+            dp.addAttributes([QgsField("class", QVariant.String)])
+            dp.addAttributes([QgsField("labels", QVariant.String)])
+            dp.addAttributes([QgsField("type", QVariant.String)])
+            layer.updateFields()
+
+            for feature in data["data"]["features"]:
+                multipolygon = []
+
+                coordinates = feature["geometry"]["coordinates"]
+                for part in coordinates:
+                    part_ = []
+                    for polygon in part:
+                        polygon_ = []
+                        for point in polygon:
+                            polygon_.append(QgsPointXY(point[0], point[1]))
+                        part_.append(polygon_)
+                    multipolygon.append(part_)
+
+                geometry = QgsGeometry().fromMultiPolygonXY(multipolygon)
+
+                attributes = feature["properties"]
+                output_feature = QgsFeature()
+                output_feature.setGeometry(geometry)
+                output_feature.setAttributes([
+                    attributes["best_label"],
+                    attributes["class"],
+                    str(attributes["labels"]),
+                    attributes["type"]
+                ])
+
+                dp.addFeature(output_feature)
+
+            QgsProject.instance().addMapLayer(layer)
+            iface.messageBar().pushMessage(
+                "Automatyczna wektoryzacja", "Pomyślnie zapisano dane do warstwy tymczasowej.", level=Qgis.Success)
+
+        else:
+            iface.messageBar().pushMessage(
+                "Automatyczna wektoryzacja", "Zapisanie danych do warstwy tymczasowej nie powiodło się.", level=Qgis.Critical)

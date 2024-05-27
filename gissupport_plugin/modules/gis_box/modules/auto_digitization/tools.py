@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from qgis.PyQt.QtCore import Qt, pyqtSignal
-from qgis.PyQt.QtWidgets import QInputDialog, QTableWidgetItem
 from qgis.PyQt.QtGui import QCursor, QPixmap, QColor
-from qgis._core import QgsEllipsoidUtils
 from qgis.core import QgsPointXY
-from qgis.core import (QgsMapLayer, QgsWkbTypes, QgsGeometry, QgsProject, Qgis, QgsDistanceArea,
-                       QgsCoordinateTransformContext, QgsUnitTypes, QgsCoordinateReferenceSystem,
-                       QgsCoordinateTransform,
-                       QgsTask, QgsApplication)
+from qgis.core import (QgsWkbTypes, QgsGeometry, QgsProject, QgsDistanceArea,
+                       QgsCoordinateTransformContext, QgsUnitTypes,
+                       )
 from qgis.gui import QgsRubberBand, QgsMapTool
 from qgis.utils import iface
 

@@ -254,5 +254,16 @@ class GISBox(BaseModule, Logger):
         QDesktopServices.openUrl(QUrl(url))
 
     def enableDigitization(self, data):
-        if data["data"]:
+        current_user = GISBOX_CONNECTION.get(
+            "/api/users/current_user", True
+        )
+        modules = current_user["data"]["permissions"]["modules"]
+
+        user_has_permissions = False
+        for module in modules:
+            if module["module_name"] == "AUTOMATIC_DIGITIZATION":
+                if module["main_value"] == 1:
+                    user_has_permissions = True
+
+        if user_has_permissions and data["data"]:
             self.autoDigitalizationAction.setEnabled(True)

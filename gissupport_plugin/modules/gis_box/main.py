@@ -170,6 +170,7 @@ class GISBox(BaseModule, Logger):
             self.connectAction.setChecked(False)
             self.refreshLayerAction.setEnabled(False)
             self.autoDigitalizationAction.setEnabled(False)
+            self.dockwidget.removeWidget()
 
     def _create_layers_menu(self, groups: list):
         modules_layer_custom_id = -99

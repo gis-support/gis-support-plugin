@@ -47,6 +47,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.selectRectangleTool.rectangleChanged.connect(self.areaChanged)
         self.selectRectangleTool.rectangleEnded.connect(self.areaEnded)
         self.areaReset.clicked.connect(self.areaInfoReset)
+        self.closingPlugin.connect(self.removeWidget)
 
     def registerTools(self):
         """ Zarejestrowanie narzędzi jak narzędzi mapy QGIS """
@@ -54,11 +55,9 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.selectRectangleTool.setButton(self.btnSelectArea)
         self.btnSelectArea.clicked.connect(lambda: self.activateTool(self.selectRectangleTool))
 
-
     def activateTool(self, tool):
         """ Zmiana aktywnego narzędzia mapy """
         iface.mapCanvas().setMapTool(tool)
-
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -73,7 +72,6 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         )
         self.digitizationOptions.clear()
         self.digitizationOptions.addItems(self.options["data"].values())
-
 
     def areaChanged(self, area: float = 0):
         self.area = area
@@ -194,3 +192,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         else:
             iface.messageBar().pushMessage(
                 "Automatyczna wektoryzacja", "Zapisanie danych do warstwy tymczasowej nie powiodło się.", level=Qgis.Critical)
+
+    def removeWidget(self):
+        self.close()
+        iface.removeDockWidget(self)

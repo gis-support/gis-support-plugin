@@ -111,11 +111,36 @@
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="lbSendAgain">
-     <property name="text">
-      <string>Nie otrzymałeś maila? Wyślij kod ponownie</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Nie otrzymałeś maila?</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btSendAgain">
+       <property name="font">
+        <font>
+         <underline>true</underline>
+        </font>
+       </property>
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: blue;</string>
+       </property>
+       <property name="text">
+        <string>Wyślij kod ponownie</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <spacer name="verticalSpacer">

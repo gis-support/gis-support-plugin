@@ -29,12 +29,18 @@ class TwoFADialog(QDialog, FORM_CLASS):
         self.buttonBox.rejected.connect(self.dialogRejected)
         self.btSendAgain.clicked.connect(self.resendCode)
 
+    def closeEvent(self, event):
+        self.edCode.clear()
+        self.close()
+
     def dialogAccepted(self):
         code = self.edCode.displayText()
         self.verification_code = code
+        self.edCode.clear()
         self.accept()
 
     def dialogRejected(self):
+        self.edCode.clear()
         self.close()
 
     def resendCode(self):

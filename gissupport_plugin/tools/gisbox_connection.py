@@ -26,7 +26,7 @@ class GisboxConnection(QObject, Logger):
         self.host = None
         self.is_connected = False
 
-        self.twoFaDialog = TwoFADialog()
+        self.twoFaDialog = None
 
     @classmethod
     def _exec_callback(cls, uuid_: str):
@@ -85,6 +85,8 @@ class GisboxConnection(QObject, Logger):
             return False
 
         if status_code == 201:
+            if self.twoFaDialog is None:
+                self.twoFaDialog = TwoFADialog()
 
             dialog = self.twoFaDialog.exec()
             if dialog != 0:

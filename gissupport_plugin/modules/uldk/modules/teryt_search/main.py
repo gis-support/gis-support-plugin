@@ -9,7 +9,6 @@ from qgis.utils import iface
 
 from ...uldk.api import ULDKSearchTeryt, ULDKSearchParcel, ULDKSearchLogger, ULDKSearchWorker
 from ...uldk import validators
-from ...lpis import api as lpis_api
 from ...lpis.qgis_adapter import extract_lpis_bbox
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -70,37 +69,6 @@ class TerytSearch(QObject):
         else:
             teryt = self.ui.lineedit_full_teryt.text()
             self.__search({0: {"teryt": teryt}})
-
-    def search_lpis(self):
-        teryt = self.ui.lineedit_full_teryt.text()
-        lpis_response = lpis_api.search(teryt)
-
-        if len(lpis_response) == 0:
-            iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono przybliżonej lokacji działki{teryt}")
-        elif len(lpis_response) > 1:
-            combobox = self.ui.combobox_sheet
-            def _zoom_to_lpis_wrapper():
-                self._zoom_to_lpis(combobox.currentData())
-                self.lpis_bbox_found.emit()
-                combobox.clear()
-                combobox.setEnabled(False)
-
-            self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
-            iface.messageBar().pushWidget(self.message_bar_item)
-            
-            combobox.setEnabled(True)
-            combobox.clear()
-            for row in lpis_response:
-                combobox.addItem(row["arkusz"], row)
-
-            try:
-                combobox.activated.disconnect()
-            except TypeError:
-                pass #w przypadku braku przypiętych slotów rzuca wyjątkiem
-            combobox.activated.connect(_zoom_to_lpis_wrapper)
-        else:
-            self._zoom_to_lpis(lpis_response[0])
-            self.lpis_bbox_found.emit()
 
     def _zoom_to_lpis(self, lpis_response):
         teryt = lpis_response["identyfikator"]
@@ -267,9 +235,6 @@ class TerytSearch(QObject):
 
     def __search_from_sheet(self):
         self.__handle_found({0:[self.ui.combobox_sheet.currentData()]})
-
-    def _search_lpis_from_sheet(self):
-        self.search_lpis(self.ui.combobox_sheet.currentData())
 
     def __handle_finished(self):
         self.ui.button_search_uldk.setEnabled(True)

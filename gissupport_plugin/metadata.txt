@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=2.2
+version=2.3
 author=GIS Support
 email=info@gis-support.pl
 
@@ -52,8 +52,10 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=Dodanie do modułu `Baza usług krajowych` obsługi WFS
-	Pobieranie paczek danych z BDOT10k dla powiatów
+changelog=Nowe narzędzie `Automatyczna wektoryzacja`
+	Obsługa uwierzytelniania dwuskładnikowego (2FA) GIS.Box
+	Aktualizacja adresów WMS Państwowego Instytutu Geologicznego
+	Osbługa ustawień serwera proxy QGIS
 
 # Tags are comma separated with spaces allowed
 tags=python

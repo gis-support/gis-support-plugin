@@ -491,7 +491,7 @@
     "source": "Państwowy Instytut Geologiczny (PIG)",
     "type": "WMS",
     "name": "Osuwiska i tereny zagrożone ruchami masowymi",
-    "url": "http://cbdgmapa.pgi.gov.pl/arcgis/services/geozagrozenia/sopo_obszary/MapServer/WMSServer",
+    "url": "https://cbdgmapa.pgi.gov.pl/arcgis/services/geozagrozenia/sopo_obszary/MapServer/WMSServer",
     "description": "-",
     "id": 62
   },
@@ -499,7 +499,7 @@
     "source": "Państwowy Instytut Geologiczny (PIG)",
     "type": "WMS",
     "name": "Podtopienia",
-    "url": "http://cbdgmapa.pgi.gov.pl/arcgis/services/hydrogeologia/podtopienia/MapServer/WMSServer",
+    "url": "https://cbdgmapa.pgi.gov.pl/arcgis/services/hydrogeologia/podtopienia/MapServer/WMSServer",
     "description": "-",
     "id": 63
   },
@@ -507,7 +507,7 @@
     "source": "Państwowy Instytut Geologiczny (PIG)",
     "type": "WMS",
     "name": "Złoża. obszary i tereny górnicze (MIDAS)",
-    "url": "http://cbdgmapa.pgi.gov.pl/arcgis/services/midas/MapServer/WMSServer",
+    "url": "https://cbdgmapa.pgi.gov.pl/arcgis/services/midas/MapServer/WMSServer",
     "description": "Granice złóż. obszarów i terenów górniczych oraz złoża wykreślone z krajowego bilansu zasobów złóż kopalin",
     "id": 64
   },
@@ -515,7 +515,7 @@
     "source": "Państwowy Instytut Geologiczny (PIG)",
     "type": "WMS",
     "name": "Obszary prognostyczne i perspektywiczne",
-    "url": "http://cbdgmapa.pgi.gov.pl/arcgis/services/geosrodowisko/obszary_zweryfikowane/MapServer/WMSServer",
+    "url": "https://cbdgmapa.pgi.gov.pl/arcgis/services/geosrodowisko/obszary_zweryfikowane/MapServer/WMSServer",
     "description": "Obszary prognostyczne i perspektywiczne",
     "id": 65
   },
@@ -523,7 +523,7 @@
     "source": "Państwowy Instytut Geologiczny (PIG)",
     "type": "WMS",
     "name": "Otwory wiertnicze",
-    "url": "http://cbdgmapa.pgi.gov.pl/arcgis/services/cbdg_otwory/MapServer/WMSServer",
+    "url": "https://cbdgmapa.pgi.gov.pl/arcgis/services/cbdg_otwory/MapServer/WMSServer",
     "description": "Otwory wiertnicze CBDG PIG-PIB",
     "id": 66
   },
@@ -531,7 +531,7 @@
     "source": "Państwowy Instytut Geologiczny (PIG)",
     "type": "WMS",
     "name": "Otwory wiertnicze - hydrogeologiczne",
-    "url": "http://cbdgmapa.pgi.gov.pl/arcgis/services/hydrogeologia/cbdh_otwory/MapServer/WMSServer",
+    "url": "https://cbdgmapa.pgi.gov.pl/arcgis/services/hydrogeologia/cbdh_otwory/MapServer/WMSServer",
     "description": "-",
     "id": 67
   },
@@ -539,7 +539,7 @@
     "source": "Państwowy Instytut Geologiczny (PIG)",
     "type": "WMS",
     "name": "Szczegółowa mapa geologiczna pigSMG",
-    "url": "http://cbdgmapa.pgi.gov.pl/arcgis/services/kartografia/smgp50k/MapServer/WMSServer",
+    "url": "https://cbdgmapa.pgi.gov.pl/arcgis/services/kartografia/smgp50k/MapServer/WMSServer",
     "description": "-",
     "id": 68
   },
@@ -547,7 +547,7 @@
     "source": "Państwowy Instytut Geologiczny (PIG)",
     "type": "WMS",
     "name": "Hydrologia - Monitoring Wód Podziemnych",
-    "url": "http://cbdgmapa.pgi.gov.pl/arcgis/services/hydrogeologia/mwp/MapServer/WMSServer",
+    "url": "https://cbdgmapa.pgi.gov.pl/arcgis/services/hydrogeologia/mwp/MapServer/WMSServer",
     "description": "-",
     "id": 69
   },
@@ -555,7 +555,7 @@
     "source": "Państwowy Instytut Geologiczny (PIG)",
     "type": "WMS",
     "name": "Jaskinie",
-    "url": "http://cbdgmapa.pgi.gov.pl/arcgis/services/jaskinie/MapServer/WMSServer",
+    "url": "https://cbdgmapa.pgi.gov.pl/arcgis/services/jaskinie/MapServer/WMSServer",
     "description": "Serwis prezentuje udokumentowane dane o jaskiniach i podobnych obiektach przyrodniczych. prowadzony jest przez PIG-PIB we współpracy z Polskim Towarzystwem Przyjaciół Nauk o Ziemi. Dane pochodzą z prac inwentaryzacyjnych prowadzonych przez speleologów na obszarze całej Polski. Adres: http://jaskinie.pgi.gov.pl",
     "id": 70
   },

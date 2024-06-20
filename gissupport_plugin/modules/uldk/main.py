@@ -1,18 +1,8 @@
-import json
-import locale
-import operator
-import os
-import sys
-import time
-from collections import OrderedDict
-from urllib.request import urlopen
 
-from PyQt5.QtCore import (QCoreApplication, Qt, QTranslator,
-                          QVariant, qVersion)
+
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import QAction, QShortcut
 from qgis.core import *
-from qgis.gui import QgsMessageBar
 from qgis.utils import iface
 
 from gissupport_plugin.modules.base import BaseModule

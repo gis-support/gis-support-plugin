@@ -1,5 +1,4 @@
 import os
-from urllib.request import urlopen
 
 from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import Qt, QThread, pyqtSignal

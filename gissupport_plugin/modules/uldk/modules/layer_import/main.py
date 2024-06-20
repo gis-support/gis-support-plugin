@@ -1,11 +1,9 @@
 import os
-from urllib.request import urlopen
 
-from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from PyQt5.QtGui import QKeySequence, QPixmap
-from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-                       QgsCoordinateTransformContext, QgsMapLayerProxyModel,
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtCore import QThread
+from PyQt5.QtGui import QPixmap
+from qgis.core import (QgsCoordinateReferenceSystem, QgsMapLayerProxyModel,
                        QgsProject)
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface

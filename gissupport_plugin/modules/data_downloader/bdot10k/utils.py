@@ -1,7 +1,10 @@
+from io import BytesIO
 import requests
 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import QgsTask, QgsMessageLog, Qgis
+from gissupport_plugin.tools.requests import NetworkHandler
+from PyQt5.QtNetwork import QNetworkRequest
 
 class BDOT10kDownloadTask(QgsTask):
 
@@ -17,18 +20,21 @@ class BDOT10kDownloadTask(QgsTask):
         super().__init__(description, QgsTask.CanCancel)
 
     def run(self):
-        response = requests.get(self.url, stream=True)
-        total_size = int(response.headers.get('content-length', 0))
+        handler = NetworkHandler()
+        response = handler.get(self.url, True)
+
+        total_size = int(response.header(QNetworkRequest.ContentLengthHeader)) or 0
+        data = BytesIO(response.readAll().data())
         bytes_received = 0
         full_filepath = f"{self.filepath}/{self.teryt_pow}_GML.zip"
         with open(full_filepath, 'wb') as file:
-            # mechanizm do przesuwania paska postępu
-            for data in response.iter_content(chunk_size=1024):
-                file.write(data)
-                bytes_received += len(data)
-                progress = (bytes_received / total_size) * 100
-                self.progress_updated.emit(progress)
-
+            for chunk in iter(lambda: data.read(1024), b''):
+                file.write(chunk)
+                bytes_received += len(chunk)
+                if total_size > 0:
+                    progress = (bytes_received / total_size) * 100
+                    self.progress_updated.emit(progress)
+                    
         self.log_message(f"{full_filepath} - pobrano", level=Qgis.Info)
         self.download_finished.emit(True)
 

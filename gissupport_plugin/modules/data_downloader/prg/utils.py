@@ -5,6 +5,8 @@ from qgis.core import QgsGeometry, QgsFeature, QgsTask, QgsCoordinateReferenceSy
     QgsMessageLog, Qgis
 from PyQt5.QtCore import QCoreApplication
 
+from gissupport_plugin.tools.requests import NetworkHandler
+
 
 class EntityOption(Enum):
     GMINA = "Gmina"
@@ -47,14 +49,16 @@ class PRGDownloadTask(QgsTask):
 
     def run(self):
         parameters = self._get_parameters()
-        response = requests.get(self.url, parameters)
+        
+        handler = NetworkHandler()
+        response = handler.get(self.url, params=parameters)
 
-        response_content = response.text
+        response_content = response["data"]
         status = response_content[0]
 
         dp = self.layer.dataProvider()
         if status != "0":
-            self.log_message(f"{response.url} - odpowiedź: {response_content}", level=Qgis.Critical)
+            self.log_message(f"{self.url} - odpowiedź: {response_content}", level=Qgis.Critical)
             self.cancel()
 
         features = self.response_as_features(response_content)
@@ -64,7 +68,7 @@ class PRGDownloadTask(QgsTask):
         for feature in features:
             self.layer.dataProvider().addFeature(feature)
 
-        self.log_message(f"{response.url} - pobrano", level=Qgis.Info)
+        self.log_message(f"{self.url} - pobrano", level=Qgis.Info)
 
         return True
 

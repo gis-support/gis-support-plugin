@@ -1,16 +1,13 @@
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.parse import quote
-from urllib.request import urlopen
-
-from http.client import IncompleteRead
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
-from .api_limits import RateLimitException, RateLimitDecorator, sleep_and_retry
-from copy import deepcopy
+from .api_limits import RateLimitDecorator, sleep_and_retry
 
 from qgis.core import QgsMessageLog
 from qgis.core import Qgis
+from gissupport_plugin.tools.requests import NetworkHandler
 
 class RequestException(Exception):
     pass
@@ -70,25 +67,17 @@ class ULDKSearch:
     @RateLimitDecorator(calls = 5, period = 3)
     def search(self):
         url = self.url
-        try:
-            with urlopen(str(url), timeout=10) as u:
-                content = u.read()
-        except IncompleteRead:
-            raise RequestException("Błąd usługi ULDK")
-        except HTTPError as e:
-            raise e
-        except URLError:
+        handler = NetworkHandler()
+        
+        content = handler.get(str(self.url))
+        if "error" in content:
             self.url = URL(self.gugik_url, **url.params)
-            try:
-                with urlopen(str(self.url), timeout=40) as u:
-                    content = u.read()
-            except IncompleteRead:
-                raise RequestException("Błąd usługi ULDK")
-            except HTTPError as e:
-                raise e
-            except URLError:
+            content = handler.get(str(self.url))
+            if "error" in content:
                 raise RequestException("Brak odpowiedzi")
-        content = content.decode()
+            
+        content = content["data"]
+        
         content_lines = content.split("\n")
         status = content_lines[0]
 

@@ -18,6 +18,10 @@ class BDOT10kDownloader:
         self.teryt_woj = ""
         self.teryt_pow = ""
 
+        self.bdot10k_dockwidget = None
+
+    def init_bdot10_dockwidget(self):
+
         self.bdot10k_dockwidget = BDOT10kDockWidget()
 
         self.fill_woj_combobox()
@@ -25,7 +29,6 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
         self.bdot10k_dockwidget.powComboBox.currentTextChanged.connect(self.get_teryt_pow)
         self.bdot10k_dockwidget.downloadButton.clicked.connect(self.download_bdot10k)
-
 
     def browse_filepath_for_bdot10k(self):
         """
@@ -38,18 +41,20 @@ class BDOT10kDownloader:
 
     def change_bdot10k_dockwidget_visibility(self):
         """
-        Zmienia widoczność widgetu BDOT10k przy wyborze z menu.
+        Zmienia widoczność widgetu BDOT10k przy wyborze z menu. Inicjuje widget przy pierwszym uruchomieniu.
         """
-        if self.bdot10k_dockwidget.isVisible():
-            iface.removeDockWidget(self.bdot10k_dockwidget)
-        else:
+        if self.bdot10k_dockwidget is None:
+            self.init_bdot10_dockwidget()
+        if not self.bdot10k_dockwidget.isVisible():
             iface.addDockWidget(Qt.RightDockWidgetArea, self.bdot10k_dockwidget)
+        else:
+            iface.removeDockWidget(self.bdot10k_dockwidget)
 
     def fill_woj_combobox(self):
         """
         Uzupełnia combobox z województwami. Wywoływane raz, przy starcie pluginu.
         """
-        wojewodztwa = self.get_administratives("wojewodztwo")
+        wojewodztwa = self.get_administratives_bdot10k("wojewodztwo")
         self.bdot10k_dockwidget.wojComboBox.clear()
         self.bdot10k_dockwidget.wojComboBox.addItem("")
         for item in wojewodztwa:
@@ -63,14 +68,14 @@ class BDOT10kDownloader:
         """
         current_woj = self.bdot10k_dockwidget.wojComboBox.currentText()
         self.teryt_woj = current_woj.split("|")[1].strip() if current_woj else ""
-        powiaty = self.get_administratives("powiat", self.teryt_woj)
+        powiaty = self.get_administratives_bdot10k("powiat", self.teryt_woj)
         self.bdot10k_dockwidget.powComboBox.clear()
         self.bdot10k_dockwidget.powComboBox.addItem("")
         for powiat in powiaty:
             display_name = f'{powiat[0]} | {powiat[1]}'
             self.bdot10k_dockwidget.powComboBox.addItem(display_name, powiat[1])
 
-    def get_administratives(self, level: str, teryt: str = ""):
+    def get_administratives_bdot10k(self, level: str, teryt: str = ""):
         """
         Pobiera dane (województwa, powiaty, gminy) dla comboboxów.
         """

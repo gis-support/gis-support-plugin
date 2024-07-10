@@ -146,6 +146,15 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
             if self.layer is None:
                 self.layer = QgsVectorLayer("MultiPolygon", self.digitizationOptions.currentText(), "memory")
 
+            try:
+                layer_id = self.layer.id()
+            except RuntimeError:
+                layer_id = None
+
+            if layer_id is None:
+                self.layer_is_added = False
+                self.layer = QgsVectorLayer("MultiPolygon", self.digitizationOptions.currentText(), "memory")
+
             self.layer.setCrs(crs)
 
             dp = self.layer.dataProvider()

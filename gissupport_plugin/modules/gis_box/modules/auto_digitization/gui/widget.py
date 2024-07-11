@@ -183,6 +183,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
                 dp.addFeature(output_feature)
 
             if not self.layer_is_added:
+                self.layer.loadNamedStyle(os.path.join(os.path.dirname(__file__), 'style.qml'))
                 QgsProject.instance().addMapLayer(self.layer)
                 self.layer_is_added = True
             else:

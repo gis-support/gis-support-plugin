@@ -28,13 +28,13 @@ class SelectRectangleTool(QgsMapTool):
 
         self.startPoint = None
         self.area = 0
+        self.geometry = QgsGeometry()
 
     def canvasPressEvent(self, e):
         if e.button() == Qt.LeftButton or e.button() == Qt.RightButton:
             self.startPoint = e.mapPoint()
 
     def canvasMoveEvent(self, e):
-        """ Przeliczanie współrzędnych dla miejsca kursora """
         if e.buttons() == Qt.LeftButton or e.buttons() == Qt.RightButton:
             newPoint = e.mapPoint()
             pointA = QgsPointXY(self.startPoint.x(), newPoint.y())
@@ -56,14 +56,9 @@ class SelectRectangleTool(QgsMapTool):
             self.rectangleChanged.emit(self.area)
 
     def canvasReleaseEvent(self, e):
-        """ Nanoszenie na mape punktu tymczasowego wraz z wysokościa w tym miejscu """
         self.rectangleEnded.emit(self.area, self.geometry)
 
     def keyPressEvent(self, e):
-        """
-        Usuwanie ostatniego dodanego punktu/segmentu lub
-        czyszczenie całości
-        """
         if e.key() == Qt.Key_Escape:
             self.reset()
 
@@ -76,9 +71,7 @@ class SelectRectangleTool(QgsMapTool):
         self.reset()
 
 
-
 def set_cursor(tool):
-    """ Konfiguracja kursora """
     tool.setCursor(QCursor(QPixmap(["16 16 2 1",
                                     "      c None",
                                     ".     c #000000",

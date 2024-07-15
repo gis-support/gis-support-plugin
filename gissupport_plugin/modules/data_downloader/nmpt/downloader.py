@@ -140,7 +140,6 @@ class NMPTdownloader:
             self.nmpt_dockwidget.selectedOnlyCheckBox.setEnabled(True)
 
         else:
-            print("No layer selected")
             self.nmpt_dockwidget.selectedOnlyCheckBox.setEnabled(False)
             self.nmpt_dockwidget.selectedOnlyCheckBox.setChecked(False)
             self.source_layer = None

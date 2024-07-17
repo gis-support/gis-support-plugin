@@ -142,14 +142,11 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
                 "Automatyczna wektoryzacja", "Trwa zapisywanie danych do warstwy tymczasowej.", level=Qgis.Info)
             crs = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
-            if self.layer_id is None:
+            if (self.layer_id is None) or ((layer := QgsProject.instance().mapLayer(self.layer_id)) is None):
                 layer = QgsVectorLayer("MultiPolygon", self.digitizationOptions.currentText(), "memory")
                 self.layer_id = layer.id()
             else:
                 layer = QgsProject.instance().mapLayer(self.layer_id)
-                if layer is None:
-                    layer = QgsVectorLayer("MultiPolygon", self.digitizationOptions.currentText(), "memory")
-                    self.layer_id = layer.id()
 
             layer.setCrs(crs)
 

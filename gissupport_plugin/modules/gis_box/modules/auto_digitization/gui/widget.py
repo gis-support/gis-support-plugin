@@ -145,8 +145,6 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
             if (self.layer_id is None) or ((layer := QgsProject.instance().mapLayer(self.layer_id)) is None):
                 layer = QgsVectorLayer("MultiPolygon", self.digitizationOptions.currentText(), "memory")
                 self.layer_id = layer.id()
-            else:
-                layer = QgsProject.instance().mapLayer(self.layer_id)
 
             layer.setCrs(crs)
 

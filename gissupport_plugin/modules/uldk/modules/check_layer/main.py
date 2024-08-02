@@ -26,6 +26,8 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("pow_m2", QVariant.String),
 ]
 
+RESULT_FIELD = QgsField("wynik", QVariant.String)
+
 CRS_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
 
@@ -214,6 +216,7 @@ class CheckLayer:
         output_data_provider = output_layer.dataProvider()
         output_data_provider.addAttributes(self.source_layer.fields().toList())
         output_data_provider.addAttributes(PLOTS_LAYER_DEFAULT_FIELDS)
+        output_data_provider.addAttributes([RESULT_FIELD])
         output_layer.updateFields()
         fields = output_layer.fields()
 
@@ -231,8 +234,12 @@ class CheckLayer:
 
             current_feature.setFields(fields, False)
             current_feature.setAttributes(
-                current_feature.attributes() + [NULL for _ in range(len(PLOTS_LAYER_DEFAULT_FIELDS))]
+                current_feature.attributes() + [NULL for _ in range(len(PLOTS_LAYER_DEFAULT_FIELDS))] + [NULL]
             )
+            for field in PLOTS_LAYER_DEFAULT_FIELDS:
+                field_index = fields.indexFromName(field.name())
+                uldk_field_index = current_uldk_feature.fields().indexFromName(field.name())
+                current_feature[field_index] = current_uldk_feature[uldk_field_index]
 
             geometry = current_feature.geometry()
 
@@ -242,11 +249,13 @@ class CheckLayer:
             area_difference = abs(geometry.area() - current_uldk_feature.geometry().area())
             area_difference_percent = (area_difference / geometry.area()) * 100
 
+            result_field_index = fields.indexFromName(RESULT_FIELD.name())
             if area_difference_percent <= area_difference_tolerance:
-                for field in PLOTS_LAYER_DEFAULT_FIELDS:
-                    field_index = fields.indexFromName(field.name())
-                    uldk_field_index = current_uldk_feature.fields().indexFromName(field.name())
-                    current_feature[field_index] = current_uldk_feature[uldk_field_index]
+                current_feature[result_field_index] = "ok"
+            else:
+                current_feature[result_field_index] = "niezgodnosc"
+
+            current_feature.setGeometry(current_uldk_feature.geometry())
 
             output_data_provider.addFeature(current_feature)
 

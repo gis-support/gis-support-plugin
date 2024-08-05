@@ -233,13 +233,11 @@ class CheckLayer:
             current_uldk_feature = ResultCollector.uldk_response_to_qgs_feature(feature)
 
             current_feature.setFields(fields, False)
-            current_feature.setAttributes(
-                current_feature.attributes() + [NULL for _ in range(len(PLOTS_LAYER_DEFAULT_FIELDS))] + [NULL]
-            )
+
+            attributes = current_feature.attributes()
+
             for field in PLOTS_LAYER_DEFAULT_FIELDS:
-                field_index = fields.indexFromName(field.name())
-                uldk_field_index = current_uldk_feature.fields().indexFromName(field.name())
-                current_feature[field_index] = current_uldk_feature[uldk_field_index]
+                attributes.append(current_uldk_feature[field.name()])
 
             geometry = current_feature.geometry()
 
@@ -249,13 +247,20 @@ class CheckLayer:
             area_difference = abs(geometry.area() - current_uldk_feature.geometry().area())
             area_difference_percent = (area_difference / geometry.area()) * 100
 
-            result_field_index = fields.indexFromName(RESULT_FIELD.name())
             if area_difference_percent <= area_difference_tolerance:
-                current_feature[result_field_index] = "ok"
+                attributes.append("ok")
             else:
-                current_feature[result_field_index] = "niezgodnosc"
+                attributes.append("niezgodność")
 
-            current_feature.setGeometry(current_uldk_feature.geometry())
+            current_feature.setAttributes(
+                attributes
+            )
+
+            new_geometry = current_uldk_feature.geometry()
+            if source_crs != CRS_2180:
+                new_geometry.transform(transformation)
+
+            current_feature.setGeometry(new_geometry)
 
             output_data_provider.addFeature(current_feature)
 

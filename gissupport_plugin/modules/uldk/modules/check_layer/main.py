@@ -258,7 +258,8 @@ class CheckLayer:
 
             new_geometry = current_uldk_feature.geometry()
             if source_crs != CRS_2180:
-                new_geometry.transform(transformation)
+                output_transformation = QgsCoordinateTransform(CRS_2180, source_crs, QgsCoordinateTransformContext())
+                new_geometry.transform(output_transformation)
 
             current_feature.setGeometry(new_geometry)
 

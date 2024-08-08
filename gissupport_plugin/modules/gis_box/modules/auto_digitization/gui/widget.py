@@ -7,11 +7,12 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import (Qgis, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsCoordinateTransform,
-                       QgsCoordinateReferenceSystem, QgsProject, QgsGeometry
+                       QgsCoordinateReferenceSystem, QgsProject, QgsGeometry, QgsApplication
                        )
 from qgis.utils import iface
 
 from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool
+from gissupport_plugin.modules.gis_box.modules.auto_digitization.utils import AutoDigitizationTask
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -33,6 +34,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.registerTools()
         self.menageSignals()
 
+        self.task = None
         self.area = 0
         self.geom = None
         self.options = None
@@ -104,6 +106,13 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
     def execute(self):
         iface.messageBar().pushMessage(
             "Automatyczna wektoryzacja", "Rozpoczęto automatyczną wektoryzację dla zadanego obszaru.", level=Qgis.Info)
+
+        self.task = AutoDigitizationTask("Automatyczna wektoryzacja")
+
+        manager = QgsApplication.taskManager()
+        self.task.hold()
+        manager.addTask(self.task)
+
         current_crs = QgsProject.instance().crs()
         crs_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
         if current_crs != crs_2180:
@@ -195,3 +204,6 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         else:
             iface.messageBar().pushMessage(
                 "Automatyczna wektoryzacja", "Zapisanie danych do warstwy tymczasowej nie powiodło się.", level=Qgis.Critical)
+
+        self.task.unhold()
+        self.task = None

@@ -41,7 +41,11 @@ class GisboxConnection(QObject, Logger):
         status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
 
         if status_code not in (200, 201, 204):
-            error_message = response_data['error_message']
+            if status_code == 500:
+                error_message = f"Wystąpił nieoczekiwany błąd. Kod błędu: {response_data['error_code']}"
+            else:
+                error_message = response_data['error_message']
+
             cls.message(f'{error_message}', level=Qgis.Critical, duration=5)
             return
 

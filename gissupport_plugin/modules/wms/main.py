@@ -112,9 +112,11 @@ class Main(BaseModule):
             if self.curServiceData['type'] == 'WMS':
                 self.layerType = "WMS"
                 try:
-                    wmsCapabilities = WebMapService(self.curServiceData['url'])
-                except (AttributeError, ParseError):
-                    wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
+                    try:
+                        wmsCapabilities = WebMapService(self.curServiceData['url'])
+                    except (AttributeError, ParseError):
+                        wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
+
                 except requests.exceptions.ReadTimeout:
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WMS',

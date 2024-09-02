@@ -2,11 +2,10 @@
 import json
 import os
 
-from PyQt5.QtCore import QVariant
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import (Qgis, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsCoordinateTransform,
+from qgis.core import (Qgis, QgsCoordinateTransform,
                        QgsCoordinateReferenceSystem, QgsProject, QgsGeometry, QgsApplication
                        )
 from qgis.utils import iface

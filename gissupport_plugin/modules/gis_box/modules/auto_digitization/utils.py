@@ -1,6 +1,5 @@
 import json
 import os
-from io import BytesIO
 
 from PyQt5.QtCore import pyqtSignal, QVariant
 from qgis.core import (QgsPointXY, QgsGeometry, QgsFeature, QgsProject,

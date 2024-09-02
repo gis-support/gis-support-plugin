@@ -38,8 +38,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.area = 0
         self.geom = None
         self.options = None
-        self.layer = None
-        self.layer_is_added = False
+        self.layer_id = None
 
         self.getOptions()
 
@@ -107,11 +106,11 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         iface.messageBar().pushMessage(
             "Automatyczna wektoryzacja", "Rozpoczęto automatyczną wektoryzację dla zadanego obszaru.", level=Qgis.Info)
 
-        self.task = AutoDigitizationTask("Automatyczna wektoryzacja")
+        options = self.options["data"]
+        current_text = self.digitizationOptions.currentText()
+        current_option = list(options.keys())[list(options.values()).index(current_text)]
 
-        manager = QgsApplication.taskManager()
-        self.task.hold()
-        manager.addTask(self.task)
+        digitization_option = (current_option, current_text)
 
         current_crs = QgsProject.instance().crs()
         crs_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
@@ -137,73 +136,31 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
             }
         }
 
-        options = self.options["data"]
-        current_text = self.digitizationOptions.currentText()
-        current_option = list(options.keys())[list(options.values()).index(current_text)]
-
-        GISBOX_CONNECTION.post(
-            f"/api/automatic_digitization/{current_option}?background=false",
-            data, srid='2180', callback=self.createShapefile
+        self.task = AutoDigitizationTask(
+            "Automatyczna wektoryzacja", digitization_option, data, self.layer_id
         )
+        self.task.task_layer_id_updated.connect(self.task_layer_id_updated)
+        self.task.task_downloaded_data.connect(self.task_downloaded_data)
+        self.task.task_completed.connect(self.task_completed)
+        self.task.task_failed.connect(self.task_failed)
 
-    def createShapefile(self, data):
-        if data.get("data"):
-            iface.messageBar().pushMessage(
-                "Automatyczna wektoryzacja", "Trwa zapisywanie danych do warstwy tymczasowej.", level=Qgis.Info)
-            crs = QgsCoordinateReferenceSystem.fromEpsgId(2180)
+        manager = QgsApplication.taskManager()
+        manager.addTask(self.task)
 
-            if self.layer is None:
-                self.layer = QgsVectorLayer("MultiPolygon", self.digitizationOptions.currentText(), "memory")
+    def task_downloaded_data(self):
+        iface.messageBar().pushMessage(
+            "Automatyczna wektoryzacja", "Trwa zapisywanie danych do warstwy tymczasowej.", level=Qgis.Info)
 
-            self.layer.setCrs(crs)
-
-            dp = self.layer.dataProvider()
-            dp.addAttributes([QgsField("best_label", QVariant.String)])
-            dp.addAttributes([QgsField("class", QVariant.String)])
-            dp.addAttributes([QgsField("labels", QVariant.String)])
-            dp.addAttributes([QgsField("type", QVariant.String)])
-            self.layer.updateFields()
-
-            for feature in data["data"]["features"]:
-                multipolygon = []
-
-                coordinates = feature["geometry"]["coordinates"]
-                for part in coordinates:
-                    part_ = []
-                    for polygon in part:
-                        polygon_ = []
-                        for point in polygon:
-                            polygon_.append(QgsPointXY(point[0], point[1]))
-                        part_.append(polygon_)
-                    multipolygon.append(part_)
-
-                geometry = QgsGeometry().fromMultiPolygonXY(multipolygon)
-
-                attributes = feature["properties"]
-                output_feature = QgsFeature()
-                output_feature.setGeometry(geometry)
-                output_feature.setAttributes([
-                    attributes["best_label"],
-                    attributes["class"],
-                    str(attributes["labels"]),
-                    attributes["type"]
-                ])
-
-                dp.addFeature(output_feature)
-
-            if not self.layer_is_added:
-                self.layer.loadNamedStyle(os.path.join(os.path.dirname(__file__), 'style.qml'))
-                QgsProject.instance().addMapLayer(self.layer)
-                self.layer_is_added = True
-            else:
-                self.layer.reload()
-
-            iface.messageBar().pushMessage(
+    def task_completed(self):
+        iface.messageBar().pushMessage(
                 "Automatyczna wektoryzacja", "Pomyślnie zapisano dane do warstwy tymczasowej.", level=Qgis.Success)
-
-        else:
-            iface.messageBar().pushMessage(
-                "Automatyczna wektoryzacja", "Zapisanie danych do warstwy tymczasowej nie powiodło się.", level=Qgis.Critical)
-
-        self.task.unhold()
         self.task = None
+
+    def task_failed(self):
+        iface.messageBar().pushMessage(
+            "Automatyczna wektoryzacja", "Zapisanie danych do warstwy tymczasowej nie powiodło się.",
+            level=Qgis.Critical)
+        self.task = None
+
+    def task_layer_id_updated(self, layer_id: str):
+        self.layer_id = layer_id

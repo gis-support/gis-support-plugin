@@ -77,11 +77,15 @@ class PRGDownloadTask(QgsTask):
 
     def _get_parameters(self):
         result_params = ["geom_wkt", self.result_parameter_name, "teryt"]
-        return {
+        p = {
             "request": self.search_type,
-            "id": self.entity_teryt,
             "result": ",".join(result_params)
         }
+
+        if self.entity_teryt != None:
+            p["id"] = self.entity_teryt
+
+        return p
 
     @staticmethod
     def response_as_features(content: str):

@@ -26,6 +26,8 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("pow_m2", QVariant.String),
 ]
 
+RESULT_FIELD = QgsField("wynik", QVariant.String)
+
 CRS_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
 
@@ -214,6 +216,7 @@ class CheckLayer:
         output_data_provider = output_layer.dataProvider()
         output_data_provider.addAttributes(self.source_layer.fields().toList())
         output_data_provider.addAttributes(PLOTS_LAYER_DEFAULT_FIELDS)
+        output_data_provider.addAttributes([RESULT_FIELD])
         output_layer.updateFields()
         fields = output_layer.fields()
 
@@ -230,9 +233,11 @@ class CheckLayer:
             current_uldk_feature = ResultCollector.uldk_response_to_qgs_feature(feature)
 
             current_feature.setFields(fields, False)
-            current_feature.setAttributes(
-                current_feature.attributes() + [NULL for _ in range(len(PLOTS_LAYER_DEFAULT_FIELDS))]
-            )
+
+            attributes = current_feature.attributes()
+
+            for field in PLOTS_LAYER_DEFAULT_FIELDS:
+                attributes.append(current_uldk_feature[field.name()])
 
             geometry = current_feature.geometry()
 
@@ -243,10 +248,20 @@ class CheckLayer:
             area_difference_percent = (area_difference / geometry.area()) * 100
 
             if area_difference_percent <= area_difference_tolerance:
-                for field in PLOTS_LAYER_DEFAULT_FIELDS:
-                    field_index = fields.indexFromName(field.name())
-                    uldk_field_index = current_uldk_feature.fields().indexFromName(field.name())
-                    current_feature[field_index] = current_uldk_feature[uldk_field_index]
+                attributes.append("ok")
+            else:
+                attributes.append("niezgodność")
+
+            current_feature.setAttributes(
+                attributes
+            )
+
+            new_geometry = current_uldk_feature.geometry()
+            if source_crs != CRS_2180:
+                output_transformation = QgsCoordinateTransform(CRS_2180, source_crs, QgsCoordinateTransformContext())
+                new_geometry.transform(output_transformation)
+
+            current_feature.setGeometry(new_geometry)
 
             output_data_provider.addFeature(current_feature)
 

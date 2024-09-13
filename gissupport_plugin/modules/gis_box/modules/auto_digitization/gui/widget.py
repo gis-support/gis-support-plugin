@@ -159,16 +159,14 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
                 multipolygon = []
 
                 coordinates = feature["geometry"]["coordinates"]
-                for part in coordinates:
-                    part_ = []
-                    for polygon in part:
-                        polygon_ = []
-                        for point in polygon:
-                            polygon_.append(QgsPointXY(point[0], point[1]))
-                        part_.append(polygon_)
-                    multipolygon.append(part_)
 
-                geometry = QgsGeometry().fromMultiPolygonXY(multipolygon)
+                for polygon in coordinates:
+                    polygon_ = []
+                    for point in polygon:
+                        polygon_.append(QgsPointXY(point[0], point[1]))
+                    multipolygon.append(polygon_)
+
+                geometry = QgsGeometry().fromMultiPolygonXY([multipolygon])
 
                 attributes = feature["properties"]
                 output_feature = QgsFeature()
@@ -183,6 +181,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
                 dp.addFeature(output_feature)
 
             if self.layer_id not in QgsProject.instance().mapLayers().keys():
+                layer.loadNamedStyle(os.path.join(os.path.dirname(__file__), 'style.qml'))
                 QgsProject.instance().addMapLayer(layer)
             else:
                 layer.reload()

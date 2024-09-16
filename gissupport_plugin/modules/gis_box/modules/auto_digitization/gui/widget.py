@@ -36,8 +36,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.area = 0
         self.geom = None
         self.options = None
-        self.layer = None
-        self.layer_is_added = False
+        self.layer_id = None
 
         self.getOptions()
 
@@ -134,41 +133,40 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
         GISBOX_CONNECTION.post(
             f"/api/automatic_digitization/{current_option}?background=false",
-            data, srid='2180', callback=self.createShapefile
+            data, srid='2180', callback=self.createLayer
         )
 
-    def createShapefile(self, data):
+    def createLayer(self, data):
         if data.get("data"):
             iface.messageBar().pushMessage(
                 "Automatyczna wektoryzacja", "Trwa zapisywanie danych do warstwy tymczasowej.", level=Qgis.Info)
             crs = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
-            if self.layer is None:
-                self.layer = QgsVectorLayer("MultiPolygon", self.digitizationOptions.currentText(), "memory")
+            if (self.layer_id is None) or ((layer := QgsProject.instance().mapLayer(self.layer_id)) is None):
+                layer = QgsVectorLayer("MultiPolygon", self.digitizationOptions.currentText(), "memory")
+                self.layer_id = layer.id()
 
-            self.layer.setCrs(crs)
+            layer.setCrs(crs)
 
-            dp = self.layer.dataProvider()
+            dp = layer.dataProvider()
             dp.addAttributes([QgsField("best_label", QVariant.String)])
             dp.addAttributes([QgsField("class", QVariant.String)])
             dp.addAttributes([QgsField("labels", QVariant.String)])
             dp.addAttributes([QgsField("type", QVariant.String)])
-            self.layer.updateFields()
+            layer.updateFields()
 
             for feature in data["data"]["features"]:
                 multipolygon = []
 
                 coordinates = feature["geometry"]["coordinates"]
-                for part in coordinates:
-                    part_ = []
-                    for polygon in part:
-                        polygon_ = []
-                        for point in polygon:
-                            polygon_.append(QgsPointXY(point[0], point[1]))
-                        part_.append(polygon_)
-                    multipolygon.append(part_)
 
-                geometry = QgsGeometry().fromMultiPolygonXY(multipolygon)
+                for polygon in coordinates:
+                    polygon_ = []
+                    for point in polygon:
+                        polygon_.append(QgsPointXY(point[0], point[1]))
+                    multipolygon.append(polygon_)
+
+                geometry = QgsGeometry().fromMultiPolygonXY([multipolygon])
 
                 attributes = feature["properties"]
                 output_feature = QgsFeature()
@@ -182,12 +180,11 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
                 dp.addFeature(output_feature)
 
-            if not self.layer_is_added:
-                self.layer.loadNamedStyle(os.path.join(os.path.dirname(__file__), 'style.qml'))
-                QgsProject.instance().addMapLayer(self.layer)
-                self.layer_is_added = True
+            if self.layer_id not in QgsProject.instance().mapLayers().keys():
+                layer.loadNamedStyle(os.path.join(os.path.dirname(__file__), 'style.qml'))
+                QgsProject.instance().addMapLayer(layer)
             else:
-                self.layer.reload()
+                layer.reload()
 
             iface.messageBar().pushMessage(
                 "Automatyczna wektoryzacja", "Pomyślnie zapisano dane do warstwy tymczasowej.", level=Qgis.Success)

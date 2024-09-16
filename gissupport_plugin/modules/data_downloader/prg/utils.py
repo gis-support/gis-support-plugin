@@ -5,6 +5,8 @@ from qgis.core import QgsGeometry, QgsFeature, QgsTask, QgsCoordinateReferenceSy
     QgsMessageLog, Qgis
 from PyQt5.QtCore import QCoreApplication
 
+from gissupport_plugin.tools.requests import NetworkHandler
+
 
 class EntityOption(Enum):
     GMINA = "Gmina"
@@ -47,14 +49,16 @@ class PRGDownloadTask(QgsTask):
 
     def run(self):
         parameters = self._get_parameters()
-        response = requests.get(self.url, parameters)
+        
+        handler = NetworkHandler()
+        response = handler.get(self.url, params=parameters)
 
-        response_content = response.text
+        response_content = response["data"]
         status = response_content[0]
 
         dp = self.layer.dataProvider()
         if status != "0":
-            self.log_message(f"{response.url} - odpowiedź: {response_content}", level=Qgis.Critical)
+            self.log_message(f"{self.url} - odpowiedź: {response_content}", level=Qgis.Critical)
             self.cancel()
 
         features = self.response_as_features(response_content)
@@ -64,7 +68,7 @@ class PRGDownloadTask(QgsTask):
         for feature in features:
             self.layer.dataProvider().addFeature(feature)
 
-        self.log_message(f"{response.url} - pobrano", level=Qgis.Info)
+        self.log_message(f"{self.url} - pobrano", level=Qgis.Info)
 
         return True
 
@@ -73,11 +77,14 @@ class PRGDownloadTask(QgsTask):
 
     def _get_parameters(self):
         result_params = ["geom_wkt", self.result_parameter_name, "teryt"]
-        return {
+        parameters = {
             "request": self.search_type,
             "id": self.entity_teryt,
             "result": ",".join(result_params)
         }
+        if self.entity_teryt is None:
+            parameters.pop("id")
+        return parameters
 
     @staticmethod
     def response_as_features(content: str):
@@ -92,7 +99,10 @@ class PRGDownloadTask(QgsTask):
             if not object_data:
                 continue
 
-            ewkt = object_data.split(";")[1]
+            try:
+                ewkt = object_data.split(";")[1]
+            except IndexError:
+                continue
 
             additional_attributes = object_data.split("|")
             entity_name = additional_attributes[1]

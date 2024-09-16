@@ -1,5 +1,4 @@
-import time
-from typing import List
+from PyQt5.QtCore import Qt
 from qgis.PyQt.QtCore import QUrl
 from qgis.PyQt.QtGui import QDesktopServices, QIcon
 from qgis.PyQt.QtWidgets import QToolButton, QMenu
@@ -7,6 +6,7 @@ from qgis.utils import iface
 from qgis.core import QgsProject
 
 from gissupport_plugin.modules.base import BaseModule
+from gissupport_plugin.modules.gis_box.modules.auto_digitization.gui.widget import AutoDigitizationWidget
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
 from gissupport_plugin.tools.logger import Logger
@@ -69,6 +69,18 @@ class GISBox(BaseModule, Logger):
             enabled=False
         )
 
+        self.autoDigitalizationAction = self.parent.add_action(
+            icon_path=':/plugins/gissupport_plugin/gis_box/digitization.svg',
+            text='Automatyczna wektoryzacja',
+            callback=self.autoDigitization,
+            parent=iface.mainWindow(),
+            add_to_menu=False,
+            add_to_topmenu=False,
+            add_to_toolbar=False,
+            checkable=False,
+            enabled=False
+        )
+
         # Ustawienia logowania
         self.loginSettingsAction = self.parent.add_action(
             None,
@@ -123,6 +135,7 @@ class GISBox(BaseModule, Logger):
         main_menu.addAction(self.connectAction)
         main_menu.addAction(self.addLayersAction)
         main_menu.addAction(self.refreshLayerAction)
+        main_menu.addAction(self.autoDigitalizationAction)
 
         main_menu.addSeparator()
         main_menu.addAction(self.loginSettingsAction)
@@ -143,6 +156,11 @@ class GISBox(BaseModule, Logger):
             self.connectAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/connection.svg"))
             self.connectAction.setText('Rozłącz z GIS.Box')
             self.refreshLayerAction.setEnabled(True)
+
+            GISBOX_CONNECTION.get(
+                "/api/settings/automatic_digitization_module_enabled?value_only=true", callback=self.enableDigitization
+            )
+
         else:
             # Rozłączono z serwerem lub błąd połączenia
             self.gisboxAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/disconnected.png"))
@@ -151,6 +169,7 @@ class GISBox(BaseModule, Logger):
             self._clear_data()
             self.connectAction.setChecked(False)
             self.refreshLayerAction.setEnabled(False)
+            self.autoDigitalizationAction.setEnabled(False)
 
     def _create_layers_menu(self, groups: list):
         modules_layer_custom_id = -99
@@ -221,6 +240,10 @@ class GISBox(BaseModule, Logger):
                     return
                 layer_class.on_reload.emit(True)
 
+    def autoDigitization(self):
+        self.dockwidget = AutoDigitizationWidget()
+        iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+
     def showLoginSettings(self):
         """ Wyświetlenie okna ustawień logowania """
         self.loginSettingsDialog.show()
@@ -228,3 +251,7 @@ class GISBox(BaseModule, Logger):
     def open_url(self, url):
         """ Otwarcie linku w przeglądarce """
         QDesktopServices.openUrl(QUrl(url))
+
+    def enableDigitization(self, data):
+        if data["data"]:
+            self.autoDigitalizationAction.setEnabled(True)

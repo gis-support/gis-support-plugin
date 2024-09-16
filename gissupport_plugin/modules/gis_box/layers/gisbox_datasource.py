@@ -443,10 +443,13 @@ class GisboxFeatureLayer(QObject, Logger):
         )
     
     def afterModify(self, data: dict):
-        if data.get("data"):
-            self.message(f'Pomyślnie zmodyfikowano dane warstwy: {self.layers[0].name()}', 
-                         level=Qgis.Success, duration=5)
-            self.on_reload.emit(True)
+        if data.get("error"):
+            self.message(data.get("error_message"), level=Qgis.Critical, duration=5)
+            return
+        
+        self.message(f'Pomyślnie zmodyfikowano dane warstwy: {self.layers[0].name()}', 
+                        level=Qgis.Success, duration=5)
+        self.on_reload.emit(True)
         
     def addFeatures(self, edit_buffer):
         """ Dodanie nowych obiektów do warstwy użytkownika """

@@ -1,3 +1,9 @@
+2.3
+Nowe narzędzie `Automatyczna wektoryzacja`
+Obsługa uwierzytelniania dwuskładnikowego (2FA) GIS.Box
+Aktualizacja adresów WMS Państwowego Instytutu Geologicznego
+Osbługa ustawień serwera proxy QGIS
+
 2.2
 Dodanie do modułu `Baza usług krajowych` obsługi WFS
 Pobieranie paczek danych z BDOT10k dla powiatów

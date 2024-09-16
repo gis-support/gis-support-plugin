@@ -11,10 +11,12 @@ from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchTeryt
 class PRGDownloader:
 
     def __init__(self):
-        self.prg_dockwidget = PRGDockWidget()
+        self.prg_dockwidget = None
         self.layer = None
         self.task = None
 
+    def init_prg_dockwidget(self):
+        self.prg_dockwidget = PRGDockWidget()
         self.populate_dockwidget_comboboxes()
         self.prg_dockwidget.entity_type_combobox.currentTextChanged.connect(self.handle_entity_type_changed)
         self.prg_dockwidget.entity_division_combobox.currentTextChanged.connect(self.handle_entity_division_changed)
@@ -24,13 +26,14 @@ class PRGDownloader:
 
     def change_prg_dockwidget_visibility(self):
         """
-        Zmienia widoczność widgetu prg przy wyborze z menu.
+        Zmienia widoczność widgetu prg przy wyborze z menu. Inicjuje widget przy pierwszym uruchomieniu.
         """
-        if self.prg_dockwidget.isVisible():
-            iface.removeDockWidget(self.prg_dockwidget)
-        else:
+        if self.prg_dockwidget is None:
+            self.init_prg_dockwidget()
+        if not self.prg_dockwidget.isVisible():
             iface.addDockWidget(Qt.RightDockWidgetArea, self.prg_dockwidget)
-
+        else:
+            iface.removeDockWidget(self.prg_dockwidget)
 
     def filter_name_combobox(self, text: str):
         model = self.prg_dockwidget.entity_name_combobox.model()
@@ -85,6 +88,7 @@ class PRGDownloader:
 
         if entity_division_value == EntityOption.GMINA.value:
             item.setEnabled(False)
+            self.prg_dockwidget.entity_type_combobox.setCurrentIndex(1)
         else:
             item.setEnabled(True)
 

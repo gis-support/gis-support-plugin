@@ -5,14 +5,16 @@ from qgis.utils import iface
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.data_downloader.bdot10k.downloader import BDOT10kDownloader
 from gissupport_plugin.modules.data_downloader.prg.downloader import PRGDownloader
+from gissupport_plugin.modules.data_downloader.nmpt.downloader import NMPTdownloader
 
-class DataDownloaderModule(BaseModule, PRGDownloader, BDOT10kDownloader):
+class DataDownloaderModule(BaseModule, PRGDownloader, BDOT10kDownloader, NMPTdownloader):
     module_name = "Dane do pobrania"
 
     def __init__(self, parent):
         super().__init__(parent)
         PRGDownloader.__init__(self)
         BDOT10kDownloader.__init__(self)
+        NMPTdownloader.__init__(self)
 
         self.download_action = self.parent.add_action(
             icon_path=':/plugins/gissupport_plugin/data_downloader/dane_do_pobrania.svg',
@@ -45,9 +47,21 @@ class DataDownloaderModule(BaseModule, PRGDownloader, BDOT10kDownloader):
             enabled=True
         )
 
+        self.nmpt_action = self.parent.add_action(
+            icon_path = None,
+            text= "NM(P)T - Numeryczny Model (Pokrycia) Terenu",
+            callback=self.change_nmpt_dockwidget_visibility,
+            parent=iface.mainWindow(),
+            add_to_topmenu=False,
+            add_to_toolbar=False,
+            checkable=False,
+            enabled=True
+        )
+
         self.download_action.setMenu(QMenu())
         main_menu = self.download_action.menu()
         main_menu.addAction(self.prg_action)
         main_menu.addAction(self.bdot10k_action)
+        main_menu.addAction(self.nmpt_action)
         self.toolButton = self.parent.toolbar.widgetForAction(self.download_action)
         self.toolButton.setPopupMode(QToolButton.InstantPopup)

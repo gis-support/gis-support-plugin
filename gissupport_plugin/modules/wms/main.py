@@ -114,7 +114,7 @@ class Main(BaseModule):
                 try:
                     try:
                         wmsCapabilities = WebMapService(self.curServiceData['url'])
-                    except (AttributeError, ParseError):
+                    except (AttributeError, ParseError, requests.exceptions.ReadTimeout):
                         wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
 
                 except requests.exceptions.ReadTimeout:

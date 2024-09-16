@@ -53,16 +53,13 @@ class AutoDigitizationTask(QgsTask):
                 multipolygon = []
 
                 coordinates = feature["geometry"]["coordinates"]
-                for part in coordinates:
-                    part_ = []
-                    for polygon in part:
-                        polygon_ = []
-                        for point in polygon:
-                            polygon_.append(QgsPointXY(point[0], point[1]))
-                        part_.append(polygon_)
-                    multipolygon.append(part_)
+                for polygon in coordinates:
+                    polygon_ = []
+                    for point in polygon:
+                        polygon_.append(QgsPointXY(point[0], point[1]))
+                    multipolygon.append(polygon_)
 
-                geometry = QgsGeometry().fromMultiPolygonXY(multipolygon)
+                geometry = QgsGeometry().fromMultiPolygonXY([multipolygon])
 
                 attributes = feature["properties"]
                 output_feature = QgsFeature()

@@ -2,6 +2,7 @@
 import json
 import os
 
+from PyQt5.QtCore import QVariant
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import pyqtSignal

@@ -88,6 +88,7 @@ class PRGDownloader:
 
         if entity_division_value == EntityOption.GMINA.value:
             item.setEnabled(False)
+            self.prg_dockwidget.entity_type_combobox.setCurrentIndex(1)
         else:
             item.setEnabled(True)
 

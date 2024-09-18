@@ -458,21 +458,29 @@ class GisboxFeatureLayer(QObject, Logger):
         features_data = []
 
         for feature in added_features:
-            f = feature.__geo_interface__
-            if f['geometry']['type'].lower() != self.geometry_type.lower():
-                f['geometry']['type'] = self.geometry_type
-                f['geometry']['coordinates'] = [f['geometry']['coordinates']]
-            properties = {k: self.sanetize_data_type(v) if v != NULL else None for k,
-                          v in f['properties'].items()}
-            geometry = f['geometry']
-            geometry.update({'crs': {
-                'type': 'name',
-                'properties': {
-                    'name': f'EPSG:{self.srid}'
-                }
-            }})
-            properties.update({self.datasource.geom_column_name: geometry})
-            features_data.append(properties)
+            if feature.hasGeometry():
+                f = feature.__geo_interface__
+                if f['geometry']['type'].lower() != self.geometry_type.lower():
+                    f['geometry']['type'] = self.geometry_type
+                    f['geometry']['coordinates'] = [f['geometry']['coordinates']]
+                properties = {k: self.sanetize_data_type(v) if v != NULL else None for k,
+                              v in f['properties'].items()}
+                geometry = f['geometry']
+                geometry.update({'crs': {
+                    'type': 'name',
+                    'properties': {
+                        'name': f'EPSG:{self.srid}'
+                    }
+                }})
+                properties.update({self.datasource.geom_column_name: geometry})
+                features_data.append(properties)
+            else:
+                attributes = feature.attributes()
+                names = feature.fields().names()
+                properties = {names[i]: self.sanetize_data_type(attributes[i]) if attributes[i] != NULL else None
+                              for i in range(len(names))}
+
+                features_data.append(properties)
 
         return features_data
 
@@ -493,25 +501,39 @@ class GisboxFeatureLayer(QObject, Logger):
         features = []
 
         for feature in layer.getFeatures(fids):
-            f = feature.__geo_interface__
-            if f['geometry']['type'].lower() != self.geometry_type.lower():
-                f['geometry']['type'] = self.geometry_type
-                f['geometry']['coordinates'] = [f['geometry']['coordinates']]
-            properties = {k: self.sanetize_data_type(v) if v != NULL else None for k,
-                          v in f['properties'].items()}
-            geometry = f['geometry']
-            geometry.update({'crs': {
-                'type': 'name',
-                'properties': {
-                    'name': f'EPSG:{self.srid}'
-                }
-            }})
-            properties.update({self.datasource.geom_column_name: geometry})
-            features.append({
-                'properties': properties,
-                'fid': f['properties'].pop(self.datasource.id_column_name),
-                'qgis_id': feature.id()
-            })
+            if feature.hasGeometry():
+                f = feature.__geo_interface__
+                if f['geometry']['type'].lower() != self.geometry_type.lower():
+                    f['geometry']['type'] = self.geometry_type
+                    f['geometry']['coordinates'] = [f['geometry']['coordinates']]
+                properties = {k: self.sanetize_data_type(v) if v != NULL else None for k,
+                              v in f['properties'].items()}
+                geometry = f['geometry']
+                geometry.update({'crs': {
+                    'type': 'name',
+                    'properties': {
+                        'name': f'EPSG:{self.srid}'
+                    }
+                }})
+                properties.update({self.datasource.geom_column_name: geometry})
+
+                features.append({
+                    'properties': properties,
+                    'fid': f['properties'].pop(self.datasource.id_column_name),
+                    'qgis_id': feature.id()
+                })
+
+            else:
+                attributes = feature.attributes()
+                names = feature.fields().names()
+                properties = {names[i]: self.sanetize_data_type(attributes[i]) if attributes[i] != NULL else None
+                              for i in range(len(names))}
+
+                features.append({
+                    'properties': properties,
+                    'fid': properties[self.datasource.id_column_name],
+                    'qgis_id': feature.id()
+                })
 
         return features
     

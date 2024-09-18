@@ -3,8 +3,7 @@
 from qgis.core import QgsProject, QgsRasterLayer, QgsLayerTreeLayer, QgsVectorLayer
 from qgis.utils import iface
 from owslib.wmts import WebMapTileService
-from owslib.wms import WebMapService
-from owslib.etree import ParseError
+from gissupport_plugin.tools.capabilities import get_wms_capabilities
 
 from .base_layer import BaseLayer
 
@@ -22,6 +21,7 @@ class BaseMapLayer(BaseLayer):
         self.zmax = data.get('zoomMax', 21)
         self.zmin = data.get('zoomMin', 10)
         self.epsg = self.getEpsg(data.get('parameters'))
+        self.parameters = data.get('parameters')
 
         if self.type == 'xyz':
             # Dla OSM wskazujemy konkretną subdomenę, zamieniamy też znaki specjalne na hexy
@@ -48,10 +48,7 @@ class BaseMapLayer(BaseLayer):
 
     def wmsUrl(self):
         """ Budowanie adresu dla WMS """
-        try:
-            cap = WebMapService(self.url)
-        except (AttributeError, ParseError):
-            cap = WebMapService(self.url, version='1.3.0')
+        cap = get_wms_capabilities(self.url, self.parameters.get('version'))
         names = self.service_layers_names.split(',')
         layer = cap.contents[names[0]]
         crs = self.getCrs(layer.crsOptions)

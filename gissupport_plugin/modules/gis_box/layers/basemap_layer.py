@@ -1,10 +1,12 @@
 #coding: UTF-8
 
-from qgis.core import QgsProject, QgsRasterLayer, QgsLayerTreeLayer, QgsVectorLayer
+from qgis.core import QgsProject, QgsRasterLayer, QgsLayerTreeLayer, Qgis
 from qgis.utils import iface
 from owslib.wmts import WebMapTileService
-from gissupport_plugin.tools.capabilities import get_wms_capabilities
 
+from requests.exceptions import MissingSchema, ConnectionError
+
+from gissupport_plugin.tools.capabilities import get_wms_capabilities
 from .base_layer import BaseLayer
 
 
@@ -116,13 +118,17 @@ class BaseMapLayer(BaseLayer):
         if self.layers:
             layer = self.layers[0].clone()
         else:
-            if self.type == 'wmts':
-                url = self.wmtsUrl()
-            elif self.type == 'wms':
-                url = self.wmsUrl()
-            else:
-                url = self.url
-            layer = QgsRasterLayer(url, self.name, 'wms')
+            try:
+                if self.type == 'wmts':
+                    url = self.wmtsUrl()
+                elif self.type == 'wms':
+                    url = self.wmsUrl()
+                else:
+                    url = self.url
+                layer = QgsRasterLayer(url, self.name, 'wms')
+            except (MissingSchema, ConnectionError):
+                self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem.", level=Qgis.Critical, duration=5)
+                return
         self.setLayer(layer)
         QgsProject.instance().addMapLayer(layer, False)
         if group is None:

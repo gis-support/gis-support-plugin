@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-import owslib.crs
 from qgis._core import QgsVectorLayer
 
-from gissupport_plugin.modules.wms.baza_wms_dialog import BazaWMSDialog
-from gissupport_plugin.modules.base import BaseModule
 #from .resources import *
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
-from qgis.PyQt.QtGui import QPixmap, QStandardItemModel, QStandardItem
-from qgis.PyQt.QtCore import QSortFilterProxyModel, QItemSelectionModel, Qt
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtCore import Qt
 from qgis.core import QgsProject, QgsRasterLayer, Qgis
 from qgis.utils import iface
-from gissupport_plugin.modules.wms.models import ServicesTableModel, ServicesProxyModel
 import json
 from os import path
-from owslib.wms import WebMapService
 from owslib.wfs import WebFeatureService
 import requests.exceptions
 import urllib
 from owslib.etree import ParseError
 from owslib.util import ServiceException
+
+from gissupport_plugin.modules.wms.baza_wms_dialog import BazaWMSDialog
+from gissupport_plugin.modules.base import BaseModule
+from gissupport_plugin.modules.wms.models import ServicesTableModel, ServicesProxyModel
+from gissupport_plugin.tools.capabilities import WmsCapabilitiesConnectionException, get_wms_capabilities
 
 
 class Main(BaseModule):
@@ -112,22 +112,12 @@ class Main(BaseModule):
             if self.curServiceData['type'] == 'WMS':
                 self.layerType = "WMS"
                 try:
-                    try:
-                        wmsCapabilities = WebMapService(self.curServiceData['url'])
-                    except (AttributeError, ParseError, requests.exceptions.ReadTimeout):
-                        wmsCapabilities = WebMapService(self.curServiceData['url'], version='1.3.0')
+                    wmsCapabilities = get_wms_capabilities(self.curServiceData['url'])
 
-                except requests.exceptions.ReadTimeout:
+                except WmsCapabilitiesConnectionException as e:
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WMS',
-                        'Serwer WMS nie odpowiada. Spróbuj ponownie później.',
-                        level=Qgis.Critical
-                    )
-                    return 1
-                except (requests.exceptions.SSLError, ServiceException):
-                    iface.messageBar().pushMessage(
-                        'Baza krajowych usług WMS',
-                        'Błąd połączenia z serwerem WMS.',
+                        f'Błąd połączenia z serwerem WMS (kod: {e.code}).',
                         level=Qgis.Critical
                     )
                     return 1

@@ -1,11 +1,12 @@
 #coding: UTF-8
 
-from qgis.core import QgsProject, QgsRasterLayer, QgsLayerTreeLayer, QgsVectorLayer
+from qgis.core import QgsProject, QgsRasterLayer, QgsLayerTreeLayer, Qgis
 from qgis.utils import iface
 from owslib.wmts import WebMapTileService
-from owslib.wms import WebMapService
-from owslib.etree import ParseError
 
+from requests.exceptions import MissingSchema, ConnectionError
+
+from gissupport_plugin.tools.capabilities import WmsCapabilitiesConnectionException, get_wms_capabilities
 from .base_layer import BaseLayer
 
 
@@ -22,6 +23,7 @@ class BaseMapLayer(BaseLayer):
         self.zmax = data.get('zoomMax', 21)
         self.zmin = data.get('zoomMin', 10)
         self.epsg = self.getEpsg(data.get('parameters'))
+        self.parameters = data.get('parameters')
 
         if self.type == 'xyz':
             # Dla OSM wskazujemy konkretną subdomenę, zamieniamy też znaki specjalne na hexy
@@ -48,10 +50,7 @@ class BaseMapLayer(BaseLayer):
 
     def wmsUrl(self):
         """ Budowanie adresu dla WMS """
-        try:
-            cap = WebMapService(self.url)
-        except (AttributeError, ParseError):
-            cap = WebMapService(self.url, version='1.3.0')
+        cap = get_wms_capabilities(self.url, self.parameters.get('version'))
         names = self.service_layers_names.split(',')
         layer = cap.contents[names[0]]
         crs = self.getCrs(layer.crsOptions)
@@ -119,13 +118,20 @@ class BaseMapLayer(BaseLayer):
         if self.layers:
             layer = self.layers[0].clone()
         else:
-            if self.type == 'wmts':
-                url = self.wmtsUrl()
-            elif self.type == 'wms':
-                url = self.wmsUrl()
-            else:
-                url = self.url
-            layer = QgsRasterLayer(url, self.name, 'wms')
+            try:
+                if self.type == 'wmts':
+                    url = self.wmtsUrl()
+                elif self.type == 'wms':
+                    url = self.wmsUrl()
+                else:
+                    url = self.url
+                layer = QgsRasterLayer(url, self.name, 'wms')
+            except (MissingSchema, ConnectionError) as e:
+                self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem.", level=Qgis.Critical)
+                return
+            except WmsCapabilitiesConnectionException as e:
+                self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem (kod: {e.code}). Upewnij się, że połączenie sieciowe i usługa działają poprawnie", level=Qgis.Critical)
+                return
         self.setLayer(layer)
         QgsProject.instance().addMapLayer(layer, False)
         if group is None:

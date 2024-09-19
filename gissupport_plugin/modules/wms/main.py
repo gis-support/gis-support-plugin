@@ -18,7 +18,7 @@ from owslib.util import ServiceException
 from gissupport_plugin.modules.wms.baza_wms_dialog import BazaWMSDialog
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.wms.models import ServicesTableModel, ServicesProxyModel
-from gissupport_plugin.tools.capabilities import get_wms_capabilities
+from gissupport_plugin.tools.capabilities import WmsCapabilitiesConnectionException, get_wms_capabilities
 
 
 class Main(BaseModule):
@@ -114,17 +114,10 @@ class Main(BaseModule):
                 try:
                     wmsCapabilities = get_wms_capabilities(self.curServiceData['url'])
 
-                except (requests.exceptions.ReadTimeout, requests.exceptions.MissingSchema):
+                except WmsCapabilitiesConnectionException as e:
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WMS',
-                        'Serwer WMS nie odpowiada. Spróbuj ponownie później.',
-                        level=Qgis.Critical
-                    )
-                    return 1
-                except (requests.exceptions.SSLError, ServiceException, requests.exceptions.ConnectionError):
-                    iface.messageBar().pushMessage(
-                        'Baza krajowych usług WMS',
-                        'Błąd połączenia z serwerem WMS.',
+                        f'Błąd połączenia z serwerem WMS (kod: {e.code}).',
                         level=Qgis.Critical
                     )
                     return 1

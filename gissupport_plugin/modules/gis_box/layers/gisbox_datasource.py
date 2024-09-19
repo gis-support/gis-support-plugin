@@ -444,7 +444,7 @@ class GisboxFeatureLayer(QObject, Logger):
     
     def afterModify(self, data: dict):
         if data.get("error"):
-            self.message(data.get("error_message"), level=Qgis.Critical, duration=5)
+            self.message(data.get("error_message"), level=Qgis.Critical)
             return
         
         self.message(f'Pomyślnie zmodyfikowano dane warstwy: {self.layers[0].name()}', 

@@ -26,6 +26,8 @@ class NetworkHandler(QObject):
             if retry_callback:
                 self.error_occurred = True
                 retry_callback()
+            elif reply.error() in (QNetworkReply.TimeoutError, QNetworkReply.OperationCanceledError, QNetworkReply.UnknownServerError):
+                self.result = {'error': reply.errorString(), 'msg': 'Przekroczono czas oczekiwania na odpowiedź serwera.'}
             else:
                 self.result = {'error': reply.errorString()}
 
@@ -57,7 +59,7 @@ class NetworkHandler(QObject):
         self.result = None
         self.error_occurred = False
 
-        def try_request(url, body, retry_callback=None):
+        def try_request(url, body, srid: str = None, retry_callback=None):
             request = QNetworkRequest(QUrl(url))
 
             if srid:

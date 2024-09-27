@@ -74,6 +74,8 @@ class ULDKSearch:
             self.url = URL(self.gugik_url, **url.params)
             content = handler.get(str(self.url))
             if "error" in content:
+                if 'msg' in content:
+                    raise RequestException(content["msg"])
                 raise RequestException("Brak odpowiedzi")
             
         content = content["data"]

@@ -1,3 +1,18 @@
+2.4
+Nowe narzędzie do pobierania Numerycznego Modelu (Pokrycia) Terenu
+Edycja danych nieprzestrzennych pochodzących z systemu GIS.Box
+Zmiany w funkcjonowaniu narzędzia `Automatyczna wektoryzacja` - pobieranie predefiniowanych fragmentów
+Dodanie domyślnej symbolizacji dla narzędzia `Automatyczna wektoryzacja`
+Dodanie paska informującego o działaniu narzędzia `Automatyczna wektoryzacja`
+Zmiana w narzędziu sprawdzania zmian w działkach z serwisem ULDK - zapisywana jest geometria z ULDK zamiast z warstwy źródłowej
+Wyłączenie ładowania danych z ULDK przy uruchamianiu wtyczki
+Aktualizacja danych dla usług GUGiK WMTS
+Naprawa błędu w narzędziu `Automatyczna wektoryzacja` przy kliknięciu w mapę
+Naprawa błędu w narzędziu `Automatyczna wektoryzacja` po usunięciu warstwy wynikowej
+Poprawiono obsługę błędów GIS.Box
+Poprawiono problem pobierania danych PRG dla całego kraju
+Lepsza obsługa błędów w usługach sieciowych
+
 2.3
 Nowe narzędzie `Automatyczna wektoryzacja`
 Obsługa uwierzytelniania dwuskładnikowego (2FA) GIS.Box

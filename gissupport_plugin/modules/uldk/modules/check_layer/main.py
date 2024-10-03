@@ -214,7 +214,6 @@ class CheckLayer:
 
         output_layer = QgsVectorLayer(f"Polygon?crs={crs}", self.ui.text_edit_target_layer_name.text(), "memory")
         output_data_provider = output_layer.dataProvider()
-        output_data_provider.addAttributes(self.source_layer.fields().toList())
         output_data_provider.addAttributes(PLOTS_LAYER_DEFAULT_FIELDS)
         output_data_provider.addAttributes([RESULT_FIELD])
         output_layer.updateFields()
@@ -234,7 +233,7 @@ class CheckLayer:
 
             current_feature.setFields(fields, False)
 
-            attributes = current_feature.attributes()
+            attributes = []
 
             for field in PLOTS_LAYER_DEFAULT_FIELDS:
                 attributes.append(current_uldk_feature[field.name()])

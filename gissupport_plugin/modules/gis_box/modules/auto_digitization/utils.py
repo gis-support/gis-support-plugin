@@ -2,7 +2,7 @@ import json
 import os
 
 from PyQt5.QtCore import pyqtSignal, QVariant
-from qgis.core import (QgsPointXY, QgsGeometry, QgsFeature, QgsProject,
+from qgis.core import (QgsPointXY, QgsGeometry, QgsFeature, QgsProject, QgsJsonUtils,
                        QgsCoordinateReferenceSystem, QgsVectorLayer, QgsField, QgsTask)
 
 from gissupport_plugin.modules.gis_box.layers.geojson import geojson2geom
@@ -52,16 +52,9 @@ class AutoDigitizationTask(QgsTask):
             layer.updateFields()
 
             for feature in data["data"]["features"]:
-                multipolygon = []
+                geometry_dict = json.dumps(feature["geometry"])
+                geometry = QgsJsonUtils.geometryFromGeoJson(geometry_dict)
 
-                coordinates = feature["geometry"]["coordinates"]
-                for polygon in coordinates:
-                    polygon_ = []
-                    for point in polygon:
-                        polygon_.append(QgsPointXY(point[0], point[1]))
-                    multipolygon.append(polygon_)
-
-                geometry = QgsGeometry().fromMultiPolygonXY([multipolygon])
                 if self.clip_results:
                     clip_geom = geojson2geom(self.data["data"]["geometry"])
                     geometry = geometry.intersection(clip_geom)

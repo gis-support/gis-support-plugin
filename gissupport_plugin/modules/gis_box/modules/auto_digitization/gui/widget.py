@@ -32,6 +32,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.lbWarning.setVisible(False)
         self.areaWidget.setHidden(True)
         self.btnExecute.setEnabled(False)
+        self.selectedToolLabel.setHidden(True)
 
         self.registerTools()
         self.menageSignals()
@@ -115,9 +116,9 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.area = 0
 
         self.areaInfo.setText("Powierzchnia: 0 ha")
-        self.select_features_rectangle_tool.reset()
-        self.select_features_freehand_tool.reset()
-        self.select_features_tool.reset()
+        self.select_features_rectangle_tool.reset_geometry()
+        self.select_features_freehand_tool.reset_geometry()
+        self.select_features_tool.reset_geometry()
 
     def execute(self):
         iface.messageBar().pushMessage(
@@ -136,7 +137,6 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
                 transformation = QgsCoordinateTransform(current_crs, crs_2180, QgsProject.instance())
                 self.geom.transform(transformation)
 
-        self.geom.convertToSingleType()
         geojson = json.loads(self.geom.asJson())
 
         data = {
@@ -165,6 +165,10 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
 
+        self.select_features_rectangle_tool.reset_geometry()
+        self.select_features_freehand_tool.reset_geometry()
+        self.select_features_tool.reset_geometry()
+
     def task_downloaded_data(self):
         iface.messageBar().pushMessage(
             "Automatyczna wektoryzacja", "Trwa zapisywanie danych do warstwy tymczasowej.", level=Qgis.Info)
@@ -188,14 +192,20 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
     def select_features(self):
         iface.mapCanvas().setMapTool(self.select_features_tool)
+        self.selectedToolLabel.setText("Wybrane narzędzie: Wskaż obiekty")
+        self.selectedToolLabel.setHidden(False)
         self.projected = True
 
     def select_features_rectangle(self):
         iface.mapCanvas().setMapTool(self.select_features_rectangle_tool)
+        self.selectedToolLabel.setText("Wybrane narzędzie: Wskaż prostokątem")
+        self.selectedToolLabel.setHidden(False)
         self.projected = False
 
     def select_features_freehand(self):
         iface.mapCanvas().setMapTool(self.select_features_freehand_tool)
+        self.selectedToolLabel.setText("Wybrane narzędzie: Wskaż swobodnie")
+        self.selectedToolLabel.setHidden(False)
         self.projected = False
 
     def checkboxStateChanged(self, toggled: bool):

@@ -86,9 +86,16 @@
      </widget>
     </item>
     <item>
+     <widget class="QCheckBox" name="clipResultCheckBox">
+      <property name="text">
+       <string>Przytnij do wskazanego zasięgu</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QPushButton" name="btnSelectArea">
+       <widget class="QToolButton" name="btnSelectArea">
         <property name="text">
          <string>Wskaż obszar</string>
         </property>

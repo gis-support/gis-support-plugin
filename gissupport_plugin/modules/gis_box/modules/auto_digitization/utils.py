@@ -5,6 +5,7 @@ from PyQt5.QtCore import pyqtSignal, QVariant
 from qgis.core import (QgsPointXY, QgsGeometry, QgsFeature, QgsProject,
                        QgsCoordinateReferenceSystem, QgsVectorLayer, QgsField, QgsTask)
 
+from gissupport_plugin.modules.gis_box.layers.geojson import geojson2geom
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 from gissupport_plugin.tools.requests import NetworkHandler
 
@@ -16,11 +17,12 @@ class AutoDigitizationTask(QgsTask):
     task_completed = pyqtSignal()
     task_failed = pyqtSignal()
 
-    def __init__(self, description: str, digitization_option: list, data: dict, layer_id: str):
+    def __init__(self, description: str, digitization_option: list, data: dict, layer_id: str, clip_results: bool):
         super().__init__(description, QgsTask.CanCancel)
         self.digitization_option = digitization_option
         self.data = data
         self.layer_id = layer_id
+        self.clip_results = clip_results
 
     def run(self):
         handler = NetworkHandler()
@@ -60,6 +62,9 @@ class AutoDigitizationTask(QgsTask):
                     multipolygon.append(polygon_)
 
                 geometry = QgsGeometry().fromMultiPolygonXY([multipolygon])
+                if self.clip_results:
+                    clip_geom = geojson2geom(self.data["data"]["geometry"])
+                    geometry = geometry.intersection(clip_geom)
 
                 attributes = feature["properties"]
                 output_feature = QgsFeature()

@@ -165,10 +165,6 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
 
-        self.select_features_rectangle_tool.reset_geometry()
-        self.select_features_freehand_tool.reset_geometry()
-        self.select_features_tool.reset_geometry()
-
     def task_downloaded_data(self):
         iface.messageBar().pushMessage(
             "Automatyczna wektoryzacja", "Trwa zapisywanie danych do warstwy tymczasowej.", level=Qgis.Info)
@@ -177,12 +173,18 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         iface.messageBar().pushMessage(
                 "Automatyczna wektoryzacja", "Pomyślnie zapisano dane do warstwy tymczasowej.", level=Qgis.Success)
         self.task = None
+        self.select_features_rectangle_tool.reset_geometry()
+        self.select_features_freehand_tool.reset_geometry()
+        self.select_features_tool.reset_geometry()
 
     def task_failed(self):
         iface.messageBar().pushMessage(
             "Automatyczna wektoryzacja", "Zapisanie danych do warstwy tymczasowej nie powiodło się.",
             level=Qgis.Critical)
         self.task = None
+        self.select_features_rectangle_tool.reset_geometry()
+        self.select_features_freehand_tool.reset_geometry()
+        self.select_features_tool.reset_geometry()
 
     def task_layer_id_updated(self, layer_id: str):
         self.layer_id = layer_id

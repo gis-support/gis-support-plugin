@@ -52,8 +52,7 @@ class AutoDigitizationTask(QgsTask):
             layer.updateFields()
 
             for feature in data["data"]["features"]:
-                geometry_dict = json.dumps(feature["geometry"])
-                geometry = QgsJsonUtils.geometryFromGeoJson(geometry_dict)
+                geometry = geojson2geom(feature["geometry"])
 
                 if self.clip_results:
                     clip_geom = geojson2geom(self.data["data"]["geometry"])

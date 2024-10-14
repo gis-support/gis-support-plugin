@@ -50,7 +50,6 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.options = None
         self.layer_id = None
         self.projected = False
-        self.clip = False
 
         self.getOptions()
 
@@ -64,7 +63,6 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.select_features_tool.geometryChanged.connect(self.areaChanged)
         self.select_features_tool.geometryEnded.connect(self.areaEnded)
         self.areaReset.clicked.connect(self.areaInfoReset)
-        self.clipResultCheckBox.toggled.connect(self.checkboxStateChanged)
 
     def registerTools(self):
         """ Zarejestrowanie narzędzi jak narzędzi mapy QGIS """
@@ -154,8 +152,10 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
             }
         }
 
+        clip = 'true' if self.clipResultCheckBox.isChecked() is True else 'false'
+
         self.task = AutoDigitizationTask(
-            "Automatyczna wektoryzacja", digitization_option, data, self.layer_id, self.clip
+            "Automatyczna wektoryzacja", digitization_option, data, self.layer_id, clip
         )
         self.task.task_layer_id_updated.connect(self.task_layer_id_updated)
         self.task.task_downloaded_data.connect(self.task_downloaded_data)
@@ -209,9 +209,3 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.selectedToolLabel.setText("Wybrane narzędzie: Wskaż swobodnie")
         self.selectedToolLabel.setHidden(False)
         self.projected = False
-
-    def checkboxStateChanged(self, toggled: bool):
-        if toggled:
-            self.clip = True
-        else:
-            self.clip = False

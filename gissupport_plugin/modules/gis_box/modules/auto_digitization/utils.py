@@ -17,17 +17,17 @@ class AutoDigitizationTask(QgsTask):
     task_completed = pyqtSignal()
     task_failed = pyqtSignal()
 
-    def __init__(self, description: str, digitization_option: list, data: dict, layer_id: str, clip_results: bool):
+    def __init__(self, description: str, digitization_option: list, data: dict, layer_id: str, clip: str):
         super().__init__(description, QgsTask.CanCancel)
         self.digitization_option = digitization_option
         self.data = data
         self.layer_id = layer_id
-        self.clip_results = clip_results
+        self.clip = clip
 
     def run(self):
         handler = NetworkHandler()
         response = handler.post(
-            GISBOX_CONNECTION.host + f"/api/automatic_digitization/{self.digitization_option[0]}",
+            GISBOX_CONNECTION.host + f"/api/automatic_digitization/{self.digitization_option[0]}?trim={self.clip}",
             True,
             data=self.data,
             srid='2180'
@@ -53,10 +53,6 @@ class AutoDigitizationTask(QgsTask):
 
             for feature in data["data"]["features"]:
                 geometry = geojson2geom(feature["geometry"])
-
-                if self.clip_results:
-                    clip_geom = geojson2geom(self.data["data"]["geometry"])
-                    geometry = geometry.intersection(clip_geom)
 
                 attributes = feature["properties"]
                 output_feature = QgsFeature()

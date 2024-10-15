@@ -1,5 +1,6 @@
 import json
 import os
+from json import JSONDecodeError
 
 from PyQt5.QtCore import pyqtSignal, QVariant
 from qgis.core import (QgsPointXY, QgsGeometry, QgsFeature, QgsProject, QgsJsonUtils,
@@ -32,7 +33,11 @@ class AutoDigitizationTask(QgsTask):
             data=self.data,
             srid='2180'
         )
-        data = json.loads(response.readAll().data().decode())
+        try:
+            data = json.loads(response.readAll().data().decode())
+        except JSONDecodeError:
+            self.task_failed.emit()
+            return False
 
         if data.get("data"):
             crs = QgsCoordinateReferenceSystem.fromEpsgId(2180)

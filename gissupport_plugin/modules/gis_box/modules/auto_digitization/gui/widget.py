@@ -177,9 +177,13 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.select_features_freehand_tool.reset_geometry()
         self.select_features_tool.reset_geometry()
 
-    def task_failed(self):
+    def task_failed(self, desc: str):
+        if desc:
+            message_description = desc
+        else:
+            message_description = "Zapisanie danych do warstwy tymczasowej nie powiodło się."
         iface.messageBar().pushMessage(
-            "Automatyczna wektoryzacja", "Zapisanie danych do warstwy tymczasowej nie powiodło się.",
+            "Automatyczna wektoryzacja", message_description,
             level=Qgis.Critical)
         self.task = None
         self.select_features_rectangle_tool.reset_geometry()

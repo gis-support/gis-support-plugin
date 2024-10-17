@@ -16,7 +16,7 @@ class AutoDigitizationTask(QgsTask):
     task_layer_id_updated = pyqtSignal(str)
     task_downloaded_data = pyqtSignal()
     task_completed = pyqtSignal()
-    task_failed = pyqtSignal()
+    task_failed = pyqtSignal(str)
 
     def __init__(self, description: str, digitization_option: list, data: dict, layer_id: str, clip: str):
         super().__init__(description, QgsTask.CanCancel)
@@ -36,7 +36,7 @@ class AutoDigitizationTask(QgsTask):
         try:
             data = json.loads(response.readAll().data().decode())
         except JSONDecodeError:
-            self.task_failed.emit()
+            self.task_failed.emit("Błąd odczytu danych nadesłanych z API")
             return False
 
         if data.get("data"):
@@ -78,7 +78,7 @@ class AutoDigitizationTask(QgsTask):
                 layer.reload()
 
         else:
-            self.task_failed.emit()
+            self.task_failed.emit(None)
             return False
 
         self.task_completed.emit()

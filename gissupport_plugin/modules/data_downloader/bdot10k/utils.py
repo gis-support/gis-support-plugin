@@ -80,8 +80,12 @@ def get_databox_layers():
 def convert_multi_polygon_to_polygon(geometry: QgsGeometry):
     # rubber bandy zwracają multipoligony, konieczne jest rozbicie geometrii przed wysłaniem do api oze
     geometry.convertToSingleType()
-    crs_dest = QgsCoordinateReferenceSystem().fromEpsgId(2180)
     crs_src = iface.mapCanvas().mapSettings().destinationCrs()
+    geometry = transform_geometry_to_2180(geometry, crs_src)
+    return geometry
+
+def transform_geometry_to_2180(geometry: QgsGeometry, crs_src: QgsCoordinateReferenceSystem):
+    crs_dest = QgsCoordinateReferenceSystem().fromEpsgId(2180)
     transform = QgsCoordinateTransform(crs_src, crs_dest, QgsProject.instance())
     geometry.transform(transform)
     return geometry
@@ -130,10 +134,10 @@ class DrawPolygon(QgsMapTool):
 
     def reset(self):
         self.drawing = False
-        self.rb.reset(True)
+        self.rb.reset(QgsWkbTypes.PolygonGeometry)
 
     def deactivate(self):
-        self.rb.reset(True)
+        self.rb.reset(QgsWkbTypes.PolygonGeometry)
         self.drawing = False
         QgsMapTool.deactivate(self)
         self.canvas.unsetMapTool(self)

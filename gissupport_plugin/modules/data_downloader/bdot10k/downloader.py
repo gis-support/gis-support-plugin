@@ -1,4 +1,3 @@
-import json
 from os.path import expanduser
 
 from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsMapLayerProxyModel, QgsGeometry, QgsWkbTypes
@@ -8,7 +7,7 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QFileDialog
 
 from gissupport_plugin.modules.data_downloader.bdot10k.bdot10k_dockwidget import BDOT10kDockWidget
-from gissupport_plugin.modules.data_downloader.bdot10k.utils import BDOT10kDownloadTask, DrawPolygon, get_databox_layers, BDOT10kDataBoxDownloadTask, convert_multi_polygon_to_polygon
+from gissupport_plugin.modules.data_downloader.bdot10k.utils import BDOT10kDownloadTask, DrawPolygon, get_databox_layers, BDOT10kDataBoxDownloadTask, convert_multi_polygon_to_polygon, transform_geometry_to_2180
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchTeryt
 from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool
 
@@ -182,7 +181,8 @@ class BDOT10kDownloader:
         selected_layer = self.bdot10k_dockwidget.fromLayerComboBox.currentLayer()
         if selected_layer:
             bbox = selected_layer.boundingBoxOfSelected()
-            self.selected_geom  = QgsGeometry.fromRect(bbox)
+            crs_src = selected_layer.crs()
+            self.selected_geom  = transform_geometry_to_2180(QgsGeometry.fromRect(bbox), crs_src)
 
     def activateTool(self, tool):
         iface.mapCanvas().setMapTool(tool)

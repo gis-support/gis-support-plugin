@@ -1,10 +1,14 @@
 from io import BytesIO
-import requests
+import json
 
-from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import QgsTask, QgsMessageLog, Qgis
+from qgis.PyQt.QtCore import pyqtSignal, Qt
+from qgis.core import QgsTask, QgsMessageLog, Qgis, QgsWkbTypes, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsProject, QgsGeometry
 from gissupport_plugin.tools.requests import NetworkHandler
 from PyQt5.QtNetwork import QNetworkRequest
+from PyQt5.QtGui import QColor
+from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.utils import iface
+
 
 class BDOT10kDownloadTask(QgsTask):
 
@@ -45,3 +49,91 @@ class BDOT10kDownloadTask(QgsTask):
 
     def log_message(self, message: str, level: Qgis.MessageLevel):
         QgsMessageLog.logMessage(message, self.message_group_name, level)
+
+class BDOT10kDataBoxDownloadTask(QgsTask):
+    download_finished = pyqtSignal(bool)
+    downloaded_data = pyqtSignal(str)
+
+    def __init__(self, description: str, layer: str, geojson: QgsGeometry):
+        self.layer = layer
+        self.geojson = json.loads(geojson.asJson())
+        self.geojson["crs"] = {"type": "name", "properties": {"name": "EPSG:2180"}}
+        self.url = f"https://api-oze.gisbox.pl/layers/{self.layer}?output_srid=2180&promote_to_multi=false"
+        super().__init__(description, QgsTask.CanCancel)
+
+    def run(self):
+        handler = NetworkHandler()
+        response = handler.post(self.url, data=self.geojson, databox=True)
+        self.downloaded_data.emit(response.get("data"))
+        self.download_finished.emit(True)
+        return True
+
+
+def get_databox_layers():
+    handler = NetworkHandler()
+    url = 'https://api-oze.gisbox.pl/layers'
+    response = handler.get(url)
+    layer_list = json.loads(response.get("data"))
+    layer_list = {v: k for k, v in layer_list.items()}
+    return layer_list
+
+def convert_multi_polygon_to_polygon(geometry: QgsGeometry):
+    # rubber bandy zwracają multipoligony, konieczne jest rozbicie geometrii przed wysłaniem do api oze
+    geometry.convertToSingleType()
+    crs_dest = QgsCoordinateReferenceSystem().fromEpsgId(2180)
+    crs_src = iface.mapCanvas().mapSettings().destinationCrs()
+    transform = QgsCoordinateTransform(crs_src, crs_dest, QgsProject.instance())
+    geometry.transform(transform)
+    return geometry
+
+class DrawPolygon(QgsMapTool):
+    """Narzędzie do rysowania poligonu"""
+    selectionDone = pyqtSignal(QgsGeometry)
+    move = pyqtSignal()
+
+    def __init__(self, parent):
+        canvas = iface.mapCanvas()
+        QgsMapTool.__init__(self, canvas)
+        self.canvas = canvas
+        self.parent = parent
+        self.rb = QgsRubberBand(self.canvas, QgsWkbTypes.PolygonGeometry)
+        self.rb.setColor(QColor(255, 0, 0, 100))
+        self.rb.setFillColor(QColor(255, 0, 0, 33))
+        self.rb.setWidth = 10
+        self.drawing = False
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Escape:
+            self.reset()
+
+    def canvasPressEvent(self, e):
+        if e.button() == Qt.LeftButton:
+            if self.drawing is False:
+                self.rb.reset(QgsWkbTypes.PolygonGeometry)
+                self.drawing = True
+            self.rb.addPoint(self.toMapCoordinates(e.pos()))
+        elif e.button() == Qt.RightButton and self.drawing:
+            if self.rb.numberOfVertices() > 2:
+                self.rb.removeLastPoint(0)
+                self.drawing = False
+                geometry = self.rb.asGeometry()
+                self.rb.setToGeometry(geometry, None)
+                self.selectionDone.emit(geometry)
+            else:
+                self.reset()
+
+    def canvasMoveEvent(self, e):
+        if self.rb.numberOfVertices() > 0  and self.drawing:
+            self.rb.removeLastPoint(0)
+            self.rb.addPoint(self.toMapCoordinates(e.pos()))
+        self.move.emit()
+
+    def reset(self):
+        self.drawing = False
+        self.rb.reset(True)
+
+    def deactivate(self):
+        self.rb.reset(True)
+        self.drawing = False
+        QgsMapTool.deactivate(self)
+        self.canvas.unsetMapTool(self)

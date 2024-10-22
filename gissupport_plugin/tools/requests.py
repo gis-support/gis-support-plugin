@@ -54,17 +54,17 @@ class NetworkHandler(QObject):
 
         return self.result
 
-    def post(self, url, reply_only: bool = False, params: dict = None, data: dict = None, srid: str = None) -> Union[dict, QNetworkReply]:
+    def post(self, url, reply_only: bool = False, params: dict = None, data: dict = None, srid: str = None, databox: bool = False) -> Union[dict, QNetworkReply]:
         """Wykonuje żądanie POST do podanego URL"""
         self.result = None
         self.error_occurred = False
 
         def try_request(url, body, srid: str = None, retry_callback=None):
             request = QNetworkRequest(QUrl(url))
-
             if srid:
                 request.setRawHeader(b'X-Response-SRID', srid.encode())
-
+            if databox:
+                request.setHeader(QNetworkRequest.ContentTypeHeader, "application/json")
             reply = self.network_manager.post(request, body)
             reply.finished.connect(lambda: self.handle_response(reply, retry_callback, reply_only))
             return reply

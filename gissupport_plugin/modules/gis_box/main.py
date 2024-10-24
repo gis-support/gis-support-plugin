@@ -254,4 +254,13 @@ class GISBox(BaseModule, Logger):
 
     def enableDigitization(self, data):
         if data["data"]:
-            self.autoDigitalizationAction.setEnabled(True)
+            GISBOX_CONNECTION.get(
+                "/api/users/current_user", callback=self.checkDigitizationPermissions
+            )
+
+    def checkDigitizationPermissions(self, user_data):
+        if modules := user_data["data"]["permissions"]["modules"]:
+            for module in modules:
+                if module["module_name"] == "AUTOMATIC_DIGITIZATION" and module["main_value"] == 1:
+                    self.autoDigitalizationAction.setEnabled(True)
+                    return

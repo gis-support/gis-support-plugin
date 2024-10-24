@@ -77,8 +77,8 @@ class NMPTdownloader:
         self.selectRectangleTool.setButton(self.nmpt_dockwidget.selectAreaButton)
         self.nmpt_dockwidget.selectAreaButton.clicked.connect(lambda: self.activateTool(
                                                                 self.selectRectangleTool))
-        self.selectRectangleTool.rectangleChanged.connect(self.area_changed)
-        self.selectRectangleTool.rectangleEnded.connect(self.area_ended)
+        self.selectRectangleTool.geometryChanged.connect(self.area_changed)
+        self.selectRectangleTool.geometryEnded.connect(self.area_ended)
         self.nmpt_dockwidget.selectedAreaReset.clicked.connect(self.area_info_reset)
         self.nmpt_dockwidget.maxAreaReachedLabel.setVisible(False)
         self.nmpt_dockwidget.areaWidget.setHidden(True)

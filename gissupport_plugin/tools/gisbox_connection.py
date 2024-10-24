@@ -146,13 +146,18 @@ class GisboxConnection(QObject, Logger):
 
         return reply
     
-    def post(self, endpoint: str, payload: dict, callback: any = None, srid: str = None):
+    def post(self, endpoint: str, payload: dict, callback: any = None, srid: str = None, sync:bool = False):
         request = self._createRequest(endpoint)
         if srid:
             request.setRawHeader(b'X-Response-SRID', srid.encode())
 
         data = json.dumps(payload).encode()
 
+        if sync:
+            reply = self.MANAGER.blockingPost(request, data)
+            response = json.loads(bytearray(reply.content()))
+            return response
+        
         reply = self.MANAGER.post(request, data)
         response = reply.readAll()
 

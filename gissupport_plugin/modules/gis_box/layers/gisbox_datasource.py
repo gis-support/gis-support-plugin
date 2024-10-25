@@ -280,6 +280,7 @@ class GisboxFeatureLayer(QObject, Logger):
             layer.updateExtents(True)
         self.zoomToExtent(layer)
         self.features_loaded.emit(layer)
+        layer.triggerRepaint()
         # Usunięcie zbędnego taska
         del self.task
 

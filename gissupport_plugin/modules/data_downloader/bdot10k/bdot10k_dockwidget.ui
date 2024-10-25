@@ -6,6 +6,12 @@
    <string>BDOT10k - Baza Danych Obiektów Topograficznych</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
      <widget class="QLabel" name="moreinfoLabel">
@@ -47,6 +53,12 @@
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QFrame" name="boundsFrame">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="frameShape">
            <enum>QFrame::StyledPanel</enum>
           </property>
@@ -56,6 +68,12 @@
           <layout class="QVBoxLayout" name="verticalLayout_5">
            <item>
             <widget class="QLabel" name="layerLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="mouseTracking">
               <bool>false</bool>
              </property>
@@ -72,6 +90,12 @@
            </item>
            <item>
             <widget class="QLabel" name="methodLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="font">
               <font>
                <kerning>true</kerning>
@@ -87,6 +111,12 @@
            </item>
            <item>
             <widget class="QLabel" name="fromLayerLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="font">
               <font>
                <kerning>true</kerning>
@@ -120,6 +150,15 @@
            </item>
            <item>
             <widget class="QLabel" name="databoxLabel">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="font">
               <font>
                <pointsize>8</pointsize>
@@ -167,6 +206,12 @@
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QFrame" name="powiatFrame">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="frameShape">
            <enum>QFrame::StyledPanel</enum>
           </property>
@@ -176,6 +221,12 @@
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <widget class="QLabel" name="infoLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="font">
               <font>
                <weight>75</weight>
@@ -189,6 +240,12 @@
            </item>
            <item>
             <widget class="QLabel" name="filepathLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
               <string>Ścieżka zapisu:</string>
              </property>
@@ -210,6 +267,12 @@
            </item>
            <item>
             <widget class="QLabel" name="wojLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
               <string>Województwo:</string>
              </property>
@@ -220,6 +283,12 @@
            </item>
            <item>
             <widget class="QLabel" name="powLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
               <string>Powiat:</string>
              </property>
@@ -243,6 +312,12 @@
            </item>
            <item>
             <widget class="QLabel" name="gugikLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="font">
               <font>
                <pointsize>8</pointsize>
@@ -284,6 +359,19 @@
        </layout>
       </widget>
      </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
     </item>
    </layout>
   </widget>

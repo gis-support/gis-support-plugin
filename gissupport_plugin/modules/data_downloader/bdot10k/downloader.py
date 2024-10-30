@@ -54,6 +54,7 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.fromLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
         self.bdot10k_dockwidget.fromLayerComboBox.hide()
         self.bdot10k_dockwidget.fromLayerLabel.hide()
+        self.bdot10k_dockwidget.fromLayerComboBox.layerChanged.connect(self.update_boundsDownloadButton_state)
 
 ### pobieranie dla wybranego powiatu
     def browse_filepath_for_bdot10k(self):
@@ -158,6 +159,7 @@ class BDOT10kDownloader:
             self.bdot10k_dockwidget.fromLayerLabel.show()
             self.bdot10k_dockwidget.fromLayerComboBox.show()
             self.bdot10k_dockwidget.drawBoundsButton.hide()
+            self.update_boundsDownloadButton_state()
 
         else:
             self.bdot10k_dockwidget.drawBoundsButton.clicked.disconnect()
@@ -173,6 +175,18 @@ class BDOT10kDownloader:
 
             self.bdot10k_dockwidget.fromLayerLabel.hide()
             self.bdot10k_dockwidget.fromLayerComboBox.hide()
+    
+    def update_boundsDownloadButton_state(self):
+        selected_layer = self.bdot10k_dockwidget.fromLayerComboBox.currentLayer()
+        if selected_layer:
+            selected_layer.selectionChanged.connect(self.on_selection_change)
+            self.on_selection_change(selected_layer.selectedFeatureCount())
+        else:
+            self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
+    
+    def on_selection_change(self, selected_feature_count):
+        selected_feature_count = len(selected_feature_count) if isinstance(selected_feature_count, list) else selected_feature_count
+        self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(selected_feature_count > 0)
 
     def set_geometry_from_draw(self, geojson):
         self.selected_geom = geojson

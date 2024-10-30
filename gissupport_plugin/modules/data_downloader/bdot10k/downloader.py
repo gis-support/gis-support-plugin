@@ -50,6 +50,7 @@ class BDOT10kDownloader:
 
         self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
         self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)
+        self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
         self.bdot10k_dockwidget.fromLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
         self.bdot10k_dockwidget.fromLayerComboBox.hide()
@@ -162,6 +163,7 @@ class BDOT10kDownloader:
             self.update_boundsDownloadButton_state()
 
         else:
+            self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
             self.bdot10k_dockwidget.drawBoundsButton.clicked.disconnect()
             self.bdot10k_dockwidget.drawBoundsButton.show()
 
@@ -190,6 +192,7 @@ class BDOT10kDownloader:
 
     def set_geometry_from_draw(self, geojson):
         self.selected_geom = geojson
+        self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
 
     def set_geometry_for_selection(self):
         selected_layer = self.bdot10k_dockwidget.fromLayerComboBox.currentLayer()

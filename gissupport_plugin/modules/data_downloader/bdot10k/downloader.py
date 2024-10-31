@@ -197,9 +197,10 @@ class BDOT10kDownloader:
     def set_geometry_for_selection(self):
         selected_layer = self.bdot10k_dockwidget.fromLayerComboBox.currentLayer()
         if selected_layer:
-            bbox = selected_layer.boundingBoxOfSelected()
+            selected_features = selected_layer.getSelectedFeatures()
+            geom = QgsGeometry.unaryUnion([f.geometry() for f in selected_features])
             crs_src = selected_layer.crs()
-            self.selected_geom  = transform_geometry_to_2180(QgsGeometry.fromRect(bbox), crs_src)
+            self.selected_geom  = transform_geometry_to_2180(geom, crs_src)
 
     def activateTool(self, tool):
         iface.mapCanvas().setMapTool(tool)

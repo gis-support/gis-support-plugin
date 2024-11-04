@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from os.path import expanduser
 
 from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsMapLayerProxyModel, QgsGeometry, QgsWkbTypes
@@ -192,7 +192,7 @@ class BDOT10kDownloader:
             self.current_layer = None
             self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
-    def on_selection_change(self, selected_feature_count: List[int] or int):
+    def on_selection_change(self, selected_feature_count: Union[int, List[int]]):
         selected_feature_count = len(selected_feature_count) if isinstance(selected_feature_count, list) else selected_feature_count
         self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(selected_feature_count > 0)
 

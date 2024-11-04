@@ -1,7 +1,8 @@
+from typing import List
 from os.path import expanduser
 
 from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsMapLayerProxyModel, QgsGeometry, QgsWkbTypes
-from qgis.gui import QgsMessageBarItem
+from qgis.gui import QgsMessageBarItem, QgsMapTool
 from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QFileDialog
@@ -25,6 +26,7 @@ class BDOT10kDownloader:
         self.databox_layers = None
         self.drawpolygon = None
         self.drawrectangle = None
+        self.current_layer = None
 
     def init_bdot10k_dockwidget(self):
 
@@ -55,7 +57,7 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.fromLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
         self.bdot10k_dockwidget.fromLayerComboBox.hide()
         self.bdot10k_dockwidget.fromLayerLabel.hide()
-        self.bdot10k_dockwidget.fromLayerComboBox.layerChanged.connect(self.update_boundsDownloadButton_state)
+        self.bdot10k_dockwidget.fromLayerComboBox.layerChanged.connect(self.set_download_button_state)
 
 ### pobieranie dla wybranego powiatu
     def browse_filepath_for_bdot10k(self):
@@ -160,7 +162,7 @@ class BDOT10kDownloader:
             self.bdot10k_dockwidget.fromLayerLabel.show()
             self.bdot10k_dockwidget.fromLayerComboBox.show()
             self.bdot10k_dockwidget.drawBoundsButton.hide()
-            self.update_boundsDownloadButton_state()
+            self.set_download_button_state()
 
         else:
             self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
@@ -178,20 +180,24 @@ class BDOT10kDownloader:
             self.bdot10k_dockwidget.fromLayerLabel.hide()
             self.bdot10k_dockwidget.fromLayerComboBox.hide()
     
-    def update_boundsDownloadButton_state(self):
+    def set_download_button_state(self):
+        if self.current_layer:
+            self.current_layer.selectionChanged.disconnect(self.on_selection_change)
         selected_layer = self.bdot10k_dockwidget.fromLayerComboBox.currentLayer()
         if selected_layer:
+            self.current_layer = selected_layer
             selected_layer.selectionChanged.connect(self.on_selection_change)
             self.on_selection_change(selected_layer.selectedFeatureCount())
         else:
+            self.current_layer = None
             self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
-    
-    def on_selection_change(self, selected_feature_count):
+
+    def on_selection_change(self, selected_feature_count: List[int] or int):
         selected_feature_count = len(selected_feature_count) if isinstance(selected_feature_count, list) else selected_feature_count
         self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(selected_feature_count > 0)
 
-    def set_geometry_from_draw(self, geojson):
-        self.selected_geom = geojson
+    def set_geometry_from_draw(self, geom: QgsGeometry):
+        self.selected_geom = geom
         self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
 
     def set_geometry_for_selection(self):
@@ -202,7 +208,7 @@ class BDOT10kDownloader:
             crs_src = selected_layer.crs()
             self.selected_geom  = transform_geometry_to_2180(geom, crs_src)
 
-    def activateTool(self, tool):
+    def activateTool(self, tool: QgsMapTool):
         iface.mapCanvas().setMapTool(tool)
 
     def download_bdot10k_from_databox(self):
@@ -219,7 +225,7 @@ class BDOT10kDownloader:
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
     
-    def add_features_to_map(self, geojson):
+    def add_features_to_map(self, geojson: str):
         layer_name = self.bdot10k_dockwidget.layerComboBox.currentText()
         existing_layer = QgsProject.instance().mapLayersByName(layer_name)
 

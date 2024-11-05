@@ -1,10 +1,12 @@
 import json
 import os
+from json import JSONDecodeError
 
 from PyQt5.QtCore import pyqtSignal, QVariant
-from qgis.core import (QgsPointXY, QgsGeometry, QgsFeature, QgsProject,
+from qgis.core import (QgsPointXY, QgsGeometry, QgsFeature, QgsProject, QgsJsonUtils,
                        QgsCoordinateReferenceSystem, QgsVectorLayer, QgsField, QgsTask)
 
+from gissupport_plugin.modules.gis_box.layers.geojson import geojson2geom
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 from gissupport_plugin.tools.requests import NetworkHandler
 
@@ -14,23 +16,28 @@ class AutoDigitizationTask(QgsTask):
     task_layer_id_updated = pyqtSignal(str)
     task_downloaded_data = pyqtSignal()
     task_completed = pyqtSignal()
-    task_failed = pyqtSignal()
+    task_failed = pyqtSignal(str)
 
-    def __init__(self, description: str, digitization_option: list, data: dict, layer_id: str):
+    def __init__(self, description: str, digitization_option: list, data: dict, layer_id: str, clip: str):
         super().__init__(description, QgsTask.CanCancel)
         self.digitization_option = digitization_option
         self.data = data
         self.layer_id = layer_id
+        self.clip = clip
 
     def run(self):
         handler = NetworkHandler()
         response = handler.post(
-            GISBOX_CONNECTION.host + f"/api/automatic_digitization/{self.digitization_option[0]}",
+            GISBOX_CONNECTION.host + f"/api/automatic_digitization/{self.digitization_option[0]}?trim={self.clip}",
             True,
             data=self.data,
             srid='2180'
         )
-        data = json.loads(response.readAll().data().decode())
+        try:
+            data = json.loads(response.readAll().data().decode())
+        except JSONDecodeError:
+            self.task_failed.emit("Błąd odczytu danych nadesłanych z API")
+            return False
 
         if data.get("data"):
             crs = QgsCoordinateReferenceSystem.fromEpsgId(2180)
@@ -50,16 +57,7 @@ class AutoDigitizationTask(QgsTask):
             layer.updateFields()
 
             for feature in data["data"]["features"]:
-                multipolygon = []
-
-                coordinates = feature["geometry"]["coordinates"]
-                for polygon in coordinates:
-                    polygon_ = []
-                    for point in polygon:
-                        polygon_.append(QgsPointXY(point[0], point[1]))
-                    multipolygon.append(polygon_)
-
-                geometry = QgsGeometry().fromMultiPolygonXY([multipolygon])
+                geometry = geojson2geom(feature["geometry"])
 
                 attributes = feature["properties"]
                 output_feature = QgsFeature()
@@ -80,7 +78,7 @@ class AutoDigitizationTask(QgsTask):
                 layer.reload()
 
         else:
-            self.task_failed.emit()
+            self.task_failed.emit(None)
             return False
 
         self.task_completed.emit()

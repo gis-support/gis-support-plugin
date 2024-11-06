@@ -417,12 +417,14 @@ class GisboxFeatureLayer(QObject, Logger):
     def manageFeatures(self):
         layer = self.sender()
         edit_buffer = layer.editBuffer()
+        sync = True
 
         payload = {'data_source_name': self.datasource_name, 'layer_id': self.id}
 
         to_add = self.addFeatures(edit_buffer)
         if to_add:
             payload['insert'] = to_add
+            sync = False
 
         to_update = self.updateFeatures(layer, edit_buffer)
         if to_update:
@@ -438,7 +440,7 @@ class GisboxFeatureLayer(QObject, Logger):
 
         GISBOX_CONNECTION.post(
             f"/api/dataio/data_sources/{self.datasource_name}/features/edit?layer_id={self.id}",
-            {"data": payload}, callback=self.afterModify, sync=True
+            {"data": payload}, callback=self.afterModify, sync=sync
         )
     
     def afterModify(self, data: dict):

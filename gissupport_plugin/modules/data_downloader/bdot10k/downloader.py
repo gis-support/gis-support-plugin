@@ -46,7 +46,7 @@ class BDOT10kDownloader:
         self.drawrectangle.setButton(self.bdot10k_dockwidget.drawBoundsButton)
         self.bdot10k_dockwidget.drawBoundsButton.clicked.connect(lambda: self.activateTool(self.drawrectangle))
         self.drawpolygon.selectionDone.connect(self.set_geometry_from_draw)
-        self.drawrectangle.rectangleEnded.connect(lambda area, geometry: self.set_geometry_from_draw(geometry))
+        self.drawrectangle.geometryEnded.connect(lambda area, geometry: self.set_geometry_from_draw(geometry))
 
         self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
         self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)

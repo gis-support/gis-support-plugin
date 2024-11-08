@@ -1,6 +1,6 @@
 import time
 
-from typing import List, Iterable, Any
+from typing import Generator, List, Iterable, Any
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
                        QgsAttributeEditorContainer, QgsAttributeEditorField, QgsMapLayer, NULL, QgsFieldConstraints,
                        QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest)
@@ -57,6 +57,7 @@ class GisboxFeatureLayer(QObject, Logger):
         self.form_schema = data['form_schema']
         self.write_permission = data['write_permission']
         self.valid_fields = []
+        self.filter_expression = data.get('filter_expression')
 
         self.connectSignals()
 
@@ -246,28 +247,40 @@ class GisboxFeatureLayer(QObject, Logger):
     def getFeatures(self):
         """ Wysłanie żądania o obiekty warstwy """
         self.time = time.time()
-        GISBOX_CONNECTION.get(
-            f'/api/qgis/layers/features_layers/{self.id}/features?cache={time.time()}', callback=self.on_features.emit)
+        GISBOX_CONNECTION.post(
+            f'/api/v2/datasources-download/{self.datasource_name}?format=geojson', payload={
+            "data": {
+                "features_filter": self.filter_expression,
+                "style": {}
+            }},
+            callback=self.on_features.emit
+        )
 
     def onFeatures(self, data: dict):
         """ Sparsowanie i dodanie otrzymanych obiektów w sposób nieblokujący QGIS
         https://new.opengis.ch/2018/06/22/threads-in-pyqgis3/ """
         # Wymagane jest zapamiętanie zadania jako atrybut klasy
         self.task = QgsTask.fromFunction(
-            'Ładowanie obiektów', self.parseFeatures, data=data['data'])
+            'Ładowanie obiektów', self.parseFeatures, data=data)
         QgsApplication.taskManager().addTask(self.task)
         self.message(
             f'Pomyślnie wczytano dane warstwy: {self.layers[0].name()}, czas: {time.time() - self.time}', level=Qgis.Success, duration=5)
     
-    def onReload(self, data: dict):
+    def onReload(self, *args, **kwargs):
         self._reload_layer_metadata()
-        GISBOX_CONNECTION.get(
-            f'/api/qgis/layers/features_layers/{self.id}/features?cache={time.time()}', callback=self.on_features.emit)
+        GISBOX_CONNECTION.post(
+            f'/api/v2/datasources-download/{self.datasource_name}?format=geojson', payload={
+            "data": {
+                "features_filter": self.filter_expression,
+                "style": {}
+            }},
+            callback=self.on_features.emit
+        )
 
     def parseFeatures(self, task: QgsTask, data: dict):
         """ Parsowanie danych z serwera i dodanie obiektów do warstwy """
         try:
-            features = self.geojson2features(data['features']['features'])
+            features = self.geojson2features(data['features'])
         except Exception as e:
             self.log(e)
             return
@@ -284,10 +297,9 @@ class GisboxFeatureLayer(QObject, Logger):
         # Usunięcie zbędnego taska
         del self.task
 
-    def geojson2features(self, features: Iterable[dict]) -> List[QgsFeature]:
+    def geojson2features(self, features: Iterable[dict]): # -> Generator[QgsFeature]:
         """ Przekształcenie GeoJSONa na QgsFeature """
         # Stworzenie listy featerow warstwy
-        addedFeatures = []
         # Zebranie nazw pól z warstwy qgis
         layer_fields = self.layers[0].fields()
         # Pasek postępu
@@ -295,7 +307,7 @@ class GisboxFeatureLayer(QObject, Logger):
         # Iteracja po atrybutach sparsowanego obiektu
         for idx, feature in enumerate(features):
             f = QgsFeature(layer_fields)
-        # Sprawdzenie czy tabela ma geometrie
+            # Sprawdzenie czy tabela ma geometrie
             try:
                 f.setGeometry(geojson2geom(feature['geometry']))
             except AttributeError:
@@ -312,19 +324,21 @@ class GisboxFeatureLayer(QObject, Logger):
                 field_name = field['name']
                 if field_name in ('topogeom', self.datasource.geom_column_name):
                     continue
-                if field_name == self.datasource.id_column_name:
-                    value = feature['id']
-                else:
-                    value = feature['properties'].get(field_name)
+                # if field_name == self.datasource.id_column_name:
+                #     value = feature['id']
+                # else:
+                value = feature['properties'].get(field_name)
                 attributes.append(value)
             f.setAttributes(attributes)
-            addedFeatures.append(f)
+            # addedFeatures.append(f)
             if hasattr(self, 'task'):
                 try:
                     self.task.setProgress(idx*total)
                 except RuntimeError:
                     continue
-        return addedFeatures
+            self.f = feature
+            yield f
+        # return addedFeatures
 
     def setLayerAttributeForm(self, layer: QgsVectorLayer, form_schema: dict):
 

@@ -158,6 +158,7 @@ class GisboxFeatureLayer(QObject, Logger):
             extent = layer.extent()
         iface.mapCanvas().setExtent(extent.scaled(1.1))
         layer.triggerRepaint()
+        self.first = False
 
     def connectSignals(self):
         """ Podłączanie sygnałów """

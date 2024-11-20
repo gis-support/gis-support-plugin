@@ -280,6 +280,7 @@ class GisboxFeatureLayer(QObject, Logger):
             layer.updateExtents(True)
         self.zoomToExtent(layer)
         self.features_loaded.emit(layer)
+        layer.reload()
         layer.triggerRepaint()
         # Usunięcie zbędnego taska
         del self.task
@@ -431,6 +432,8 @@ class GisboxFeatureLayer(QObject, Logger):
         to_delete = self.deleteFeatures(layer, edit_buffer)
         if to_delete:
             payload['delete'] = to_delete
+
+        edit_buffer.rollBack()
 
         if to_delete:
             payload['delete']['features_ids'] = self.getFeaturesDbIds(

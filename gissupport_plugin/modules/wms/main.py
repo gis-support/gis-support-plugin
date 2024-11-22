@@ -281,5 +281,5 @@ class Main(BaseModule):
         with urllib.request.urlopen(url) as response:
             xml = response.read()
             root = et.fromstring(xml)
-            version = root.attrib['version']
+            version = root.attrib.get('version', '1.0.0')
             return version

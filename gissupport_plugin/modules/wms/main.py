@@ -14,6 +14,7 @@ import requests.exceptions
 import urllib
 from owslib.etree import ParseError
 from owslib.util import ServiceException
+import xml.etree.ElementTree as et
 
 from gissupport_plugin.modules.wms.baza_wms_dialog import BazaWMSDialog
 from gissupport_plugin.modules.base import BaseModule
@@ -137,10 +138,10 @@ class Main(BaseModule):
                     self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))
             elif self.curServiceData['type'] == 'WFS':
                 self.layerType = "WFS"
+                url = self.curServiceData['url']
+                version = self._get_wfs_version(self.curServiceData['url'])
                 try:
-                    wfsCapabilities = WebFeatureService(self.curServiceData['url'])
-                except (AttributeError, ParseError, TypeError):
-                    wfsCapabilities = WebFeatureService(self.curServiceData['url'], version='2.0.0')
+                    wfsCapabilities = WebFeatureService(url=url, version=version)
                 except requests.exceptions.ReadTimeout:
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WFS',
@@ -275,3 +276,10 @@ class Main(BaseModule):
             self.servicesTableModel.insertRows(0, services)
         else:
             self.servicesTableModel.insertRows(0, self.services)
+    
+    def _get_wfs_version(self, url):
+        with urllib.request.urlopen(url) as response:
+            xml = response.read()
+            root = et.fromstring(xml)
+            version = root.attrib['version']
+            return version

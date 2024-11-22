@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=2.4
+version=2.5
 author=GIS Support
 email=info@gis-support.pl
 license=GPL-3.0-only
@@ -53,19 +53,12 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=Nowe narzędzie do pobierania Numerycznego Modelu (Pokrycia) Terenu
-	Edycja danych nieprzestrzennych pochodzących z systemu GIS.Box
-	Zmiany w funkcjonowaniu narzędzia `Automatyczna wektoryzacja` - pobieranie predefiniowanych fragmentów
-	Dodanie domyślnej symbolizacji dla narzędzia `Automatyczna wektoryzacja`
-	Dodanie paska informującego o działaniu narzędzia `Automatyczna wektoryzacja`
-	Zmiana w narzędziu sprawdzania zmian w działkach z serwisem ULDK - zapisywana jest geometria z ULDK zamiast z warstwy źródłowej
-	Wyłączenie ładowania danych z ULDK przy uruchamianiu wtyczki
-	Aktualizacja danych dla usług GUGiK WMTS
-	Naprawa błędu w narzędziu `Automatyczna wektoryzacja` przy kliknięciu w mapę
-	Naprawa błędu w narzędziu `Automatyczna wektoryzacja` po usunięciu warstwy wynikowej
-	Poprawiono obsługę błędów GIS.Box
-	Poprawiono problem pobierania danych PRG dla całego kraju
-	Lepsza obsługa błędów w usługach sieciowych
+changelog=Nowe narzędzie do pobierania danych BDOT10k dla wskazanego obszaru
+	Rozwój narzędzia `Automatyczna wektoryzacja` - nowe sposoby zaznaczania zasięgu i docinanie danych do wybranego obszaru
+	Usprawnienia edycji warstw GIS.Box
+	Poprawiona obsługa błędów zewnętrznych usług
+	Naprawa błędnie wypełnianego wyniku sprawdzania działek ULDK
+	Poprawiona obsługa uprawnień narzędzia `Automatyczna wektoryzacja` GIS.Box
 
 # Tags are comma separated with spaces allowed
 tags=python

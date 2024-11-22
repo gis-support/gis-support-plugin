@@ -158,6 +158,7 @@ class GisboxFeatureLayer(QObject, Logger):
             extent = layer.extent()
         iface.mapCanvas().setExtent(extent.scaled(1.1))
         layer.triggerRepaint()
+        self.first = False
 
     def connectSignals(self):
         """ Podłączanie sygnałów """
@@ -280,6 +281,7 @@ class GisboxFeatureLayer(QObject, Logger):
             layer.updateExtents(True)
         self.zoomToExtent(layer)
         self.features_loaded.emit(layer)
+        layer.reload()
         layer.triggerRepaint()
         # Usunięcie zbędnego taska
         del self.task
@@ -412,7 +414,7 @@ class GisboxFeatureLayer(QObject, Logger):
         layer.setEditorWidgetSetup(field_id, setup)
 
     def getFeaturesDbIds(self, qgis_ids, layer):
-        return [f[self.datasource.id_column_name] for f in layer.getFeatures(qgis_ids)]
+        return [f[self.datasource.id_column_name] for f in layer.dataProvider().getFeatures( QgsFeatureRequest().setFilterFids( qgis_ids ))]
         
     def manageFeatures(self):
         layer = self.sender()

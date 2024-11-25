@@ -68,6 +68,39 @@ class BDOT10kDataBoxDownloadTask(QgsTask):
         self.download_finished.emit(True)
         return True
 
+class BDOT10kClassDownloadTask(QgsTask):
+    message_group_name = "GIS Support - BDOT10k Baza Danych Obiektów Topograficznych"
+    progress_updated = pyqtSignal(float)
+    download_finished = pyqtSignal(bool)
+
+    def __init__(self, description: str, bdot_class: str, filepath: str):
+        self.bdot_class = bdot_class
+        self.filepath = filepath
+        self.url = f"https://s3.gis.support/public/bdot10k/{self.bdot_class}.gpkg"
+        super().__init__(description, QgsTask.CanCancel)
+
+    def run(self):
+        handler = NetworkHandler()
+        response = handler.get(self.url, reply_only=True)
+        total_size = int(response.header(QNetworkRequest.ContentLengthHeader)) or 0
+        data = BytesIO(response.readAll().data())
+        bytes_received = 0
+        full_filepath = f"{self.filepath}/{self.bdot_class}.gpkg"
+        with open(full_filepath, 'wb') as file:
+            for chunk in iter(lambda: data.read(1024), b''):
+                file.write(chunk)
+                bytes_received += len(chunk)
+                if total_size > 0:
+                    progress = (bytes_received / total_size) * 100
+                    self.progress_updated.emit(progress)
+
+        self.log_message(f"{full_filepath} - pobrano", level=Qgis.Info)
+        self.download_finished.emit(True)
+
+        return True
+
+    def log_message(self, message: str, level: Qgis.MessageLevel):
+        QgsMessageLog.logMessage(message, self.message_group_name, level)
 
 def get_databox_layers():
     handler = NetworkHandler()

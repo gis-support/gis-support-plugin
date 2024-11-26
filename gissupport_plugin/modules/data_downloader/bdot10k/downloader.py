@@ -37,8 +37,8 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget = BDOT10kDockWidget()
 
         self.fill_woj_combobox()
-        self.fill_class_combobox()
         self.databox_layers = get_databox_layers()
+        self.fill_class_combobox()
 
         self.bdot10k_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_bdot10k)
         self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
@@ -286,7 +286,7 @@ class BDOT10kDownloader:
         """
         Uzupełnia combobox z klasami. Wywoływane raz, przy starcie pluginu.
         """
-        classes = get_databox_layers()
+        classes = self.databox_layers
         self.bdot10k_dockwidget.classComboBox.clear()
         self.bdot10k_dockwidget.classComboBox.addItem("")
         for item in classes.items():

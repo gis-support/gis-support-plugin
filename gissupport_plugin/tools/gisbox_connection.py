@@ -156,6 +156,10 @@ class GisboxConnection(QObject, Logger):
         if sync:
             reply = self.MANAGER.blockingPost(request, data)
             response = json.loads(bytearray(reply.content()))
+
+            if callback:
+                callback(response)
+
             return response
         
         reply = self.MANAGER.post(request, data)

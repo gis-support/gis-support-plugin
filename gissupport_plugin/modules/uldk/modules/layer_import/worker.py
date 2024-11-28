@@ -240,7 +240,7 @@ class LayerImportWorker(QObject):
         area = int(da.measureArea(geometry))/10000
         if area > 1:
             points_number *= area
-        points = geometry.randomPointsInPolygon(points_number)
+        points = geometry.randomPointsInPolygon(int(points_number))
 
         for point in points:
             feature = QgsFeature()

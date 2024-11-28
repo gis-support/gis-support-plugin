@@ -81,13 +81,13 @@ class BDOT10kClassDownloadTask(QgsTask):
 
     def run(self):
         handler = NetworkHandler()
+        handler.downloadProgress.connect( lambda value: self.setProgress(value) )
         response = handler.get(self.url, reply_only=True)
         total_size = int(response.header(QNetworkRequest.ContentLengthHeader)) or 0
-        data = BytesIO(response.readAll().data())
         bytes_received = 0
         full_filepath = f"{self.filepath}/{self.bdot_class}.gpkg"
         with open(full_filepath, 'wb') as file:
-            for chunk in iter(lambda: data.read(1024), b''):
+            while (chunk:=response.read(1024)):
                 file.write(chunk)
                 bytes_received += len(chunk)
                 if total_size > 0:

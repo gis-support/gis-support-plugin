@@ -198,7 +198,8 @@ class BDOT10kDownloader:
 
     def set_geometry_from_draw(self, geom: QgsGeometry):
         self.selected_geom = geom
-        self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
+        if not self.selected_geom.isNull():
+            self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
 
     def set_geometry_for_selection(self):
         selected_layer = self.bdot10k_dockwidget.fromLayerComboBox.currentLayer()

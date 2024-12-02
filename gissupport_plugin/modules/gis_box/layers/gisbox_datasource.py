@@ -1,6 +1,6 @@
 import time
 
-from typing import Generator, List, Iterable, Any
+from typing import Iterable, Any
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
                        QgsAttributeEditorContainer, QgsAttributeEditorField, QgsMapLayer, NULL, QgsFieldConstraints,
                        QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest)
@@ -299,7 +299,7 @@ class GisboxFeatureLayer(QObject, Logger):
         # Usunięcie zbędnego taska
         del self.task
 
-    def geojson2features(self, features: Iterable[dict]): # -> Generator[QgsFeature]:
+    def geojson2features(self, features: Iterable[dict]) -> Iterable[QgsFeature]:
         """ Przekształcenie GeoJSONa na QgsFeature """
         # Stworzenie listy featerow warstwy
         # Zebranie nazw pól z warstwy qgis
@@ -326,13 +326,9 @@ class GisboxFeatureLayer(QObject, Logger):
                 field_name = field['name']
                 if field_name in ('topogeom', self.datasource.geom_column_name):
                     continue
-                # if field_name == self.datasource.id_column_name:
-                #     value = feature['id']
-                # else:
                 value = feature['properties'].get(field_name)
                 attributes.append(value)
             f.setAttributes(attributes)
-            # addedFeatures.append(f)
             if hasattr(self, 'task'):
                 try:
                     self.task.setProgress(idx*total)
@@ -340,7 +336,6 @@ class GisboxFeatureLayer(QObject, Logger):
                     continue
             self.f = feature
             yield f
-        # return addedFeatures
 
     def setLayerAttributeForm(self, layer: QgsVectorLayer, form_schema: dict):
 

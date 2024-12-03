@@ -22,7 +22,7 @@ class BDOT10kDownloader:
         self.teryt_pow = ""
 
         self.bdot10k_dockwidget = None
-        self.selected_geom = None
+        self.selected_geom = QgsGeometry()
         self.databox_layers = None
         self.drawpolygon = None
         self.drawrectangle = None

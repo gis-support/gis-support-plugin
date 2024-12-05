@@ -8,7 +8,9 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QFileDialog
 
 from gissupport_plugin.modules.data_downloader.bdot10k.bdot10k_dockwidget import BDOT10kDockWidget
-from gissupport_plugin.modules.data_downloader.bdot10k.utils import BDOT10kDownloadTask, DrawPolygon, get_databox_layers, BDOT10kDataBoxDownloadTask, convert_multi_polygon_to_polygon, transform_geometry_to_2180
+from gissupport_plugin.modules.data_downloader.bdot10k.utils import BDOT10kDownloadTask, DrawPolygon, \
+    get_databox_layers, BDOT10kDataBoxDownloadTask, convert_multi_polygon_to_polygon, transform_geometry_to_2180, \
+    BDOT10kClassDownloadTask
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchTeryt
 from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool
 
@@ -18,11 +20,13 @@ class BDOT10kDownloader:
     def __init__(self):
         self.task = None
         self.bdot10k_filepath = expanduser("~")
+        self.bdot10k_class_filepath = expanduser("~")
         self.teryt_woj = ""
         self.teryt_pow = ""
+        self.bdot10k_class = ""
 
         self.bdot10k_dockwidget = None
-        self.selected_geom = None
+        self.selected_geom = QgsGeometry()
         self.databox_layers = None
         self.drawpolygon = None
         self.drawrectangle = None
@@ -34,6 +38,7 @@ class BDOT10kDownloader:
 
         self.fill_woj_combobox()
         self.databox_layers = get_databox_layers()
+        self.fill_class_combobox()
 
         self.bdot10k_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_bdot10k)
         self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
@@ -58,6 +63,10 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.fromLayerComboBox.hide()
         self.bdot10k_dockwidget.fromLayerLabel.hide()
         self.bdot10k_dockwidget.fromLayerComboBox.layerChanged.connect(self.set_download_button_state)
+
+        self.bdot10k_dockwidget.classBrowseButton.clicked.connect(self.browse_filepath_for_class_bdot10k)
+        self.bdot10k_dockwidget.classDownloadButton.clicked.connect(self.download_class_bdot10k)
+        self.bdot10k_dockwidget.classComboBox.currentTextChanged.connect(self.get_class)
 
 ### pobieranie dla wybranego powiatu
     def browse_filepath_for_bdot10k(self):
@@ -198,7 +207,8 @@ class BDOT10kDownloader:
 
     def set_geometry_from_draw(self, geom: QgsGeometry):
         self.selected_geom = geom
-        self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
+        if not self.selected_geom.isNull():
+            self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
 
     def set_geometry_for_selection(self):
         selected_layer = self.bdot10k_dockwidget.fromLayerComboBox.currentLayer()
@@ -270,3 +280,49 @@ class BDOT10kDownloader:
         iface.messageBar().pushMessage("Wtyczka GIS Support",
                     """Na wybranym obszarze nie znajdują się obiekty wybranej warstwy
                     lub liczba obiektów na wybranym obszarze jest większa niż 100 000""", level=Qgis.Warning)
+
+### POBIERANIE DLA KLASY
+
+    def fill_class_combobox(self):
+        """
+        Uzupełnia combobox z klasami. Wywoływane raz, przy starcie pluginu.
+        """
+        classes = self.databox_layers
+        self.bdot10k_dockwidget.classComboBox.clear()
+        self.bdot10k_dockwidget.classComboBox.addItem("")
+        for item in classes.items():
+            display_name = f'{item[0]}'
+            self.bdot10k_dockwidget.classComboBox.addItem(display_name, item[1])
+
+    def browse_filepath_for_class_bdot10k(self):
+        """
+        Uruchamia okno z wyborem miejsca zapisu plików BDOT10k i zapisuje ścieżkę.
+        """
+        self.bdot10k_class_filepath = QFileDialog.getExistingDirectory(self.bdot10k_dockwidget,
+                                                 'Wybierz miejsce zapisu plików BDOT10k',
+                                                 expanduser("~"))
+        self.bdot10k_dockwidget.classFilePathLine.setText(self.bdot10k_class_filepath)
+
+    def download_class_bdot10k(self):
+        """
+        Uruchamia pobieranie danych BDOT10k.
+        """
+        if self.bdot10k_class == "":
+            iface.messageBar().pushMessage("Przed pobraniem należy wybrać klasę BDOT10k",
+                                           level=Qgis.Warning)
+            return
+
+        self.task = BDOT10kClassDownloadTask("Pobieranie danych BDOT10k dla wybranej klasy",
+                                             self.bdot10k_class, self.bdot10k_class_filepath)
+        self.task.progress_updated.connect(self.update_bdok10k_download_progress)
+        self.task.download_finished.connect(self.show_bdot10k_success_message)
+
+        manager = QgsApplication.taskManager()
+        manager.addTask(self.task)
+
+    def get_class(self):
+        """
+        Zapisuje teryt wybranego powiatu z comboboxa.
+        """
+        current_class = self.bdot10k_dockwidget.classComboBox.currentData()
+        self.bdot10k_class = str(current_class).upper()

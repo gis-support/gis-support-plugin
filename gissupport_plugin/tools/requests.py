@@ -4,12 +4,14 @@ from typing import Union
 from qgis.core import QgsNetworkAccessManager
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from PyQt5.QtCore import QCoreApplication, QUrl
-from qgis.PyQt.QtCore import QObject
+from qgis.PyQt.QtCore import QObject, pyqtSignal
 
 from urllib.parse import urlencode
 
 
 class NetworkHandler(QObject):
+    downloadProgress: pyqtSignal = pyqtSignal(int)
+
     def __init__(self):
         super().__init__()
         self.network_manager = QgsNetworkAccessManager.instance()
@@ -40,6 +42,7 @@ class NetworkHandler(QObject):
             request = QNetworkRequest(QUrl(url))
             
             reply = self.network_manager.get(request)
+            reply.downloadProgress.connect( lambda recv, total: self.downloadProgress.emit( int(100*recv/total) ) )
             reply.finished.connect(lambda: self.handle_response(reply, retry_callback, reply_only))
             return reply
 
@@ -66,6 +69,7 @@ class NetworkHandler(QObject):
             if databox:
                 request.setHeader(QNetworkRequest.ContentTypeHeader, "application/json")
             reply = self.network_manager.post(request, body)
+            reply.downloadProgress.connect( lambda recv, total: self.downloadProgress.emit( int(100*recv/total) ) )
             reply.finished.connect(lambda: self.handle_response(reply, retry_callback, reply_only))
             return reply
 

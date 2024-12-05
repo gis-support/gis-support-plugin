@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-from qgis._core import QgsVectorLayer
 
 #from .resources import *
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtCore import Qt
-from qgis.core import QgsProject, QgsRasterLayer, Qgis
+from qgis.core import QgsProject, QgsRasterLayer, Qgis, QgsVectorLayer, QgsDataSourceUri
 from qgis.utils import iface
 import json
 from os import path
@@ -209,19 +208,23 @@ class Main(BaseModule):
 
         elif self.layerType == 'WFS':
             for layerId in selectedRows:
-                url = (
-                        "{}?"
-                        "SERVICE=WFS&"
-                        "REQUEST=GetFeature&"
-                        "SRSNAME={}&"
-                        "VERSION=2.0.0&"
-                        "TYPENAME={}").format(
-                            self.curServiceData['url'],
-                            self.dlg.crsCb.currentText(),
-                            urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:'),
+                url = QgsDataSourceUri(
+                    (
+                    """
+                        pagingEnabled='disabled' 
+                        srsname='{}'
+                        typename='{}' 
+                        url='{}' 
+                        version='2.0.0'
+                    """
+                    ).format(
+                        self.dlg.crsCb.currentText(),
+                        urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:'),
+                        self.curServiceData['url']
                     )
+                )
 
-                wfsLayer = QgsVectorLayer(url, self.dlg.layersTableWidget.item(layerId, 2).text(), 'wfs')
+                wfsLayer = QgsVectorLayer(url.uri(False), self.dlg.layersTableWidget.item(layerId, 2).text(), 'wfs')
 
                 if wfsLayer.isValid():
                     QgsProject.instance().addMapLayer(wfsLayer)

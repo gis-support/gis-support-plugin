@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=2.5
+version=2.6
 author=GIS Support
 email=info@gis-support.pl
 license=GPL-3.0-only
@@ -53,12 +53,12 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=Nowe narzędzie do pobierania danych BDOT10k dla wskazanego obszaru
-	Rozwój narzędzia `Automatyczna wektoryzacja` - nowe sposoby zaznaczania zasięgu i docinanie danych do wybranego obszaru
-	Usprawnienia edycji warstw GIS.Box
-	Poprawiona obsługa błędów zewnętrznych usług
-	Naprawa błędnie wypełnianego wyniku sprawdzania działek ULDK
-	Poprawiona obsługa uprawnień narzędzia `Automatyczna wektoryzacja` GIS.Box
+changelog=Nowe narzędzie do pobierania danych BDOT10k dla wybranej klasy
+	Dodanie kolumny z adresem w oknie wczytywania warstw WMS/WFS
+	Poprawiono pobieranie działek dla obiektów o powierzchni > 10 tys. km^2
+	Poprawiono obsługę starszych wersji usług WMS/WFS
+	Wyłączenie stronnicowania obiektów w usłudze WFS
+	Naprawa błędu pobierania BDOT10k
 
 # Tags are comma separated with spaces allowed
 tags=python

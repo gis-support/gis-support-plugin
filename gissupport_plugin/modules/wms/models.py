@@ -10,7 +10,7 @@ class ServicesTableModel(QAbstractTableModel):
         return len(self.items)
     
     def columnCount(self, parent=QModelIndex()):
-        return 5
+        return 6
 
     def insertRows(self, position, rows, parent=QModelIndex()):
         self.beginInsertRows(parent, position, position + len(rows) - 1)
@@ -40,6 +40,8 @@ class ServicesTableModel(QAbstractTableModel):
             elif section == 3:
                 return 'Nazwa'
             elif section == 4:
+                return 'Adres'
+            elif section == 5:
                 return 'Opis'
 
     def data(self, index, role):
@@ -54,8 +56,10 @@ class ServicesTableModel(QAbstractTableModel):
             elif index.column() == 2:
                 return item['type']
             elif index.column() == 3:
-                return '{}, {}'.format(item['name'], item['url'])
+                return item['name']
             elif index.column() == 4:
+                return item['url']
+            elif index.column() == 5:
                 return item['description']
         elif role == Qt.UserRole:
             return item

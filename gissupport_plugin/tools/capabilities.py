@@ -1,38 +1,34 @@
 
 from qgis.core import QgsNetworkAccessManager
 from owslib.wms import WebMapService
+from owslib.wfs import WebFeatureService
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtCore import QUrl
-from owslib.etree import ParseError
+import xml.etree.ElementTree as et
+from typing import Union
 
-
-class WmsCapabilitiesConnectionException(Exception):
+class CapabilitiesConnectionException(Exception):
     def __init__(self, code: int, *args, **kwargs):
             self.code = code
             super().__init__(*args, **kwargs)
 
 
-def get_wms_capabilities(url: str, version: str="1.3.0") -> WebMapService:
-
-    if not url.endswith("?"):
-        url += "?"
-    
+def get_capabilities(url: str, type: str) -> Union[WebMapService, WebFeatureService]:
     manager = QgsNetworkAccessManager()
-    try:
-        wms = get_capabilities(manager, url, version)
-    except (AttributeError, ParseError, WmsCapabilitiesConnectionException):
-        version = "1.1.1" if version == "1.3.0" else "1.3.0"
-        wms = get_capabilities(manager, url, version)
-
-    return wms
-
-def get_capabilities(manager: QgsNetworkAccessManager, url: str, version: str) -> WebMapService:
-    request = QNetworkRequest(QUrl(f'{url}service=WMS&request=GetCapabilities&version={version}'))
-    reply = manager.blockingGet(request)
-    if reply.error() != QNetworkReply.NoError:
-        raise WmsCapabilitiesConnectionException(code=reply.error())
     
-    xml = reply.content()
-    if not xml:
-        raise WmsCapabilitiesConnectionException(code=-1)
-    return WebMapService('', xml=xml.data(), version=version)
+    url = f'{url}?service={type}&request=GetCapabilities'
+    request = QNetworkRequest(QUrl(url))
+    reply = manager.blockingGet(request)
+    
+    if reply.error() != QNetworkReply.NoError or not reply.content():
+        raise CapabilitiesConnectionException(code=reply.error())
+
+    content = reply.content()
+    data = content.data()
+    xml = et.fromstring(data)
+    version =  xml.attrib.get("version")
+    
+    if type == "WMS":
+        return WebMapService(url="", version=version, xml=data)
+    elif type == "WFS":
+        return WebFeatureService(url="", version=version, xml=data)

@@ -1,3 +1,19 @@
+2.6
+Nowe narzędzie do pobierania danych BDOT10k dla wybranej klasy
+Dodanie kolumny z adresem w oknie wczytywania warstw WMS/WFS
+Poprawiono pobieranie działek dla obiektów o powierzchni > 10 tys. km^2
+Poprawiono obsługę starszych wersji usług WMS/WFS
+Wyłączenie stronnicowania obiektów w usłudze WFS
+Naprawa błędu pobierania BDOT10k
+
+2.5
+Nowe narzędzie do pobierania danych BDOT10k dla wskazanego obszaru
+Rozwój narzędzia `Automatyczna wektoryzacja` - nowe sposoby zaznaczania zasięgu i docinanie danych do wybranego obszaru
+Usprawnienia edycji warstw GIS.Box
+Poprawiona obsługa błędów zewnętrznych usług
+Naprawa błędnie wypełnianego wyniku sprawdzania działek ULDK
+Poprawiona obsługa uprawnień narzędzia `Automatyczna wektoryzacja` GIS.Box
+
 2.4
 Nowe narzędzie do pobierania Numerycznego Modelu (Pokrycia) Terenu
 Edycja danych nieprzestrzennych pochodzących z systemu GIS.Box

@@ -1,24 +1,19 @@
 # -*- coding: utf-8 -*-
-from qgis._core import QgsVectorLayer
 
 #from .resources import *
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtCore import Qt
-from qgis.core import QgsProject, QgsRasterLayer, Qgis
+from qgis.core import QgsProject, QgsRasterLayer, Qgis, QgsVectorLayer, QgsDataSourceUri
 from qgis.utils import iface
 import json
 from os import path
-from owslib.wfs import WebFeatureService
-import requests.exceptions
 import urllib
-from owslib.etree import ParseError
-from owslib.util import ServiceException
 
 from gissupport_plugin.modules.wms.baza_wms_dialog import BazaWMSDialog
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.wms.models import ServicesTableModel, ServicesProxyModel
-from gissupport_plugin.tools.capabilities import WmsCapabilitiesConnectionException, get_wms_capabilities
+from gissupport_plugin.tools.capabilities import CapabilitiesConnectionException, get_capabilities
 
 
 class Main(BaseModule):
@@ -112,9 +107,9 @@ class Main(BaseModule):
             if self.curServiceData['type'] == 'WMS':
                 self.layerType = "WMS"
                 try:
-                    wmsCapabilities = get_wms_capabilities(self.curServiceData['url'])
+                    wmsCapabilities = get_capabilities(self.curServiceData['url'], self.layerType)
 
-                except WmsCapabilitiesConnectionException as e:
+                except CapabilitiesConnectionException as e:
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WMS',
                         f'Błąd połączenia z serwerem WMS (kod: {e.code}).',
@@ -137,18 +132,10 @@ class Main(BaseModule):
                     self.dlg.layersTableWidget.setItem(nr, 3, QTableWidgetItem(wmsLayer.abstract))
             elif self.curServiceData['type'] == 'WFS':
                 self.layerType = "WFS"
+                url = self.curServiceData['url']
                 try:
-                    wfsCapabilities = WebFeatureService(self.curServiceData['url'])
-                except (AttributeError, ParseError, TypeError):
-                    wfsCapabilities = WebFeatureService(self.curServiceData['url'], version='2.0.0')
-                except requests.exceptions.ReadTimeout:
-                    iface.messageBar().pushMessage(
-                        'Baza krajowych usług WFS',
-                        'Serwer WFS nie odpowiada. Spróbuj ponownie później.',
-                        level=Qgis.Critical
-                    )
-                    return 1
-                except (requests.exceptions.SSLError, ServiceException):
+                    wfsCapabilities = get_capabilities(url ,self.layerType)
+                except CapabilitiesConnectionException as e:
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WFS',
                         'Błąd połączenia z serwerem WFS.',
@@ -209,19 +196,23 @@ class Main(BaseModule):
 
         elif self.layerType == 'WFS':
             for layerId in selectedRows:
-                url = (
-                        "{}?"
-                        "SERVICE=WFS&"
-                        "REQUEST=GetFeature&"
-                        "SRSNAME={}&"
-                        "VERSION=2.0.0&"
-                        "TYPENAME={}").format(
-                            self.curServiceData['url'],
-                            self.dlg.crsCb.currentText(),
-                            urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:'),
+                url = QgsDataSourceUri(
+                    (
+                    """
+                        pagingEnabled='disabled' 
+                        srsname='{}'
+                        typename='{}' 
+                        url='{}' 
+                        version='2.0.0'
+                    """
+                    ).format(
+                        self.dlg.crsCb.currentText(),
+                        urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:'),
+                        self.curServiceData['url']
                     )
+                )
 
-                wfsLayer = QgsVectorLayer(url, self.dlg.layersTableWidget.item(layerId, 2).text(), 'wfs')
+                wfsLayer = QgsVectorLayer(url.uri(False), self.dlg.layersTableWidget.item(layerId, 2).text(), 'wfs')
 
                 if wfsLayer.isValid():
                     QgsProject.instance().addMapLayer(wfsLayer)

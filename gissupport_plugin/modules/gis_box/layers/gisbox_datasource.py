@@ -254,7 +254,7 @@ class GisboxFeatureLayer(QObject, Logger):
         """ Wysłanie żądania o obiekty warstwy """
         self.time = time.time()
         self.remove_all_features = True
-
+  
         self.task = GisboxDownloadLayerTask(
             name=self.datasource_name,
             layer_id=self.id,

@@ -12,7 +12,7 @@ from . import DATA_SOURCE_REGISTRY, RELATION_VALUES_MAPPING_REGISTRY
 
 from gissupport_plugin.tools.logger import Logger
 from .geojson import geojson2geom
-from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION, GisboxDownloadLayerTask
 
 class GisboxDataSource(QObject, Logger):
     """ Klasa bazowa dla źródeł danych GISBox """
@@ -58,6 +58,7 @@ class GisboxFeatureLayer(QObject, Logger):
         self.write_permission = data['write_permission']
         self.valid_fields = []
         self.filter_expression = data.get('filter_expression')
+        self.relation_values_mapping = {}
 
         self.connectSignals()
 
@@ -248,14 +249,18 @@ class GisboxFeatureLayer(QObject, Logger):
     def getFeatures(self):
         """ Wysłanie żądania o obiekty warstwy """
         self.time = time.time()
-        GISBOX_CONNECTION.post(
-            f'/api/v2/datasources-download/{self.datasource_name}?format=geojson', payload={
-            "data": {
-                "features_filter": self.filter_expression,
-                "style": {}
-            }},
-            callback=self.on_features.emit
+        self.task = GisboxDownloadLayerTask(
+            name=self.datasource_name,
+            layer_id=self.id,
+            payload={
+                "data": {
+                    "features_filter": self.filter_expression,
+                    "style": {}
+                }
+            }
         )
+        self.task.downloaded_data.connect(self.on_features.emit)
+        QgsApplication.taskManager().addTask(self.task)
 
     def onFeatures(self, data: dict):
         """ Sparsowanie i dodanie otrzymanych obiektów w sposób nieblokujący QGIS
@@ -269,14 +274,18 @@ class GisboxFeatureLayer(QObject, Logger):
     
     def onReload(self, *args, **kwargs):
         self._reload_layer_metadata()
-        GISBOX_CONNECTION.post(
-            f'/api/v2/datasources-download/{self.datasource_name}?format=geojson', payload={
-            "data": {
-                "features_filter": self.filter_expression,
-                "style": {}
-            }},
-            callback=self.on_features.emit
+        self.task = GisboxDownloadLayerTask(
+            name=self.datasource_name,
+            layer_id=self.id,
+            payload={
+                "data": {
+                    "features_filter": self.filter_expression,
+                    "style": {}
+                }
+            }
         )
+        self.task.downloaded_data.connect(self.on_features.emit)
+        QgsApplication.taskManager().addTask(self.task)
 
     def parseFeatures(self, task: QgsTask, data: dict):
         """ Parsowanie danych z serwera i dodanie obiektów do warstwy """
@@ -306,6 +315,7 @@ class GisboxFeatureLayer(QObject, Logger):
         layer_fields = self.layers[0].fields()
         # Pasek postępu
         total = 100/len(features)
+        fields = self.datasource.attributes_schema['attributes']
         # Iteracja po atrybutach sparsowanego obiektu
         for idx, feature in enumerate(features):
             f = QgsFeature(layer_fields)
@@ -315,9 +325,7 @@ class GisboxFeatureLayer(QObject, Logger):
             except AttributeError:
                 # Brak geometrii
                 pass
-            # Pusta lista atrybutów, do której będziemy dodawać kolejne wartości
-            attributes = []
-            fields = self.datasource.attributes_schema['attributes']
+
             for field in fields:
 
                 if field['name'] not in self.valid_fields:
@@ -326,9 +334,22 @@ class GisboxFeatureLayer(QObject, Logger):
                 field_name = field['name']
                 if field_name in ('topogeom', self.datasource.geom_column_name):
                     continue
-                value = feature['properties'].get(field_name)
-                attributes.append(value)
-            f.setAttributes(attributes)
+
+                if field_name == self.datasource.id_column_name:
+                    value = feature.get('id')
+
+                else:
+                    value = feature['properties'].get(field_name)
+                    if field.get('relation'):
+                        # dla atrybutów relacyjnych, v2 zwraca wartości atrybutów wyświetlanych
+                        # musimy pozyskać wartości atrybutów zapisywanych
+                        datasource = field['relation'].get('data_source')
+                        attribute = field['relation'].get('attribute')
+                        representation = field['relation'].get('representation')
+                        value = self.relation_values_mapping[datasource + attribute + representation].get(value)
+
+                f.setAttribute(field_name, value)
+
             if hasattr(self, 'task'):
                 try:
                     self.task.setProgress(idx*total)
@@ -410,6 +431,8 @@ class GisboxFeatureLayer(QObject, Logger):
                     dict_values = {data['text']: data['value']
                                    for data in relation_map_values}
                     if dict_values:
+                        # zapisujemy mapowanie atrybutów relacyjnych dla metody tworzenia obiektów w warstwie
+                        self.relation_values_mapping[related_datasource + related_attribute + representation] = dict_values
                         self.setWidgetType(layer, dict_values, field_id)
 
         layer.setEditFormConfig(config)

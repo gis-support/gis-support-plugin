@@ -1,6 +1,6 @@
 import time
 
-from typing import Iterable, Any
+from typing import Iterable, Any, Dict
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
                        QgsAttributeEditorContainer, QgsAttributeEditorField, QgsMapLayer, NULL, QgsFieldConstraints,
                        QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest)
@@ -31,7 +31,7 @@ class GisboxFeatureLayer(QObject, Logger):
     """ Bazowa klasa dla warstw wektorowych """
 
     on_features = pyqtSignal(dict)
-    on_reload = pyqtSignal(bool)
+    on_reload = pyqtSignal(list)
     features_loaded = pyqtSignal(object)
 
     def __init__(self, data: dict, parent=None):
@@ -59,6 +59,10 @@ class GisboxFeatureLayer(QObject, Logger):
         self.valid_fields = []
         self.filter_expression = data.get('filter_expression')
         self.relation_values_mapping = {}
+
+        self.num_of_added_features = 0
+        self.db_ids_to_delete = []
+        self.remove_all_features = False
 
         self.connectSignals()
 
@@ -249,6 +253,8 @@ class GisboxFeatureLayer(QObject, Logger):
     def getFeatures(self):
         """ Wysłanie żądania o obiekty warstwy """
         self.time = time.time()
+        self.remove_all_features = True
+  
         self.task = GisboxDownloadLayerTask(
             name=self.datasource_name,
             layer_id=self.id,
@@ -262,7 +268,7 @@ class GisboxFeatureLayer(QObject, Logger):
         self.task.downloaded_data.connect(self.on_features.emit)
         QgsApplication.taskManager().addTask(self.task)
 
-    def onFeatures(self, data: dict):
+    def onFeatures(self, data: Dict[str, Any]):
         """ Sparsowanie i dodanie otrzymanych obiektów w sposób nieblokujący QGIS
         https://new.opengis.ch/2018/06/22/threads-in-pyqgis3/ """
         # Wymagane jest zapamiętanie zadania jako atrybut klasy
@@ -274,12 +280,26 @@ class GisboxFeatureLayer(QObject, Logger):
     
     def onReload(self, *args, **kwargs):
         self._reload_layer_metadata()
+        self.remove_all_features = True
+
+        data = args[0]
+        filter = self.filter_expression
+        if data:
+            filter = {
+                        "$IN": {
+                            self.datasource_name + '.' + self.datasource.id_column_name: {
+                                "value": data
+                            }
+                        }
+                    }
+            self.remove_all_features = False
+
         self.task = GisboxDownloadLayerTask(
             name=self.datasource_name,
             layer_id=self.id,
             payload={
                 "data": {
-                    "features_filter": self.filter_expression,
+                    "features_filter": filter,
                     "style": {}
                 }
             }
@@ -290,17 +310,41 @@ class GisboxFeatureLayer(QObject, Logger):
     def parseFeatures(self, task: QgsTask, data: dict):
         """ Parsowanie danych z serwera i dodanie obiektów do warstwy """
         try:
-            features = self.geojson2features(data['features'])
+            new_features = self.geojson2features(data['features'])
         except Exception as e:
             self.log(e)
             return
-        for layer in self.layers:
+        
+        layer = self.layers[0]
+        if self.remove_all_features:
             # Czyścimy warstwę z obiektów (wymagane jeśli przeładowujemy istniejącą warstwę)
             layer.dataProvider().truncate()
-            # Dodanie obiektów do warstwy
-            layer.dataProvider().addFeatures(features)
-            # Aktualizacja zasięgu warstwy
-            layer.updateExtents(True)
+
+        else:
+            # Usuwamy dodane/edytowane obiekty z warstwy
+            # a następnie dodajemy je od nowa ze wszystkimi wypełnionymi atrybutami z bazy 
+
+            features = list(layer.getFeatures())
+            features_to_delete = []
+
+            if self.num_of_added_features > 0:
+                features_to_delete.extend([feature.id() for feature in features[-self.num_of_added_features:]])
+                self.num_of_added_features = 0
+
+            if self.db_ids_to_delete:
+                for feature in features:
+                    if feature[self.datasource.id_column_name] in self.db_ids_to_delete:
+                        features_to_delete.append(feature.id())
+
+                self.db_ids_to_delete = []
+
+            if features_to_delete:
+                layer.dataProvider().deleteFeatures(features_to_delete)
+
+        # Dodanie obiektów do warstwy
+        layer.dataProvider().addFeatures(new_features)
+        # Aktualizacja zasięgu warstwy
+        layer.updateExtents(True)
         self.zoomToExtent(layer)
         self.features_loaded.emit(layer)
         layer.reload()
@@ -475,14 +519,31 @@ class GisboxFeatureLayer(QObject, Logger):
             {"data": payload}, callback=self.afterModify, sync=True
         )
     
-    def afterModify(self, data: dict):
+    def afterModify(self, data: Dict[str, Any]):
         if data.get("error"):
             self.message(data.get("error_message"), level=Qgis.Critical)
             return
         
+        modified_data = data.get("data")
+
+        if modified_data.get("delete") and not modified_data.get("insert") and not modified_data.get("update"):
+            # jeśli tylko usuwamy obiekty z warstwy, nie musimy jej przeładowywać
+            return
+
+        features_to_download = []
+
+        if modified_data.get("insert"):
+            features_to_download.extend([f[self.datasource.id_column_name] for f in modified_data["insert"]])
+            self.num_of_added_features = len(features_to_download)
+
+        if modified_data.get("update"):
+            db_ids = [f['properties'][self.datasource.id_column_name]  for f in modified_data["update"]]
+            self.db_ids_to_delete.extend(db_ids)
+            features_to_download.extend(db_ids)
+
         self.message(f'Pomyślnie zmodyfikowano dane warstwy: {self.layers[0].name()}', 
                         level=Qgis.Success, duration=5)
-        self.on_reload.emit(True)
+        self.on_reload.emit(features_to_download)
         
     def addFeatures(self, edit_buffer):
         """ Dodanie nowych obiektów do warstwy użytkownika """

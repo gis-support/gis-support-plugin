@@ -390,7 +390,9 @@ class GisboxFeatureLayer(QObject, Logger):
                         datasource = field['relation'].get('data_source')
                         attribute = field['relation'].get('attribute')
                         representation = field['relation'].get('representation')
-                        value = self.relation_values_mapping[datasource + attribute + representation].get(value)
+                        mapping_key = datasource + attribute + representation
+                        mapping = self.relation_values_mapping.get(mapping_key) or {}
+                        value = mapping.get(value)
 
                 f.setAttribute(field_name, value)
 

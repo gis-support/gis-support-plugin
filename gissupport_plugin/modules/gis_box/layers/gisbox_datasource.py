@@ -1,4 +1,5 @@
 import time
+import json
 
 from typing import Iterable, Any, Dict
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
@@ -12,7 +13,7 @@ from . import DATA_SOURCE_REGISTRY, RELATION_VALUES_MAPPING_REGISTRY
 
 from gissupport_plugin.tools.logger import Logger
 from .geojson import geojson2geom
-from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION, GisboxDownloadLayerTask
+from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 
 class GisboxDataSource(QObject, Logger):
     """ Klasa bazowa dla źródeł danych GISBox """
@@ -30,7 +31,6 @@ class GisboxDataSource(QObject, Logger):
 class GisboxFeatureLayer(QObject, Logger):
     """ Bazowa klasa dla warstw wektorowych """
 
-    on_features = pyqtSignal(dict)
     on_reload = pyqtSignal(list)
     features_loaded = pyqtSignal(object)
 
@@ -168,7 +168,6 @@ class GisboxFeatureLayer(QObject, Logger):
 
     def connectSignals(self):
         """ Podłączanie sygnałów """
-        self.on_features.connect(self.onFeatures)
         self.on_reload.connect(self.onReload)
 
     def _reload_layer_metadata(self):
@@ -258,6 +257,7 @@ class GisboxFeatureLayer(QObject, Logger):
         self.task = GisboxDownloadLayerTask(
             name=self.datasource_name,
             layer_id=self.id,
+            gbfeaturelayer=self,
             payload={
                 "data": {
                     "features_filter": self.filter_expression,
@@ -265,16 +265,10 @@ class GisboxFeatureLayer(QObject, Logger):
                 }
             }
         )
-        self.task.downloaded_data.connect(self.on_features.emit)
+        self.task.download_finished.connect(self.show_download_layer_success_message)
         QgsApplication.taskManager().addTask(self.task)
 
-    def onFeatures(self, data: Dict[str, Any]):
-        """ Sparsowanie i dodanie otrzymanych obiektów w sposób nieblokujący QGIS
-        https://new.opengis.ch/2018/06/22/threads-in-pyqgis3/ """
-        # Wymagane jest zapamiętanie zadania jako atrybut klasy
-        self.task = QgsTask.fromFunction(
-            'Ładowanie obiektów', self.parseFeatures, data=data)
-        QgsApplication.taskManager().addTask(self.task)
+    def show_download_layer_success_message(self):
         self.message(
             f'Pomyślnie wczytano dane warstwy: {self.layers[0].name()}, czas: {time.time() - self.time}', level=Qgis.Success, duration=5)
     
@@ -297,6 +291,7 @@ class GisboxFeatureLayer(QObject, Logger):
         self.task = GisboxDownloadLayerTask(
             name=self.datasource_name,
             layer_id=self.id,
+            gbfeaturelayer=self,
             payload={
                 "data": {
                     "features_filter": filter,
@@ -304,10 +299,10 @@ class GisboxFeatureLayer(QObject, Logger):
                 }
             }
         )
-        self.task.downloaded_data.connect(self.on_features.emit)
+        self.task.download_finished.connect(self.show_download_layer_success_message)
         QgsApplication.taskManager().addTask(self.task)
 
-    def parseFeatures(self, task: QgsTask, data: dict):
+    def parseFeatures(self, data: dict):
         """ Parsowanie danych z serwera i dodanie obiektów do warstwy """
         try:
             new_features = self.geojson2features(data['features'])
@@ -358,7 +353,7 @@ class GisboxFeatureLayer(QObject, Logger):
         # Zebranie nazw pól z warstwy qgis
         layer_fields = self.layers[0].fields()
         # Pasek postępu
-        total = 100/len(features)
+        total = 50/len(features)
         fields = self.datasource.attributes_schema['attributes']
         # Iteracja po atrybutach sparsowanego obiektu
         for idx, feature in enumerate(features):
@@ -398,7 +393,7 @@ class GisboxFeatureLayer(QObject, Logger):
 
             if hasattr(self, 'task'):
                 try:
-                    self.task.setProgress(idx*total)
+                    self.task.setProgress(idx*total+50)
                 except RuntimeError:
                     continue
             self.f = feature
@@ -641,3 +636,43 @@ class GisboxFeatureLayer(QObject, Logger):
         elif isinstance(value, QTime):
             value = value.toString('hh:mm:ss')
         return value
+
+
+class GisboxDownloadLayerTask(QgsTask, Logger):
+    download_finished = pyqtSignal(bool)
+
+    def __init__(self, name: str, layer_id: int, payload: dict, gbfeaturelayer: GisboxFeatureLayer):
+        self.endpoint = f'/api/v2/datasources-download/{name}?format=geojson&layer_id={layer_id}&attributes_use_verbose_names=false'
+        self.payload = payload
+        self.network_manager = GISBOX_CONNECTION.MANAGER.instance()
+        self.gbfeaturelayer = gbfeaturelayer
+        self.download_progress = 0
+        super().__init__('Wczytywanie warstwy', QgsTask.CanCancel)
+
+    def run(self):
+        request = GISBOX_CONNECTION._createRequest(self.endpoint)
+        request.setRawHeader(b"Accept-Encoding", b"identity")
+
+        data = json.dumps(self.payload).encode()
+        self.network_manager.downloadProgress.connect(self.set_download_progress)
+
+        reply = self.network_manager.blockingPost(request, data)
+        response = json.loads(bytearray(reply.content()))
+        
+        self.gbfeaturelayer.parseFeatures(response)
+
+        self.download_finished.emit(True)
+        return True
+    
+    def set_download_progress(self, id, bytesReceived, bytesTotal):
+        if bytesTotal in (0, -1):
+            self.setProgress(0)
+        else:
+            download_progress = bytesReceived / bytesTotal * 50
+            if download_progress > self.download_progress:
+                self.download_progress = download_progress
+            self.setProgress(self.download_progress)
+
+    def finished(self, result):
+        self.network_manager.downloadProgress.disconnect(self.set_progress)
+        super().finished(result)

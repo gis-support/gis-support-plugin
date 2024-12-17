@@ -2,7 +2,7 @@
 import uuid
 from PyQt5.QtCore import QObject, QUrl, pyqtSignal, QSettings
 from PyQt5.QtNetwork import QNetworkRequest
-from qgis.core import QgsNetworkAccessManager, Qgis, QgsTask
+from qgis.core import QgsNetworkAccessManager, Qgis
 import json
 
 from .logger import Logger
@@ -202,36 +202,3 @@ class GisboxConnection(QObject, Logger):
 
 
 GISBOX_CONNECTION = GisboxConnection()
-
-
-class GisboxDownloadLayerTask(QgsTask):
-    downloaded_data = pyqtSignal(dict)
-
-    def __init__(self, name: str, layer_id: int, payload: dict):
-        self.endpoint = f'/api/v2/datasources-download/{name}?format=geojson&layer_id={layer_id}&attributes_use_verbose_names=false'
-        self.payload = payload
-        self.network_manager = GISBOX_CONNECTION.MANAGER.instance()
-        super().__init__('Pobieranie warstwy', QgsTask.CanCancel)
-
-    def run(self):
-        request = GISBOX_CONNECTION._createRequest(self.endpoint)
-        request.setRawHeader(b"Accept-Encoding", b"identity")
-
-        data = json.dumps(self.payload).encode()
-        self.network_manager.downloadProgress.connect(self.set_progress)
-
-        reply = self.network_manager.blockingPost(request, data)
-        response = json.loads(bytearray(reply.content()))
-
-        self.downloaded_data.emit(response)
-        return True
-    
-    def set_progress(self, id, bytesReceived, bytesTotal):
-        if bytesTotal == 0:
-            self.setProgress(0)
-        else:
-            self.setProgress(bytesReceived / bytesTotal * 100)
-
-    def finished(self, result):
-        self.network_manager.downloadProgress.disconnect(self.set_progress)
-        super().finished(result)

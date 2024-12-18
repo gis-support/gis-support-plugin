@@ -647,6 +647,7 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
         self.network_manager = GISBOX_CONNECTION.MANAGER.instance()
         self.gbfeaturelayer = gbfeaturelayer
         self.download_progress = 0
+        self.first_process_id = None
         super().__init__('Wczytywanie warstwy', QgsTask.CanCancel)
 
     def run(self):
@@ -664,14 +665,19 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
         self.download_finished.emit(True)
         return True
     
-    def set_download_progress(self, id, bytesReceived, bytesTotal):
-        if bytesTotal in (0, -1):
-            self.setProgress(0)
-        else:
-            download_progress = bytesReceived / bytesTotal * 50
-            if download_progress > self.download_progress:
-                self.download_progress = download_progress
-            self.setProgress(self.download_progress)
+    def set_download_progress(self, id: int, bytesReceived: int, bytesTotal: int):
+        if self.first_process_id is None:
+            self.first_process_id = id
+        if id == self.first_process_id + 2:
+            # zmieniamy status jedynie dla pobierania danych,
+            # ignorujemy dwa pierwsze procesy
+            if bytesTotal in (0, -1):
+                self.setProgress(0)
+            else:
+                download_progress = bytesReceived / bytesTotal * 50
+                if download_progress > self.download_progress:
+                    self.download_progress = download_progress
+                self.setProgress(self.download_progress)
 
     def finished(self, result):
         self.network_manager.downloadProgress.disconnect(self.set_progress)

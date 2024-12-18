@@ -6,7 +6,7 @@ from owslib.wmts import WebMapTileService
 
 from requests.exceptions import MissingSchema, ConnectionError
 
-from gissupport_plugin.tools.capabilities import WmsCapabilitiesConnectionException, get_wms_capabilities
+from gissupport_plugin.tools.capabilities import CapabilitiesConnectionException, get_capabilities
 from .base_layer import BaseLayer
 
 
@@ -50,7 +50,7 @@ class BaseMapLayer(BaseLayer):
 
     def wmsUrl(self):
         """ Budowanie adresu dla WMS """
-        cap = get_wms_capabilities(self.url, self.parameters.get('version'))
+        cap = get_capabilities(self.url, 'WMS')
         names = self.service_layers_names.split(',')
         layer = cap.contents[names[0]]
         crs = self.getCrs(layer.crsOptions)
@@ -129,7 +129,7 @@ class BaseMapLayer(BaseLayer):
             except (MissingSchema, ConnectionError) as e:
                 self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem.", level=Qgis.Critical)
                 return
-            except WmsCapabilitiesConnectionException as e:
+            except CapabilitiesConnectionException as e:
                 self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem (kod: {e.code}). Upewnij się, że połączenie sieciowe i usługa działają poprawnie", level=Qgis.Critical)
                 return
         self.setLayer(layer)

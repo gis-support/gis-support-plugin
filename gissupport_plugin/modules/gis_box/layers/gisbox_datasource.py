@@ -281,7 +281,6 @@ class GisboxFeatureLayer(QObject, Logger):
             f'Pomyślnie wczytano dane warstwy: {self.layers[0].name()}, czas: {time.time() - self.time}', level=Qgis.Success, duration=5)
     
     def onReload(self, *args, **kwargs):
-        self._reload_layer_metadata()
         self.remove_all_features = True
 
         filter = self.filter_expression

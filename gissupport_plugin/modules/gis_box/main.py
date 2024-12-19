@@ -238,7 +238,7 @@ class GISBox(BaseModule, Logger):
                 layer_class = layers_registry.layers.get(int(layer_id))
                 if not layer_class:
                     return
-                layer_class.on_reload.emit([])
+                layer_class.on_reload.emit()
 
     def autoDigitization(self):
         self.dockwidget = AutoDigitizationWidget()

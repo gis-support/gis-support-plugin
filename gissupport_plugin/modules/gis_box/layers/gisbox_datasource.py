@@ -1,5 +1,6 @@
 import time
 import json
+import tempfile
 
 from typing import Iterable, Any, Dict
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
@@ -302,10 +303,10 @@ class GisboxFeatureLayer(QObject, Logger):
         self.task.download_finished.connect(self.show_download_layer_success_message)
         QgsApplication.taskManager().addTask(self.task)
 
-    def parseFeatures(self, data: dict):
+    def parseFeatures(self, response_layer: QgsVectorLayer):
         """ Parsowanie danych z serwera i dodanie obiektów do warstwy """
         try:
-            new_features = self.geojson2features(data['features'])
+            new_features = self.gpkg2features(response_layer)
         except Exception as e:
             self.log(e)
             return
@@ -347,20 +348,22 @@ class GisboxFeatureLayer(QObject, Logger):
         # Usunięcie zbędnego taska
         del self.task
 
-    def geojson2features(self, features: Iterable[dict]) -> Iterable[QgsFeature]:
-        """ Przekształcenie GeoJSONa na QgsFeature """
+    def gpkg2features(self, response_layer: QgsVectorLayer) -> Iterable[QgsFeature]:
+        """ Przekształcenie warstwy GPKG na QgsFeature """
         # Stworzenie listy featerow warstwy
         # Zebranie nazw pól z warstwy qgis
         layer_fields = self.layers[0].fields()
+        feature_count = response_layer.featureCount()
+        features = response_layer.getFeatures()
         # Pasek postępu
-        total = 50/len(features)
+        total = 50/feature_count
         fields = self.datasource.attributes_schema['attributes']
         # Iteracja po atrybutach sparsowanego obiektu
         for idx, feature in enumerate(features):
             f = QgsFeature(layer_fields)
             # Sprawdzenie czy tabela ma geometrie
             try:
-                f.setGeometry(geojson2geom(feature['geometry']))
+                f.setGeometry(feature.geometry())
             except AttributeError:
                 # Brak geometrii
                 pass
@@ -375,10 +378,10 @@ class GisboxFeatureLayer(QObject, Logger):
                     continue
 
                 if field_name == self.datasource.id_column_name:
-                    value = feature.get('id')
+                    value = feature[self.datasource.id_column_name]
 
                 else:
-                    value = feature['properties'].get(field_name)
+                    value = feature[field_name]
                     if field.get('relation'):
                         # dla atrybutów relacyjnych, v2 zwraca wartości atrybutów wyświetlanych
                         # musimy pozyskać wartości atrybutów zapisywanych
@@ -642,7 +645,7 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
     download_finished = pyqtSignal(bool)
 
     def __init__(self, name: str, layer_id: int, payload: dict, gbfeaturelayer: GisboxFeatureLayer):
-        self.endpoint = f'/api/v2/datasources-download/{name}?format=geojson&layer_id={layer_id}&attributes_use_verbose_names=false'
+        self.endpoint = f'/api/v2/datasources-download/{name}?format=gpkg&layer_id={layer_id}&attributes_use_verbose_names=false'
         self.payload = payload
         self.network_manager = GISBOX_CONNECTION.MANAGER.instance()
         self.gbfeaturelayer = gbfeaturelayer
@@ -658,11 +661,16 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
         self.network_manager.downloadProgress.connect(self.set_download_progress)
 
         reply = self.network_manager.blockingPost(request, data)
-        response = json.loads(bytearray(reply.content()))
-        
-        self.gbfeaturelayer.parseFeatures(response)
 
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".gpkg")
+        temp_file_path = temp_file.name
+        with open(temp_file_path, "wb") as f:
+            f.write(bytearray(reply.content()))
+        response_layer = QgsVectorLayer(temp_file_path, "temp", "ogr")
+
+        self.gbfeaturelayer.parseFeatures(response_layer)
         self.download_finished.emit(True)
+        del temp_file
         return True
     
     def set_download_progress(self, id: int, bytesReceived: int, bytesTotal: int):

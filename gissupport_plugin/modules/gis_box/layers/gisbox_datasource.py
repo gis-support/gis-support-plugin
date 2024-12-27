@@ -2,7 +2,7 @@ import time
 import json
 import tempfile
 
-from typing import Iterable, Any, Dict
+from typing import Iterable, Any, Dict, List
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
                        QgsAttributeEditorContainer, QgsAttributeEditorField, QgsMapLayer, NULL, QgsFieldConstraints,
                        QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest)
@@ -32,7 +32,7 @@ class GisboxDataSource(QObject, Logger):
 class GisboxFeatureLayer(QObject, Logger):
     """ Bazowa klasa dla warstw wektorowych """
 
-    on_reload = pyqtSignal(list)
+    on_reload = pyqtSignal()
     features_loaded = pyqtSignal(object)
 
     def __init__(self, data: dict, parent=None):
@@ -61,8 +61,9 @@ class GisboxFeatureLayer(QObject, Logger):
         self.filter_expression = data.get('filter_expression')
         self.relation_values_mapping = {}
 
-        self.num_of_added_features = 0
-        self.db_ids_to_delete = []
+        
+        self.features_to_download = [] # id z gisbox
+        self.features_to_delete = [] # id z qgis
         self.remove_all_features = False
 
         self.connectSignals()
@@ -125,6 +126,7 @@ class GisboxFeatureLayer(QObject, Logger):
         # Odznaczenie pozycji w menu w przypadku usunięcia warstwy z QGIS
         layer.willBeDeleted.connect(self.setLayer)
         layer.beforeCommitChanges.connect(self.manageFeatures)
+        layer.committedFeaturesAdded.connect(lambda _, added_features: self.getFeaturesIds(added_features))
         self.checkLayer(True)
         # Usunięcie z legendy ikony warstwy tymczasowej
         node = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
@@ -274,16 +276,14 @@ class GisboxFeatureLayer(QObject, Logger):
             f'Pomyślnie wczytano dane warstwy: {self.layers[0].name()}, czas: {time.time() - self.time}', level=Qgis.Success, duration=5)
     
     def onReload(self, *args, **kwargs):
-        self._reload_layer_metadata()
         self.remove_all_features = True
 
-        data = args[0]
         filter = self.filter_expression
-        if data:
+        if self.features_to_download:
             filter = {
                         "$IN": {
                             self.datasource_name + '.' + self.datasource.id_column_name: {
-                                "value": data
+                                "value": self.features_to_download
                             }
                         }
                     }
@@ -320,22 +320,9 @@ class GisboxFeatureLayer(QObject, Logger):
             # Usuwamy dodane/edytowane obiekty z warstwy
             # a następnie dodajemy je od nowa ze wszystkimi wypełnionymi atrybutami z bazy 
 
-            features = list(layer.getFeatures())
-            features_to_delete = []
-
-            if self.num_of_added_features > 0:
-                features_to_delete.extend([feature.id() for feature in features[-self.num_of_added_features:]])
-                self.num_of_added_features = 0
-
-            if self.db_ids_to_delete:
-                for feature in features:
-                    if feature[self.datasource.id_column_name] in self.db_ids_to_delete:
-                        features_to_delete.append(feature.id())
-
-                self.db_ids_to_delete = []
-
-            if features_to_delete:
-                layer.dataProvider().deleteFeatures(features_to_delete)
+            self.getFeaturesByDbIds(layer)
+            if self.features_to_delete:
+                layer.dataProvider().deleteFeatures(self.features_to_delete)
 
         # Dodanie obiektów do warstwy
         layer.dataProvider().addFeatures(new_features)
@@ -345,6 +332,8 @@ class GisboxFeatureLayer(QObject, Logger):
         self.features_loaded.emit(layer)
         layer.reload()
         layer.triggerRepaint()
+        self.features_to_download = []
+        self.features_to_delete = []
         # Usunięcie zbędnego taska
         del self.task
 
@@ -491,7 +480,18 @@ class GisboxFeatureLayer(QObject, Logger):
 
     def getFeaturesDbIds(self, qgis_ids, layer):
         return [f[self.datasource.id_column_name] for f in layer.dataProvider().getFeatures( QgsFeatureRequest().setFilterFids( qgis_ids ))]
-        
+
+    def getFeaturesByDbIds(self, layer):
+        expression = f"\"{self.datasource.id_column_name}\" IN ({', '.join(map(str, self.features_to_download))})"
+        request = QgsFeatureRequest().setFilterExpression(expression)
+        features = layer.getFeatures(request)
+        for feature in features:
+            self.features_to_delete.append(feature.id())
+
+    def getFeaturesIds(self, added_features: List[QgsFeature]):
+        for feature in added_features:
+            self.features_to_delete.append(feature.id())
+
     def manageFeatures(self):
         layer = self.sender()
         edit_buffer = layer.editBuffer()
@@ -525,25 +525,20 @@ class GisboxFeatureLayer(QObject, Logger):
             return
         
         modified_data = data.get("data")
-
         if modified_data.get("delete") and not modified_data.get("insert") and not modified_data.get("update"):
             # jeśli tylko usuwamy obiekty z warstwy, nie musimy jej przeładowywać
             return
 
-        features_to_download = []
-
         if modified_data.get("insert"):
-            features_to_download.extend([f[self.datasource.id_column_name] for f in modified_data["insert"]])
-            self.num_of_added_features = len(features_to_download)
+            self.features_to_download.extend([f[self.datasource.id_column_name] for f in modified_data["insert"]])
 
         if modified_data.get("update"):
             db_ids = [f['properties'][self.datasource.id_column_name]  for f in modified_data["update"]]
-            self.db_ids_to_delete.extend(db_ids)
-            features_to_download.extend(db_ids)
+            self.features_to_download.extend(db_ids)
 
         self.message(f'Pomyślnie zmodyfikowano dane warstwy: {self.layers[0].name()}', 
                         level=Qgis.Success, duration=5)
-        self.on_reload.emit(features_to_download)
+        self.on_reload.emit()
         
     def addFeatures(self, edit_buffer):
         """ Dodanie nowych obiektów do warstwy użytkownika """

@@ -1,4 +1,6 @@
 import time
+import os
+import shutil
 import json
 import tempfile
 
@@ -11,6 +13,8 @@ from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtCore import QObject, pyqtSignal, QDate, QDateTime, QTime
 
 from . import DATA_SOURCE_REGISTRY, RELATION_VALUES_MAPPING_REGISTRY
+
+downloaded_layers = []
 
 from gissupport_plugin.tools.logger import Logger
 from .geojson import geojson2geom
@@ -640,7 +644,9 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
     download_finished = pyqtSignal(bool)
 
     def __init__(self, name: str, layer_id: int, payload: dict, gbfeaturelayer: GisboxFeatureLayer):
-        self.endpoint = f'/api/v2/datasources-download/{name}?format=gpkg&layer_id={layer_id}&attributes_use_verbose_names=false'
+        self.layer_id = layer_id
+        self.name = name
+        self.endpoint = f'/api/v2/datasources-download/{self.name}?format=gpkg&layer_id={self.layer_id}&attributes_use_verbose_names=false'
         self.payload = payload
         self.network_manager = GISBOX_CONNECTION.MANAGER.instance()
         self.gbfeaturelayer = gbfeaturelayer
@@ -657,23 +663,32 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
 
         reply = self.network_manager.blockingPost(request, data)
 
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".gpkg")
-        temp_file_path = temp_file.name
+        temp_dir = tempfile.mkdtemp()
+        temp_file_path = os.path.join(temp_dir, f"{self.name}.gpkg")
+
         with open(temp_file_path, "wb") as f:
             f.write(bytearray(reply.content()))
         response_layer = QgsVectorLayer(temp_file_path, "temp", "ogr")
 
         self.gbfeaturelayer.parseFeatures(response_layer)
+
+        if os.path.exists(temp_file_path):
+            shutil.rmtree(temp_dir)
+
         self.download_finished.emit(True)
-        del temp_file
+        if self.layer_id not in downloaded_layers:
+            downloaded_layers.append(self.layer_id)
         return True
     
     def set_download_progress(self, id: int, bytesReceived: int, bytesTotal: int):
         if self.first_process_id is None:
             self.first_process_id = id
-        if id == self.first_process_id + 2:
-            # zmieniamy status jedynie dla pobierania danych,
-            # ignorujemy dwa pierwsze procesy
+        # przy pierwszym pobieraniu warstwy, aktualizujemy status trzecim procesem (faktycznym pobieraniem danych)
+        skip_processes = 2
+        # przy kolejnym pobieraniu tej samej warstwy, korzystamy z drugiego procesu
+        if self.layer_id in downloaded_layers:
+            skip_processes = 1
+        if id == self.first_process_id + skip_processes:
             if bytesTotal in (0, -1):
                 self.setProgress(0)
             else:
@@ -681,7 +696,3 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
                 if download_progress > self.download_progress:
                     self.download_progress = download_progress
                 self.setProgress(self.download_progress)
-
-    def finished(self, result):
-        self.network_manager.downloadProgress.disconnect(self.set_progress)
-        super().finished(result)

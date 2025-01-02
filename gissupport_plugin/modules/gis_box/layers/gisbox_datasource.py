@@ -1,23 +1,21 @@
 import time
-import os
-import shutil
 import json
-import tempfile
+from osgeo import ogr, gdal
+gdal.UseExceptions()
 
 from typing import Iterable, Any, Dict, List
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
                        QgsAttributeEditorContainer, QgsAttributeEditorField, QgsMapLayer, NULL, QgsFieldConstraints,
-                       QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest)
+                       QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest, QgsGeometry)
 from qgis.utils import iface
 from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtCore import QObject, pyqtSignal, QDate, QDateTime, QTime
+from qgis.PyQt.QtCore import QObject, pyqtSignal, QDate, QDateTime, QTime, QDir, QTemporaryFile
 
 from . import DATA_SOURCE_REGISTRY, RELATION_VALUES_MAPPING_REGISTRY
 
 downloaded_layers = []
 
 from gissupport_plugin.tools.logger import Logger
-from .geojson import geojson2geom
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 
 class GisboxDataSource(QObject, Logger):
@@ -307,10 +305,10 @@ class GisboxFeatureLayer(QObject, Logger):
         self.task.download_finished.connect(self.show_download_layer_success_message)
         QgsApplication.taskManager().addTask(self.task)
 
-    def parseFeatures(self, response_layer: QgsVectorLayer):
+    def parseFeatures(self, temp_file: str):
         """ Parsowanie danych z serwera i dodanie obiektów do warstwy """
         try:
-            new_features = self.gpkg2features(response_layer)
+            new_features = self.gpkg2features(temp_file)
         except Exception as e:
             self.log(e)
             return
@@ -341,59 +339,60 @@ class GisboxFeatureLayer(QObject, Logger):
         # Usunięcie zbędnego taska
         del self.task
 
-    def gpkg2features(self, response_layer: QgsVectorLayer) -> Iterable[QgsFeature]:
+    def gpkg2features(self, temp_file: str) -> Iterable[QgsFeature]:
         """ Przekształcenie warstwy GPKG na QgsFeature """
         # Stworzenie listy featerow warstwy
         # Zebranie nazw pól z warstwy qgis
         layer_fields = self.layers[0].fields()
-        feature_count = response_layer.featureCount()
-        features = response_layer.getFeatures()
+
+        ds = ogr.Open(temp_file)
+        lyr = ds.GetLayer()
+        total = 50/lyr.GetFeatureCount()
+
         # Pasek postępu
-        total = 50/feature_count
         fields = self.datasource.attributes_schema['attributes']
+        # Tworzymy obiekty przed pętlą ponieważ po `yield` są zapisywane w warstwie.
+        # Późniejsze zmiany nie wpływają na zapisane obiekty
+        geometry = QgsGeometry()
+        new_feature = QgsFeature(layer_fields)
         # Iteracja po atrybutach sparsowanego obiektu
-        for idx, feature in enumerate(features):
-            f = QgsFeature(layer_fields)
+        for idx, feature in enumerate(lyr):
             # Sprawdzenie czy tabela ma geometrie
             try:
-                f.setGeometry(feature.geometry())
+                # Geometria OGR -> QGIS, trochę wąskie gardło
+                geometry.fromWkb( feature.GetGeometryRef().ExportToWkb() )
+                new_feature.setGeometry(geometry)
             except AttributeError:
                 # Brak geometrii
                 pass
 
             for field in fields:
-
-                if field['name'] not in self.valid_fields:
-                    continue
-
                 field_name = field['name']
-                if field_name in ('topogeom', self.datasource.geom_column_name):
+                
+                if field_name not in self.valid_fields:
                     continue
 
-                if field_name == self.datasource.id_column_name:
-                    value = feature[self.datasource.id_column_name]
+                value = feature.GetField(field_name)
+                if (relation:=field.get('relation')):
+                    # dla atrybutów relacyjnych, v2 zwraca wartości atrybutów wyświetlanych
+                    # musimy pozyskać wartości atrybutów zapisywanych
+                    datasource = relation.get('data_source')
+                    attribute = relation.get('attribute')
+                    representation = relation.get('representation')
+                    mapping_key = f'{datasource}{attribute}{representation}'
+                    mapping = self.relation_values_mapping.get(mapping_key) or {}
+                    value = mapping.get(value)
 
-                else:
-                    value = feature[field_name]
-                    if field.get('relation'):
-                        # dla atrybutów relacyjnych, v2 zwraca wartości atrybutów wyświetlanych
-                        # musimy pozyskać wartości atrybutów zapisywanych
-                        datasource = field['relation'].get('data_source')
-                        attribute = field['relation'].get('attribute')
-                        representation = field['relation'].get('representation')
-                        mapping_key = datasource + attribute + representation
-                        mapping = self.relation_values_mapping.get(mapping_key) or {}
-                        value = mapping.get(value)
-
-                f.setAttribute(field_name, value)
+                new_feature.setAttribute(field_name, value)
 
             if hasattr(self, 'task'):
                 try:
                     self.task.setProgress(idx*total+50)
                 except RuntimeError:
                     continue
-            self.f = feature
-            yield f
+
+            yield new_feature
+        del ds
 
     def setLayerAttributeForm(self, layer: QgsVectorLayer, form_schema: dict):
 
@@ -663,17 +662,18 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
 
         reply = self.network_manager.blockingPost(request, data)
 
-        temp_dir = tempfile.mkdtemp()
-        temp_file_path = os.path.join(temp_dir, f"{self.name}.gpkg")
+        # Tworzymy plik tymczasowy, XXXXXX będzie zastąpione losowymi znakami
+        tmp_file = QTemporaryFile( f"{QDir.tempPath()}/XXXXXX.gpkg" )
+        # Zapis danych do pliku
+        tmp_file.open()
+        tmp_file.write(reply.content())
+        del reply
+        tmp_file.close()
+        self.gbfeaturelayer.parseFeatures(tmp_file.fileName())
+        # Usunięcie pliku z dysku
+        tmp_file.remove()
+        tmp_file.deleteLater()
 
-        with open(temp_file_path, "wb") as f:
-            f.write(bytearray(reply.content()))
-        response_layer = QgsVectorLayer(temp_file_path, "temp", "ogr")
-
-        self.gbfeaturelayer.parseFeatures(response_layer)
-
-        if os.path.exists(temp_file_path):
-            shutil.rmtree(temp_dir)
 
         self.download_finished.emit(True)
         if self.layer_id not in downloaded_layers:

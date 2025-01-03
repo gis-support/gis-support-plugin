@@ -13,8 +13,6 @@ from qgis.PyQt.QtCore import QObject, pyqtSignal, QDate, QDateTime, QTime, QDir,
 
 from . import DATA_SOURCE_REGISTRY, RELATION_VALUES_MAPPING_REGISTRY
 
-downloaded_layers = []
-
 from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 
@@ -36,6 +34,9 @@ class GisboxFeatureLayer(QObject, Logger):
 
     on_reload = pyqtSignal()
     features_loaded = pyqtSignal(object)
+
+    # Procentowy podziału pobierania i parsowania danych
+    PROGRESS_STEP = 50
 
     def __init__(self, data: dict, parent=None):
         super(GisboxFeatureLayer, self).__init__(parent)
@@ -191,7 +192,6 @@ class GisboxFeatureLayer(QObject, Logger):
             toc_name = self.name
         if self.layers:
             layer = self.layers[0].clone()
-            layer.dataProvider().addFeatures(self.layers[0].getFeatures())
             layer.updateExtents(True)
         else:
             self._reload_layer_metadata()
@@ -260,9 +260,7 @@ class GisboxFeatureLayer(QObject, Logger):
         self.remove_all_features = True
   
         self.task = GisboxDownloadLayerTask(
-            name=self.datasource_name,
-            layer_id=self.id,
-            gbfeaturelayer=self,
+            parent=self,
             payload={
                 "data": {
                     "features_filter": self.filter_expression,
@@ -292,9 +290,7 @@ class GisboxFeatureLayer(QObject, Logger):
             self.remove_all_features = False
 
         self.task = GisboxDownloadLayerTask(
-            name=self.datasource_name,
-            layer_id=self.id,
-            gbfeaturelayer=self,
+            parent=self,
             payload={
                 "data": {
                     "features_filter": filter,
@@ -347,7 +343,7 @@ class GisboxFeatureLayer(QObject, Logger):
 
         ds = ogr.Open(temp_file)
         lyr = ds.GetLayer()
-        total = 50/lyr.GetFeatureCount()
+        total = self.PROGRESS_STEP/lyr.GetFeatureCount()
 
         # Pasek postępu
         fields = self.datasource.attributes_schema['attributes']
@@ -387,7 +383,7 @@ class GisboxFeatureLayer(QObject, Logger):
 
             if hasattr(self, 'task'):
                 try:
-                    self.task.setProgress(idx*total+50)
+                    self.task.setProgress(idx*total+self.PROGRESS_STEP)
                 except RuntimeError:
                     continue
 
@@ -642,25 +638,21 @@ class GisboxFeatureLayer(QObject, Logger):
 class GisboxDownloadLayerTask(QgsTask, Logger):
     download_finished = pyqtSignal(bool)
 
-    def __init__(self, name: str, layer_id: int, payload: dict, gbfeaturelayer: GisboxFeatureLayer):
-        self.layer_id = layer_id
-        self.name = name
-        self.endpoint = f'/api/v2/datasources-download/{self.name}?format=gpkg&layer_id={self.layer_id}&attributes_use_verbose_names=false'
-        self.payload = payload
-        self.network_manager = GISBOX_CONNECTION.MANAGER.instance()
-        self.gbfeaturelayer = gbfeaturelayer
-        self.download_progress = 0
-        self.first_process_id = None
+    def __init__(self, parent: GisboxFeatureLayer, payload: dict):
+        self.endpoint = f'/api/v2/datasources-download/{parent.datasource_name}?format=gpkg&layer_id={parent.id}&attributes_use_verbose_names=false'
+        self.payload = json.dumps(payload).encode()
+        self.callback = parent.parseFeatures
+        self.MAX_PROGRESS = parent.PROGRESS_STEP
         super().__init__('Wczytywanie warstwy', QgsTask.CanCancel)
 
-    def run(self):
+    def run(self) -> bool:
+        self.network_manager = GISBOX_CONNECTION.MANAGER.instance()
         request = GISBOX_CONNECTION._createRequest(self.endpoint)
         request.setRawHeader(b"Accept-Encoding", b"identity")
 
-        data = json.dumps(self.payload).encode()
         self.network_manager.downloadProgress.connect(self.set_download_progress)
-
-        reply = self.network_manager.blockingPost(request, data)
+        reply = self.network_manager.blockingPost(request, self.payload)
+        self.network_manager.downloadProgress.disconnect(self.set_download_progress)
 
         # Tworzymy plik tymczasowy, XXXXXX będzie zastąpione losowymi znakami
         tmp_file = QTemporaryFile( f"{QDir.tempPath()}/XXXXXX.gpkg" )
@@ -669,30 +661,17 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
         tmp_file.write(reply.content())
         del reply
         tmp_file.close()
-        self.gbfeaturelayer.parseFeatures(tmp_file.fileName())
+        self.callback(tmp_file.fileName())
         # Usunięcie pliku z dysku
         tmp_file.remove()
         tmp_file.deleteLater()
 
-
         self.download_finished.emit(True)
-        if self.layer_id not in downloaded_layers:
-            downloaded_layers.append(self.layer_id)
         return True
     
     def set_download_progress(self, id: int, bytesReceived: int, bytesTotal: int):
-        if self.first_process_id is None:
-            self.first_process_id = id
-        # przy pierwszym pobieraniu warstwy, aktualizujemy status trzecim procesem (faktycznym pobieraniem danych)
-        skip_processes = 2
-        # przy kolejnym pobieraniu tej samej warstwy, korzystamy z drugiego procesu
-        if self.layer_id in downloaded_layers:
-            skip_processes = 1
-        if id == self.first_process_id + skip_processes:
-            if bytesTotal in (0, -1):
-                self.setProgress(0)
-            else:
-                download_progress = bytesReceived / bytesTotal * 50
-                if download_progress > self.download_progress:
-                    self.download_progress = download_progress
-                self.setProgress(self.download_progress)
+        if bytesTotal in (0, -1):
+            self.setProgress(0)
+        else:
+            download_progress = min(self.MAX_PROGRESS, bytesReceived / bytesTotal * self.MAX_PROGRESS)
+            self.setProgress(download_progress)

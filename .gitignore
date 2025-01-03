@@ -2,3 +2,4 @@ __pycache__
 *.pyc
 gissupport_plugin.zip
 .DS_Store
+.vscode/

@@ -1,7 +1,6 @@
 import time
 import json
-from osgeo import ogr, gdal
-gdal.UseExceptions()
+import sqlite3
 
 from typing import Iterable, Any, Dict, List
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
@@ -36,7 +35,7 @@ class GisboxFeatureLayer(QObject, Logger):
     features_loaded = pyqtSignal(object)
 
     # Procentowy podziału pobierania i parsowania danych
-    PROGRESS_STEP = 50
+    PROGRESS_STEP = 75
 
     def __init__(self, data: dict, parent=None):
         super(GisboxFeatureLayer, self).__init__(parent)
@@ -120,7 +119,7 @@ class GisboxFeatureLayer(QObject, Logger):
             self.getFeatures()
         self.setLayerAttributeForm(layer, self.form_schema)
 
-    def _validate_fields(self, form_schema: dict):
+    def _validate_fields(self, form_schema: dict) -> list:
         elements = form_schema.get('elements')
         return [inner_element['attribute'] for element in elements for inner_element in element['elements']]
 
@@ -340,46 +339,53 @@ class GisboxFeatureLayer(QObject, Logger):
         # Stworzenie listy featerow warstwy
         # Zebranie nazw pól z warstwy qgis
         layer_fields = self.layers[0].fields()
+        layer_fields_names = layer_fields.names()
 
-        ds = ogr.Open(temp_file)
-        lyr = ds.GetLayer()
-        total = self.PROGRESS_STEP/lyr.GetFeatureCount()
+        # Połączenie i skonfigurowanie SpatiaLite
+        con = sqlite3.connect(temp_file)
+        con.enable_load_extension(True)
+        con.execute('SELECT load_extension("mod_spatialite");')
+        con.execute("SELECT InitSpatialMetaData(1);")
+        cur = con.cursor()
+        
+        # Liczba obiektów
+        cur.execute(f"SELECT Count(*) FROM {self.datasource_name};")
+        total = (100-self.PROGRESS_STEP)/cur.fetchone()[0]
 
-        # Pasek postępu
+        # Zebranie informacji o atrybutach relacyjnych
         fields = self.datasource.attributes_schema['attributes']
+        # Słownik: klucz - indeks kolumny relacyjnej, wartość klucz mapowania relacji
+        relation_map = {}
+        for field in fields:
+            if (relation:=field.get('relation')):
+                datasource = relation.get('data_source')
+                attribute = relation.get('attribute')
+                representation = relation.get('representation')
+                relation_map[layer_fields_names.index(field['name'])] = f'{datasource}{attribute}{representation}'
+
+
         # Tworzymy obiekty przed pętlą ponieważ po `yield` są zapisywane w warstwie.
         # Późniejsze zmiany nie wpływają na zapisane obiekty
         geometry = QgsGeometry()
         new_feature = QgsFeature(layer_fields)
-        # Iteracja po atrybutach sparsowanego obiektu
-        for idx, feature in enumerate(lyr):
-            # Sprawdzenie czy tabela ma geometrie
-            try:
-                # Geometria OGR -> QGIS, trochę wąskie gardło
-                geometry.fromWkb( feature.GetGeometryRef().ExportToWkb() )
+        geom_field = f'AsBinary(CastAutomagic({self.datasource.geom_column_name})) AS geom,' if self.datasource.geom_column_name else ''
+        # Atrybuty są pobierane zgodnie z kolejnością na warstwie
+        features = cur.execute(f"SELECT {geom_field} { ','.join(layer_fields_names) } FROM {self.datasource_name};")
+        for idx, feature in enumerate(features):
+            # Sprawdzenie czy tabela ma geometrię
+            if geom_field:
+                geometry.fromWkb( feature[0] )
                 new_feature.setGeometry(geometry)
-            except AttributeError:
-                # Brak geometrii
-                pass
+                attributes = list(feature[1:])
+            else:
+                attributes = list(feature)
 
-            for field in fields:
-                field_name = field['name']
-                
-                if field_name not in self.valid_fields:
-                    continue
-
-                value = feature.GetField(field_name)
-                if (relation:=field.get('relation')):
-                    # dla atrybutów relacyjnych, v2 zwraca wartości atrybutów wyświetlanych
-                    # musimy pozyskać wartości atrybutów zapisywanych
-                    datasource = relation.get('data_source')
-                    attribute = relation.get('attribute')
-                    representation = relation.get('representation')
-                    mapping_key = f'{datasource}{attribute}{representation}'
-                    mapping = self.relation_values_mapping.get(mapping_key) or {}
-                    value = mapping.get(value)
-
-                new_feature.setAttribute(field_name, value)
+            # Zamiana wartości relacyjnych
+            for field_index, relation_key in relation_map.items():
+                mapping = self.relation_values_mapping.get(relation_key) or {}
+                attributes[field_index] = mapping.get(attributes[field_index])
+            
+            new_feature.setAttributes(attributes)
 
             if hasattr(self, 'task'):
                 try:
@@ -388,7 +394,8 @@ class GisboxFeatureLayer(QObject, Logger):
                     continue
 
             yield new_feature
-        del ds
+
+        con.close()
 
     def setLayerAttributeForm(self, layer: QgsVectorLayer, form_schema: dict):
 
@@ -643,7 +650,8 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
         self.payload = json.dumps(payload).encode()
         self.callback = parent.parseFeatures
         self.MAX_PROGRESS = parent.PROGRESS_STEP
-        super().__init__('Wczytywanie warstwy', QgsTask.CanCancel)
+        self.template = f'Wczytywanie warstwy `{parent.name}`: {{}}'
+        super().__init__(self.template.format('pobieranie danych'), QgsTask.CanCancel)
 
     def run(self) -> bool:
         self.network_manager = GISBOX_CONNECTION.MANAGER.instance()
@@ -653,6 +661,8 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
         self.network_manager.downloadProgress.connect(self.set_download_progress)
         reply = self.network_manager.blockingPost(request, self.payload)
         self.network_manager.downloadProgress.disconnect(self.set_download_progress)
+
+        self.setDescription(self.template.format('przetwarzanie danych'))
 
         # Tworzymy plik tymczasowy, XXXXXX będzie zastąpione losowymi znakami
         tmp_file = QTemporaryFile( f"{QDir.tempPath()}/XXXXXX.gpkg" )

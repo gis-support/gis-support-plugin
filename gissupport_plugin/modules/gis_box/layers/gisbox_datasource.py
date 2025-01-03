@@ -82,24 +82,13 @@ class GisboxFeatureLayer(QObject, Logger):
             DATA_SOURCE_REGISTRY[datasource_name] = datasource
         return datasource
 
-    def setLayer(self, layer=None, from_project=False):
+    def setLayer(self, layer, from_project=False):
         """ Rejestracja warstwy QGIS """
-        if layer and not QgsProject.instance().layerTreeRoot().findLayers():
-            self.first = True
-        else:
+        if QgsProject.instance().layerTreeRoot().findLayers():
             self.first = False
-        if isinstance(self.sender(), QgsMapLayer):
-            # Usunięcie warstwy z TOC
-            try:
-                self.layers.remove(self.sender())
-            except ValueError:
-                # Dla pierwszej wczytanej warstwy zwraca błąd,
-                # który trzeba obsłużyć indywidualnie
-                del self.layers[0]
-            self.log(self.layers)
-            self.unregisterLayer(self.sender())
-        if not layer:
-            return
+        else:
+            self.first = True
+        
         if self.datasource is None:
             self.datasource = self._get_datasource(self.datasource_name)
         # Ustawienia warstwy
@@ -114,7 +103,7 @@ class GisboxFeatureLayer(QObject, Logger):
         self.registerLayer(layer)
         if from_project:
             self._reload_layer_metadata()
-        if layer is not None and len(self.layers) == 1:
+        if len(self.layers) == 1:
             # Pobieranie obiektów warstwy (tylko za pierwszym razem)
             self.getFeatures()
         self.setLayerAttributeForm(layer, self.form_schema)
@@ -126,7 +115,7 @@ class GisboxFeatureLayer(QObject, Logger):
     def registerLayer(self, layer):
         """ Zarejestrowanie warstwy """
         # Odznaczenie pozycji w menu w przypadku usunięcia warstwy z QGIS
-        layer.willBeDeleted.connect(self.setLayer)
+        layer.willBeDeleted.connect(self.unregisterLayer)
         layer.beforeCommitChanges.connect(self.manageFeatures)
         layer.committedFeaturesAdded.connect(lambda _, added_features: self.getFeaturesIds(added_features))
         self.checkLayer(True)
@@ -136,13 +125,24 @@ class GisboxFeatureLayer(QObject, Logger):
         if indicators:
             iface.layerTreeView().removeIndicator(node, indicators[0])
 
-    def unregisterLayer(self, layer):
+    def unregisterLayer(self):
         """ Wyrejestrowanie warstwy """
+        layer = self.sender()
+        # Usunięcie warstwy z TOC
+        try:
+            self.layers.remove(layer)
+        except ValueError:
+            # Dla pierwszej wczytanej warstwy zwraca błąd,
+            # który trzeba obsłużyć indywidualnie
+            del self.layers[0]
+
         if not self.layers:
             self.checkLayer(False)
             pass
         try:
-            layer.willBeDeleted.disconnect(self.setLayer)
+            layer.willBeDeleted.disconnect()
+            layer.beforeCommitChanges.disconnect()
+            layer.committedFeaturesAdded.disconnect()
         except Exception as e:
             self.log(e)
 
@@ -487,7 +487,7 @@ class GisboxFeatureLayer(QObject, Logger):
     def getFeaturesDbIds(self, qgis_ids, layer):
         return [f[self.datasource.id_column_name] for f in layer.dataProvider().getFeatures( QgsFeatureRequest().setFilterFids( qgis_ids ))]
 
-    def getFeaturesByDbIds(self, layer):
+    def getFeaturesByDbIds(self, layer: QgsVectorLayer):
         expression = f"\"{self.datasource.id_column_name}\" IN ({', '.join(map(str, self.features_to_download))})"
         request = QgsFeatureRequest().setFilterExpression(expression)
         features = layer.getFeatures(request)
@@ -535,11 +535,13 @@ class GisboxFeatureLayer(QObject, Logger):
             # jeśli tylko usuwamy obiekty z warstwy, nie musimy jej przeładowywać
             return
 
+        id_column = self.datasource.id_column_name
+        
         if modified_data.get("insert"):
-            self.features_to_download.extend([f[self.datasource.id_column_name] for f in modified_data["insert"]])
+            self.features_to_download.extend([f[id_column] for f in modified_data["insert"]])
 
         if modified_data.get("update"):
-            db_ids = [f['properties'][self.datasource.id_column_name]  for f in modified_data["update"]]
+            db_ids = [f['properties'][id_column]  for f in modified_data["update"]]
             self.features_to_download.extend(db_ids)
 
         self.message(f'Pomyślnie zmodyfikowano dane warstwy: {self.layers[0].name()}', 

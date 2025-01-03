@@ -1,18 +1,21 @@
 import time
 import json
+from osgeo import ogr, gdal
+gdal.UseExceptions()
 
 from typing import Iterable, Any, Dict, List
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
                        QgsAttributeEditorContainer, QgsAttributeEditorField, QgsMapLayer, NULL, QgsFieldConstraints,
-                       QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest)
+                       QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest, QgsGeometry)
 from qgis.utils import iface
 from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtCore import QObject, pyqtSignal, QDate, QDateTime, QTime
+from qgis.PyQt.QtCore import QObject, pyqtSignal, QDate, QDateTime, QTime, QDir, QTemporaryFile
 
 from . import DATA_SOURCE_REGISTRY, RELATION_VALUES_MAPPING_REGISTRY
 
+downloaded_layers = []
+
 from gissupport_plugin.tools.logger import Logger
-from .geojson import geojson2geom
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 
 class GisboxDataSource(QObject, Logger):
@@ -302,10 +305,10 @@ class GisboxFeatureLayer(QObject, Logger):
         self.task.download_finished.connect(self.show_download_layer_success_message)
         QgsApplication.taskManager().addTask(self.task)
 
-    def parseFeatures(self, data: dict):
+    def parseFeatures(self, temp_file: str):
         """ Parsowanie danych z serwera i dodanie obiektów do warstwy """
         try:
-            new_features = self.geojson2features(data['features'])
+            new_features = self.gpkg2features(temp_file)
         except Exception as e:
             self.log(e)
             return
@@ -336,57 +339,60 @@ class GisboxFeatureLayer(QObject, Logger):
         # Usunięcie zbędnego taska
         del self.task
 
-    def geojson2features(self, features: Iterable[dict]) -> Iterable[QgsFeature]:
-        """ Przekształcenie GeoJSONa na QgsFeature """
+    def gpkg2features(self, temp_file: str) -> Iterable[QgsFeature]:
+        """ Przekształcenie warstwy GPKG na QgsFeature """
         # Stworzenie listy featerow warstwy
         # Zebranie nazw pól z warstwy qgis
         layer_fields = self.layers[0].fields()
+
+        ds = ogr.Open(temp_file)
+        lyr = ds.GetLayer()
+        total = 50/lyr.GetFeatureCount()
+
         # Pasek postępu
-        total = 50/len(features)
         fields = self.datasource.attributes_schema['attributes']
+        # Tworzymy obiekty przed pętlą ponieważ po `yield` są zapisywane w warstwie.
+        # Późniejsze zmiany nie wpływają na zapisane obiekty
+        geometry = QgsGeometry()
+        new_feature = QgsFeature(layer_fields)
         # Iteracja po atrybutach sparsowanego obiektu
-        for idx, feature in enumerate(features):
-            f = QgsFeature(layer_fields)
+        for idx, feature in enumerate(lyr):
             # Sprawdzenie czy tabela ma geometrie
             try:
-                f.setGeometry(geojson2geom(feature['geometry']))
+                # Geometria OGR -> QGIS, trochę wąskie gardło
+                geometry.fromWkb( feature.GetGeometryRef().ExportToWkb() )
+                new_feature.setGeometry(geometry)
             except AttributeError:
                 # Brak geometrii
                 pass
 
             for field in fields:
-
-                if field['name'] not in self.valid_fields:
-                    continue
-
                 field_name = field['name']
-                if field_name in ('topogeom', self.datasource.geom_column_name):
+                
+                if field_name not in self.valid_fields:
                     continue
 
-                if field_name == self.datasource.id_column_name:
-                    value = feature.get('id')
+                value = feature.GetField(field_name)
+                if (relation:=field.get('relation')):
+                    # dla atrybutów relacyjnych, v2 zwraca wartości atrybutów wyświetlanych
+                    # musimy pozyskać wartości atrybutów zapisywanych
+                    datasource = relation.get('data_source')
+                    attribute = relation.get('attribute')
+                    representation = relation.get('representation')
+                    mapping_key = f'{datasource}{attribute}{representation}'
+                    mapping = self.relation_values_mapping.get(mapping_key) or {}
+                    value = mapping.get(value)
 
-                else:
-                    value = feature['properties'].get(field_name)
-                    if field.get('relation'):
-                        # dla atrybutów relacyjnych, v2 zwraca wartości atrybutów wyświetlanych
-                        # musimy pozyskać wartości atrybutów zapisywanych
-                        datasource = field['relation'].get('data_source')
-                        attribute = field['relation'].get('attribute')
-                        representation = field['relation'].get('representation')
-                        mapping_key = datasource + attribute + representation
-                        mapping = self.relation_values_mapping.get(mapping_key) or {}
-                        value = mapping.get(value)
-
-                f.setAttribute(field_name, value)
+                new_feature.setAttribute(field_name, value)
 
             if hasattr(self, 'task'):
                 try:
                     self.task.setProgress(idx*total+50)
                 except RuntimeError:
                     continue
-            self.f = feature
-            yield f
+
+            yield new_feature
+        del ds
 
     def setLayerAttributeForm(self, layer: QgsVectorLayer, form_schema: dict):
 
@@ -637,7 +643,9 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
     download_finished = pyqtSignal(bool)
 
     def __init__(self, name: str, layer_id: int, payload: dict, gbfeaturelayer: GisboxFeatureLayer):
-        self.endpoint = f'/api/v2/datasources-download/{name}?format=geojson&layer_id={layer_id}&attributes_use_verbose_names=false'
+        self.layer_id = layer_id
+        self.name = name
+        self.endpoint = f'/api/v2/datasources-download/{self.name}?format=gpkg&layer_id={self.layer_id}&attributes_use_verbose_names=false'
         self.payload = payload
         self.network_manager = GISBOX_CONNECTION.MANAGER.instance()
         self.gbfeaturelayer = gbfeaturelayer
@@ -653,19 +661,34 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
         self.network_manager.downloadProgress.connect(self.set_download_progress)
 
         reply = self.network_manager.blockingPost(request, data)
-        response = json.loads(bytearray(reply.content()))
-        
-        self.gbfeaturelayer.parseFeatures(response)
+
+        # Tworzymy plik tymczasowy, XXXXXX będzie zastąpione losowymi znakami
+        tmp_file = QTemporaryFile( f"{QDir.tempPath()}/XXXXXX.gpkg" )
+        # Zapis danych do pliku
+        tmp_file.open()
+        tmp_file.write(reply.content())
+        del reply
+        tmp_file.close()
+        self.gbfeaturelayer.parseFeatures(tmp_file.fileName())
+        # Usunięcie pliku z dysku
+        tmp_file.remove()
+        tmp_file.deleteLater()
+
 
         self.download_finished.emit(True)
+        if self.layer_id not in downloaded_layers:
+            downloaded_layers.append(self.layer_id)
         return True
     
     def set_download_progress(self, id: int, bytesReceived: int, bytesTotal: int):
         if self.first_process_id is None:
             self.first_process_id = id
-        if id == self.first_process_id + 2:
-            # zmieniamy status jedynie dla pobierania danych,
-            # ignorujemy dwa pierwsze procesy
+        # przy pierwszym pobieraniu warstwy, aktualizujemy status trzecim procesem (faktycznym pobieraniem danych)
+        skip_processes = 2
+        # przy kolejnym pobieraniu tej samej warstwy, korzystamy z drugiego procesu
+        if self.layer_id in downloaded_layers:
+            skip_processes = 1
+        if id == self.first_process_id + skip_processes:
             if bytesTotal in (0, -1):
                 self.setProgress(0)
             else:
@@ -673,7 +696,3 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
                 if download_progress > self.download_progress:
                     self.download_progress = download_progress
                 self.setProgress(self.download_progress)
-
-    def finished(self, result):
-        self.network_manager.downloadProgress.disconnect(self.set_progress)
-        super().finished(result)

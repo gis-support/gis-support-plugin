@@ -1,11 +1,13 @@
 import time
 import json
 import sqlite3
+from typing import Iterable, Any, Dict, List, Optional
+from itertools import chain
 
-from typing import Iterable, Any, Dict, List
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
-                       QgsAttributeEditorContainer, QgsAttributeEditorField, QgsMapLayer, NULL, QgsFieldConstraints,
-                       QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest, QgsGeometry)
+                       QgsAttributeEditorContainer, QgsAttributeEditorField, NULL, QgsFieldConstraints,
+                       QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsGeometry,
+                       QgsVectorLayerEditBuffer, QgsLayerTreeGroup)
 from qgis.utils import iface
 from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtCore import QObject, pyqtSignal, QDate, QDateTime, QTime, QDir, QTemporaryFile
@@ -18,7 +20,7 @@ from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 class GisboxDataSource(QObject, Logger):
     """ Klasa bazowa dla źródeł danych GISBox """
 
-    def __init__(self, data: dict, parent=None):
+    def __init__(self, data: dict, parent: QObject=None):
         super(GisboxDataSource, self).__init__(parent)
         self.name = data['name']
         self.display_name = data['verbose_name']
@@ -31,18 +33,21 @@ class GisboxDataSource(QObject, Logger):
 class GisboxFeatureLayer(QObject, Logger):
     """ Bazowa klasa dla warstw wektorowych """
 
-    on_reload = pyqtSignal()
+    on_reload = pyqtSignal(object)
     features_loaded = pyqtSignal(object)
 
     # Procentowy podziału pobierania i parsowania danych
     PROGRESS_STEP = 75
 
-    def __init__(self, data: dict, parent=None):
+    def __init__(self, data: dict, parent: QObject=None):
         super(GisboxFeatureLayer, self).__init__(parent)
 
         # Lista warstw dla danego typu
         self.parent = parent
         self.layers = []
+        self.valid_fields = []
+        self.relation_values_mapping = {}
+        self.features_to_delete = [] # id z qgis
         self.first = False
 
         self.datasource = None
@@ -59,14 +64,7 @@ class GisboxFeatureLayer(QObject, Logger):
         self.layer_scope = data.get('layer_scope')
         self.form_schema = data['form_schema']
         self.write_permission = data['write_permission']
-        self.valid_fields = []
         self.filter_expression = data.get('filter_expression')
-        self.relation_values_mapping = {}
-
-        
-        self.features_to_download = [] # id z gisbox
-        self.features_to_delete = [] # id z qgis
-        self.remove_all_features = False
 
         self.connectSignals()
 
@@ -82,12 +80,10 @@ class GisboxFeatureLayer(QObject, Logger):
             DATA_SOURCE_REGISTRY[datasource_name] = datasource
         return datasource
 
-    def setLayer(self, layer, from_project=False):
+    def setLayer(self, layer: QgsVectorLayer, from_project=False):
         """ Rejestracja warstwy QGIS """
-        if QgsProject.instance().layerTreeRoot().findLayers():
-            self.first = False
-        else:
-            self.first = True
+        # Czy są wczytane jakieś warstwy
+        self.first = not QgsProject.instance().layerTreeRoot().findLayers()
         
         if self.datasource is None:
             self.datasource = self._get_datasource(self.datasource_name)
@@ -108,16 +104,16 @@ class GisboxFeatureLayer(QObject, Logger):
             self.getFeatures()
         self.setLayerAttributeForm(layer, self.form_schema)
 
-    def _validate_fields(self, form_schema: dict) -> list:
+    def _validate_fields(self, form_schema: Dict[str, List[Dict[str, Any]]]) -> List[str]:
         elements = form_schema.get('elements')
         return [inner_element['attribute'] for element in elements for inner_element in element['elements']]
 
-    def registerLayer(self, layer):
+    def registerLayer(self, layer: QgsVectorLayer):
         """ Zarejestrowanie warstwy """
         # Odznaczenie pozycji w menu w przypadku usunięcia warstwy z QGIS
         layer.willBeDeleted.connect(self.unregisterLayer)
         layer.beforeCommitChanges.connect(self.manageFeatures)
-        layer.committedFeaturesAdded.connect(lambda _, added_features: self.getFeaturesIds(added_features))
+        layer.committedFeaturesAdded.connect(lambda _, added_features: self.getFeaturesQgisIds(added_features))
         self.checkLayer(True)
         # Usunięcie z legendy ikony warstwy tymczasowej
         node = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
@@ -146,13 +142,13 @@ class GisboxFeatureLayer(QObject, Logger):
         except Exception as e:
             self.log(e)
 
-    def checkLayer(self, state):
+    def checkLayer(self, state: bool):
         try:
             self.parent.setChecked(state)
         except:
             pass
 
-    def zoomToExtent(self, layer):
+    def zoomToExtent(self, layer: QgsVectorLayer):
         """ Przybiżenie do warstwy z innym układem współrzędnych """
         # Przybliżamy tylko do pierwszej dodanej warstwy
         if not self.first:
@@ -184,9 +180,8 @@ class GisboxFeatureLayer(QObject, Logger):
             self.valid_fields = self._validate_fields(
                 form_schema=self.form_schema)
 
-    def loadLayer(self, checked=False, group=None, toc_name=None):
+    def loadLayer(self, checked: bool=False, group: QgsLayerTreeGroup=None, toc_name: str=None) -> QgsVectorLayer:
         """ Wczytywanie warstwy do QGIS """
-
         if not toc_name:
             toc_name = self.name
         if self.layers:
@@ -239,13 +234,13 @@ class GisboxFeatureLayer(QObject, Logger):
         self.deleteTemporaryIcons(layer)
         return layer
 
-    def deleteTemporaryIcons(self, layer):
+    def deleteTemporaryIcons(self, layer: QgsVectorLayer):
         node = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
         indicators = iface.layerTreeView().indicators(node)
         if indicators:
             iface.layerTreeView().removeIndicator(node, indicators[0])
 
-    def setStyle(self, layer):
+    def setStyle(self, layer: QgsVectorLayer):
         """ Wczytanie stylu warstwy jeśli istnieje """
         if not self.style:
             return
@@ -256,7 +251,6 @@ class GisboxFeatureLayer(QObject, Logger):
     def getFeatures(self):
         """ Wysłanie żądania o obiekty warstwy """
         self.time = time.time()
-        self.remove_all_features = True
   
         self.task = GisboxDownloadLayerTask(
             parent=self,
@@ -265,7 +259,8 @@ class GisboxFeatureLayer(QObject, Logger):
                     "features_filter": self.filter_expression,
                     "style": {}
                 }
-            }
+            },
+            remove_all_features = True
         )
         self.task.download_finished.connect(self.show_download_layer_success_message)
         QgsApplication.taskManager().addTask(self.task)
@@ -274,20 +269,20 @@ class GisboxFeatureLayer(QObject, Logger):
         self.message(
             f'Pomyślnie wczytano dane warstwy: {self.layers[0].name()}, czas: {time.time() - self.time}', level=Qgis.Success, duration=5)
     
-    def onReload(self, *args, **kwargs):
-        self.remove_all_features = True
-
-        filter = self.filter_expression
-        if self.features_to_download:
+    def onReload(self, features_to_download: Optional[List[Dict[str, Any]]] = None):
+        if features_to_download:
             filter = {
                         "$IN": {
                             self.datasource_name + '.' + self.datasource.id_column_name: {
-                                "value": self.features_to_download
+                                "value": features_to_download
                             }
                         }
                     }
-            self.remove_all_features = False
-
+            remove_all_features = False
+        else:
+            filter = self.filter_expression
+            remove_all_features = True
+        
         self.task = GisboxDownloadLayerTask(
             parent=self,
             payload={
@@ -295,12 +290,14 @@ class GisboxFeatureLayer(QObject, Logger):
                     "features_filter": filter,
                     "style": {}
                 }
-            }
+            },
+            features_to_download=features_to_download,
+            remove_all_features=remove_all_features
         )
         self.task.download_finished.connect(self.show_download_layer_success_message)
         QgsApplication.taskManager().addTask(self.task)
 
-    def parseFeatures(self, temp_file: str):
+    def parseFeatures(self, temp_file: str, features_to_download: List[Dict[str, Any]], remove_all_features: bool = True):
         """ Parsowanie danych z serwera i dodanie obiektów do warstwy """
         try:
             new_features = self.gpkg2features(temp_file)
@@ -309,7 +306,7 @@ class GisboxFeatureLayer(QObject, Logger):
             return
         
         layer = self.layers[0]
-        if self.remove_all_features:
+        if remove_all_features:
             # Czyścimy warstwę z obiektów (wymagane jeśli przeładowujemy istniejącą warstwę)
             layer.dataProvider().truncate()
 
@@ -317,7 +314,7 @@ class GisboxFeatureLayer(QObject, Logger):
             # Usuwamy dodane/edytowane obiekty z warstwy
             # a następnie dodajemy je od nowa ze wszystkimi wypełnionymi atrybutami z bazy 
 
-            self.getFeaturesByDbIds(layer)
+            self.db2qgisIds(layer, features_to_download)
             if self.features_to_delete:
                 layer.dataProvider().deleteFeatures(self.features_to_delete)
 
@@ -329,7 +326,6 @@ class GisboxFeatureLayer(QObject, Logger):
         self.features_loaded.emit(layer)
         layer.reload()
         layer.triggerRepaint()
-        self.features_to_download = []
         self.features_to_delete = []
         # Usunięcie zbędnego taska
         del self.task
@@ -397,7 +393,7 @@ class GisboxFeatureLayer(QObject, Logger):
 
         con.close()
 
-    def setLayerAttributeForm(self, layer: QgsVectorLayer, form_schema: dict):
+    def setLayerAttributeForm(self, layer: QgsVectorLayer, form_schema: Dict[str, List[Dict[str, Any]]]):
 
         config = layer.editFormConfig()
         id_field = layer.fields().indexFromName(self.datasource.id_column_name)
@@ -476,7 +472,7 @@ class GisboxFeatureLayer(QObject, Logger):
 
         layer.setEditFormConfig(config)
 
-    def setWidgetType(self, layer: QgsVectorLayer, dict_values: dict, field_id: int):
+    def setWidgetType(self, layer: QgsVectorLayer, dict_values: Dict[str, int], field_id: int):
         """ Ustawianie typu atrybutu w formularzu atrybutów """
         value_map = [{"": NULL}]
         value_map.extend({str(text): str(value)} for text, value in dict_values.items())
@@ -484,27 +480,31 @@ class GisboxFeatureLayer(QObject, Logger):
             'ValueMap', {'map': value_map})
         layer.setEditorWidgetSetup(field_id, setup)
 
-    def getFeaturesDbIds(self, qgis_ids, layer):
-        return [f[self.datasource.id_column_name] for f in layer.dataProvider().getFeatures( QgsFeatureRequest().setFilterFids( qgis_ids ))]
+    def qgis2dbIds(self, qgis_ids: List[int], layer: QgsVectorLayer) -> List[id]:
+        """ Pobranie GIS Box ID na podstawie listy QGIS ID """
+        return [f[self.datasource.id_column_name] for f in layer.dataProvider().getFeatures( qgis_ids )]
 
-    def getFeaturesByDbIds(self, layer: QgsVectorLayer):
-        expression = f"\"{self.datasource.id_column_name}\" IN ({', '.join(map(str, self.features_to_download))})"
-        request = QgsFeatureRequest().setFilterExpression(expression)
-        features = layer.getFeatures(request)
+    def db2qgisIds(self, layer: QgsVectorLayer, features_to_download: List[Dict[str, Any]]):
+        """ Pobranie QGIS ID na podstawie listy GIS Box ID """
+        expression = f"\"{self.datasource.id_column_name}\" IN ({', '.join(map(str, features_to_download))})"
+        features = layer.getFeatures(expression)
         for feature in features:
             self.features_to_delete.append(feature.id())
 
-    def getFeaturesIds(self, added_features: List[QgsFeature]):
+    def getFeaturesQgisIds(self, added_features: List[QgsFeature]):
+        """ Pobranie QGIS ID z listy obiektów """
         for feature in added_features:
             self.features_to_delete.append(feature.id())
 
     def manageFeatures(self):
         layer = self.sender()
         edit_buffer = layer.editBuffer()
+        # Resetujemy listę obiektów do usunięcia (po dodaniu/edycji)
+        self.features_to_delete = []
 
         payload = {'data_source_name': self.datasource_name, 'layer_id': self.id}
 
-        to_add = self.addFeatures(edit_buffer)
+        to_add = self.addFeatures(edit_buffer.addedFeatures().values(), layer.fields().names())
         if to_add:
             payload['insert'] = to_add
 
@@ -512,12 +512,12 @@ class GisboxFeatureLayer(QObject, Logger):
         if to_update:
             payload['update'] = to_update
 
-        to_delete = self.deleteFeatures(layer, edit_buffer)
+        to_delete = self.deleteFeatures(edit_buffer.deletedFeatureIds())
         if to_delete:
             payload['delete'] = to_delete
 
         if to_delete:
-            payload['delete']['features_ids'] = self.getFeaturesDbIds(
+            payload['delete']['features_ids'] = self.qgis2dbIds(
                 to_delete['qgis_features_ids'], layer)
 
         GISBOX_CONNECTION.post(
@@ -537,122 +537,91 @@ class GisboxFeatureLayer(QObject, Logger):
 
         id_column = self.datasource.id_column_name
         
+        features_to_download = []
+
         if modified_data.get("insert"):
-            self.features_to_download.extend([f[id_column] for f in modified_data["insert"]])
+            features_to_download.extend([f[id_column] for f in modified_data["insert"]])
 
         if modified_data.get("update"):
             db_ids = [f['properties'][id_column]  for f in modified_data["update"]]
-            self.features_to_download.extend(db_ids)
+            features_to_download.extend(db_ids)
 
         self.message(f'Pomyślnie zmodyfikowano dane warstwy: {self.layers[0].name()}', 
                         level=Qgis.Success, duration=5)
-        self.on_reload.emit()
+        self.on_reload.emit(features_to_download)
         
-    def addFeatures(self, edit_buffer):
+    def addFeatures(self, features: Iterable[QgsFeature], field_names: str) -> List[Dict[str, Any]]:
         """ Dodanie nowych obiektów do warstwy użytkownika """
-        added_features = edit_buffer.addedFeatures().values()
+        return [ self.qgsfeature_to_json(feature, field_names) for feature in features ]
 
-        features_data = []
-
-        for feature in added_features:
-            if feature.hasGeometry():
-                f = feature.__geo_interface__
-                if f['geometry']['type'].lower() != self.geometry_type.lower():
-                    f['geometry']['type'] = self.geometry_type
-                    f['geometry']['coordinates'] = [f['geometry']['coordinates']]
-                properties = {k: self.sanetize_data_type(v) if v != NULL else None for k,
-                              v in f['properties'].items()}
-                geometry = f['geometry']
-                geometry.update({'crs': {
-                    'type': 'name',
-                    'properties': {
-                        'name': f'EPSG:{self.srid}'
-                    }
-                }})
-                properties.update({self.datasource.geom_column_name: geometry})
-                features_data.append(properties)
-            else:
-                attributes = feature.attributes()
-                names = feature.fields().names()
-                properties = {names[i]: self.sanetize_data_type(attributes[i]) if attributes[i] != NULL else None
-                              for i in range(len(names))}
-
-                features_data.append(properties)
-
-        return features_data
-
-    def deleteFeatures(self, layer, edit_buffer):
-        qgis_deleted_features_ids = edit_buffer.deletedFeatureIds()
+    def deleteFeatures(self, qgis_deleted_features_ids: List[int]) -> Dict[str, List[int]]:
         if not qgis_deleted_features_ids:
             return {}
 
         return {'qgis_features_ids': qgis_deleted_features_ids}
 
-    def updateFeatures(self, layer, edit_buffer):
+    def updateFeatures(self, layer: QgsVectorLayer, edit_buffer: QgsVectorLayerEditBuffer) -> List[Dict[str, Any]]:
         changed_attributes = edit_buffer.changedAttributeValues()
         changed_geometries = edit_buffer.changedGeometries()
 
-        fids = list(set(list(changed_attributes.keys()) +
-                    list(changed_geometries.keys())))
-
-        features = []
-
+        fids = list(set(chain(changed_attributes.keys(), changed_geometries.keys())))
+        field_names = layer.fields().names()
+        features_data = []
         for feature in layer.getFeatures(fids):
-            if feature.hasGeometry():
-                f = feature.__geo_interface__
-                if f['geometry']['type'].lower() != self.geometry_type.lower():
-                    f['geometry']['type'] = self.geometry_type
-                    f['geometry']['coordinates'] = [f['geometry']['coordinates']]
-                properties = {k: self.sanetize_data_type(v) if v != NULL else None for k,
-                              v in f['properties'].items()}
-                geometry = f['geometry']
-                geometry.update({'crs': {
-                    'type': 'name',
-                    'properties': {
-                        'name': f'EPSG:{self.srid}'
-                    }
-                }})
-                properties.update({self.datasource.geom_column_name: geometry})
-
-                features.append({
-                    'properties': properties,
-                    'fid': f['properties'].pop(self.datasource.id_column_name),
-                    'qgis_id': feature.id()
-                })
-
-            else:
-                attributes = feature.attributes()
-                names = feature.fields().names()
-                properties = {names[i]: self.sanetize_data_type(attributes[i]) if attributes[i] != NULL else None
-                              for i in range(len(names))}
-
-                features.append({
+            properties = self.qgsfeature_to_json(feature, field_names)
+            
+            features_data.append({
                     'properties': properties,
                     'fid': properties[self.datasource.id_column_name],
                     'qgis_id': feature.id()
                 })
 
-        return features
+        return features_data
     
     def sanetize_data_type(self, value: Any) -> Any:
         if isinstance(value, QDateTime):
-            value = value.toString('yyyy-MM-dd hh:mm:ss')
+            return value.toString('yyyy-MM-dd hh:mm:ss')
         elif isinstance(value, QDate):
-            value = value.toString('yyyy-MM-dd')
+            return value.toString('yyyy-MM-dd')
         elif isinstance(value, QTime):
-            value = value.toString('hh:mm:ss')
+            return value.toString('hh:mm:ss')
+        elif value == NULL:
+            return
         return value
+
+    def qgsfeature_to_json(self, feature: QgsFeature, field_names: List[str]) -> Dict[str, Any]:
+        attributes = feature.attributes()
+        properties = { name: self.sanetize_data_type(value) for name, value in zip(field_names, attributes) }
+        
+        if feature.hasGeometry():
+            geometry = json.loads(feature.geometry().asJson())
+            if geometry['type'].lower() != self.geometry_type.lower():
+                geometry['type'] = self.geometry_type
+                geometry['coordinates'] = [geometry['coordinates']]
+            geometry.update({'crs': {
+                'type': 'name',
+                'properties': {
+                    'name': f'EPSG:{self.srid}'
+                }
+            }})
+            properties[self.datasource.geom_column_name] = geometry
+        
+        return properties
 
 
 class GisboxDownloadLayerTask(QgsTask, Logger):
     download_finished = pyqtSignal(bool)
 
-    def __init__(self, parent: GisboxFeatureLayer, payload: dict):
+    def __init__(self, parent: GisboxFeatureLayer, payload: dict, 
+                 features_to_download: Optional[List[Dict[str, Any]]] = None,
+                 remove_all_features: bool = True):
         self.endpoint = f'/api/v2/datasources-download/{parent.datasource_name}?format=gpkg&layer_id={parent.id}&attributes_use_verbose_names=false'
         self.payload = json.dumps(payload).encode()
         self.callback = parent.parseFeatures
         self.MAX_PROGRESS = parent.PROGRESS_STEP
         self.template = f'Wczytywanie warstwy `{parent.name}`: {{}}'
+        self.features_to_download = features_to_download
+        self.remove_all_features = remove_all_features
         super().__init__(self.template.format('pobieranie danych'), QgsTask.CanCancel)
 
     def run(self) -> bool:
@@ -673,7 +642,7 @@ class GisboxDownloadLayerTask(QgsTask, Logger):
         tmp_file.write(reply.content())
         del reply
         tmp_file.close()
-        self.callback(tmp_file.fileName())
+        self.callback(tmp_file.fileName(), self.features_to_download, self.remove_all_features)
         # Usunięcie pliku z dysku
         tmp_file.remove()
         tmp_file.deleteLater()

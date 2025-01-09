@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GugikNmtDockWidgetBase</class>
- <widget class="QDockWidget" name="GugikNmtDockWidgetBase">
+ <class>dockWidgetBase</class>
+ <widget class="QDockWidget" name="dockWidgetBase">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>442</width>
     <height>552</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>400</width>
+    <width>442</width>
     <height>552</height>
    </size>
   </property>
@@ -93,14 +93,10 @@
      </widget>
     </item>
     <item>
+     <layout class="QVBoxLayout" name="verticalLayout"/>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QToolButton" name="btnSelectArea">
-        <property name="text">
-         <string>Wskaż obszar</string>
-        </property>
-       </widget>
-      </item>
       <item>
        <widget class="QPushButton" name="btnExecute">
         <property name="text">
@@ -108,27 +104,7 @@
         </property>
        </widget>
       </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
      </layout>
-    </item>
-    <item>
-     <widget class="QLabel" name="selectedToolLabel">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
     </item>
     <item>
      <spacer name="verticalSpacer">

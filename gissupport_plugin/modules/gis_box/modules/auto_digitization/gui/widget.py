@@ -3,7 +3,6 @@ import json
 import os
 
 from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QMenu
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import pyqtSignal
@@ -12,10 +11,9 @@ from qgis.core import (Qgis, QgsCoordinateTransform,
                        )
 from qgis.utils import iface
 
-from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool, SelectFreehandTool, \
-    SelectFeaturesTool
 from gissupport_plugin.modules.gis_box.modules.auto_digitization.utils import AutoDigitizationTask
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+from gissupport_plugin.tools.widgets.gs_select_area import GsSelectArea
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'widget.ui'))
@@ -32,17 +30,13 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.lbWarning.setVisible(False)
         self.areaWidget.setHidden(True)
         self.btnExecute.setEnabled(False)
-        self.selectedToolLabel.setHidden(True)
+
+        self.selectAreaWidget = GsSelectArea()
 
         self.registerTools()
         self.menageSignals()
 
-        self.btnSelectArea.setMenu(QMenu(self.btnSelectArea))
-        self.btnSelectArea.menu().addAction("Prostokątem", self.select_features_rectangle)
-        self.btnSelectArea.menu().addAction("Swobodnie", self.select_features_freehand)
-        self.btnSelectArea.menu().addAction("Wskaż obiekty", self.select_features)
-        self.btnSelectArea.menu()
-        self.btnSelectArea.clicked.connect(self.select_tool)
+        self.verticalLayout.addWidget(self.selectAreaWidget)
 
         self.task = None
         self.area = 0
@@ -66,9 +60,9 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
     def registerTools(self):
         """ Zarejestrowanie narzędzi jak narzędzi mapy QGIS """
-        self.select_features_tool = SelectFeaturesTool(self)
-        self.select_features_rectangle_tool = SelectRectangleTool(self)
-        self.select_features_freehand_tool = SelectFreehandTool(self)
+        self.select_features_rectangle_tool = self.selectAreaWidget.select_features_rectangle_tool
+        self.select_features_freehand_tool = self.selectAreaWidget.select_features_freehand_tool
+        self.select_features_tool = self.selectAreaWidget.select_features_tool
 
     def activateTool(self, tool):
         """ Zmiana aktywnego narzędzia mapy """
@@ -198,18 +192,12 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
     def select_features(self):
         iface.mapCanvas().setMapTool(self.select_features_tool)
-        self.selectedToolLabel.setText("Wybrane narzędzie: Wskaż obiekty")
-        self.selectedToolLabel.setHidden(False)
         self.projected = True
 
     def select_features_rectangle(self):
         iface.mapCanvas().setMapTool(self.select_features_rectangle_tool)
-        self.selectedToolLabel.setText("Wybrane narzędzie: Wskaż prostokątem")
-        self.selectedToolLabel.setHidden(False)
         self.projected = False
 
     def select_features_freehand(self):
         iface.mapCanvas().setMapTool(self.select_features_freehand_tool)
-        self.selectedToolLabel.setText("Wybrane narzędzie: Wskaż swobodnie")
-        self.selectedToolLabel.setHidden(False)
         self.projected = False

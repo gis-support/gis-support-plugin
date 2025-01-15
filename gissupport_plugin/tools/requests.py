@@ -31,7 +31,11 @@ class NetworkHandler(QObject):
             elif reply.error() in (QNetworkReply.TimeoutError, QNetworkReply.OperationCanceledError, QNetworkReply.UnknownServerError):
                 self.result = {'error': reply.errorString(), 'msg': 'Przekroczono czas oczekiwania na odpowiedź serwera.'}
             else:
-                self.result = {'error': reply.errorString()}
+                if (status_code := reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)) == 400 and (
+                        detail := json.loads(bytearray(reply.readAll())).get("detail")):
+                    self.result = {'error': reply.errorString(), 'details': detail}
+                else:
+                    self.result = {'error': reply.errorString()}
 
     def get(self, url, reply_only: bool=False, params: dict=None) -> Union[dict, QNetworkReply]:
         """Wykonuje żądanie GET do podanego URL"""

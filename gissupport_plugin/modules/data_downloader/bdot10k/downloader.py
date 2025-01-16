@@ -11,9 +11,8 @@ from gissupport_plugin.modules.data_downloader.bdot10k.bdot10k_dockwidget import
 from gissupport_plugin.modules.data_downloader.bdot10k.utils import BDOT10kDownloadTask, DrawPolygon, \
     get_databox_layers, BDOT10kDataBoxDownloadTask, convert_multi_polygon_to_polygon, transform_geometry_to_2180, \
     BDOT10kClassDownloadTask
-from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchTeryt
 from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool
-
+from gissupport_plugin.tools.teryt import Wojewodztwa, POWIATY
 
 class BDOT10kDownloader:
 
@@ -93,12 +92,11 @@ class BDOT10kDownloader:
         """
         Uzupełnia combobox z województwami. Wywoływane raz, przy starcie pluginu.
         """
-        wojewodztwa = self.get_administratives_bdot10k("wojewodztwo")
+        wojewodztwa = [woj.value for woj in Wojewodztwa]
         self.bdot10k_dockwidget.wojComboBox.clear()
         self.bdot10k_dockwidget.wojComboBox.addItem("")
         for item in wojewodztwa:
-            display_name = f'{item[0]} | {item[1]}'
-            self.bdot10k_dockwidget.wojComboBox.addItem(display_name, item[1])
+            self.bdot10k_dockwidget.wojComboBox.addItem(item)
 
     def fill_pow_combobox(self):
         """
@@ -107,22 +105,11 @@ class BDOT10kDownloader:
         """
         current_woj = self.bdot10k_dockwidget.wojComboBox.currentText()
         self.teryt_woj = current_woj.split("|")[1].strip() if current_woj else ""
-        powiaty = self.get_administratives_bdot10k("powiat", self.teryt_woj)
+        powiaty = POWIATY.get(Wojewodztwa(current_woj), [])
         self.bdot10k_dockwidget.powComboBox.clear()
         self.bdot10k_dockwidget.powComboBox.addItem("")
         for powiat in powiaty:
-            display_name = f'{powiat[0]} | {powiat[1]}'
-            self.bdot10k_dockwidget.powComboBox.addItem(display_name, powiat[1])
-
-    def get_administratives_bdot10k(self, level: str, teryt: str = ""):
-        """
-        Pobiera dane (województwa, powiaty, gminy) dla comboboxów.
-        """
-        search = ULDKSearchTeryt(level, ("nazwa", "teryt"))
-        result = search.search(teryt)
-        result = [r.split("|") for r in result]
-
-        return result
+            self.bdot10k_dockwidget.powComboBox.addItem(powiat)
 
     def get_teryt_pow(self):
         """

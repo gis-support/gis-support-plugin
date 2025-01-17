@@ -18,7 +18,6 @@ class BDOT10kDownloader:
 
     def __init__(self):
         self.task = None
-        self.bdot10k_filepath = expanduser("~")
         self.bdot10k_class_filepath = expanduser("~")
         self.teryt_woj = ""
         self.teryt_pow = ""
@@ -73,10 +72,9 @@ class BDOT10kDownloader:
         """
         Uruchamia okno z wyborem miejsca zapisu plików BDOT10k i zapisuje ścieżkę.
         """
-        self.bdot10k_filepath = QFileDialog.getExistingDirectory(self.bdot10k_dockwidget,
-                                                 'Wybierz miejsce zapisu plików BDOT10k',
-                                                 expanduser("~"))
-        self.bdot10k_dockwidget.filepathLine.setText(self.bdot10k_filepath)
+        bdot10k_filepath = QFileDialog.getExistingDirectory(self.bdot10k_dockwidget,
+                                                 'Wybierz miejsce zapisu plików BDOT10k')
+        self.bdot10k_dockwidget.filepathLine.setText(bdot10k_filepath)
 
     def change_bdot10k_dockwidget_visibility(self):
         """
@@ -128,8 +126,14 @@ class BDOT10kDownloader:
                                            level=Qgis.Warning)
             return
 
+        bdot10k_filepath = self.bdot10k_dockwidget.filepathLine.text()
+        if not bdot10k_filepath or bdot10k_filepath == "":
+            iface.messageBar().pushMessage("Przed pobraniem należy wybrać ścieżkę zapisu danych",
+                                           level=Qgis.Warning)
+            return
+
         self.task = BDOT10kDownloadTask("Pobieranie danych BDOT10k", self.teryt_woj,
-                                        self.teryt_pow, self.bdot10k_filepath)
+                                        self.teryt_pow, bdot10k_filepath)
         self.task.progress_updated.connect(self.update_bdok10k_download_progress)
         self.task.download_finished.connect(self.show_bdot10k_success_message)
 

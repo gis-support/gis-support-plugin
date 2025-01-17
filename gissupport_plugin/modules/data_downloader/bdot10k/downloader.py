@@ -36,6 +36,7 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget = BDOT10kDockWidget()
 
         self.fill_woj_combobox()
+        self.fill_pow_combobox()
         self.databox_layers = get_databox_layers()
         self.fill_class_combobox()
 
@@ -94,9 +95,9 @@ class BDOT10kDownloader:
         """
         wojewodztwa = [woj.value for woj in Wojewodztwa]
         self.bdot10k_dockwidget.wojComboBox.clear()
-        self.bdot10k_dockwidget.wojComboBox.addItem("")
         for item in wojewodztwa:
             self.bdot10k_dockwidget.wojComboBox.addItem(item)
+        self.teryt_woj = wojewodztwa[0].split("|")[1].strip()
 
     def fill_pow_combobox(self):
         """
@@ -107,9 +108,9 @@ class BDOT10kDownloader:
         self.teryt_woj = current_woj.split("|")[1].strip() if current_woj else ""
         powiaty = POWIATY.get(Wojewodztwa(current_woj), [])
         self.bdot10k_dockwidget.powComboBox.clear()
-        self.bdot10k_dockwidget.powComboBox.addItem("")
         for powiat in powiaty:
             self.bdot10k_dockwidget.powComboBox.addItem(powiat)
+        self.teryt_pow = powiaty[0].split("|")[1].strip()
 
     def get_teryt_pow(self):
         """

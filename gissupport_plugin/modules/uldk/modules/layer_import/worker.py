@@ -209,6 +209,7 @@ class LayerImportWorker(QObject):
 
         if QgsWkbTypes.hasZ(geom_type):
             geometry, geom_type = self.drop_z_from_geom(geometry, geom_type)
+            geometry = geometry[0]
 
         features = []
         points_number = 0
@@ -228,7 +229,14 @@ class LayerImportWorker(QObject):
                     geometry.convertToMultiType()
 
                 multi_polygon = QgsGeometry.fromMultiPolygonXY(geometry.asMultiPolygon())
-                geometry = multi_polygon.difference(self.parcels_geometry.buffer(0.001, 2))
+                diff_geometry = multi_polygon.difference(self.parcels_geometry.buffer(0.001, 2))
+
+                # obsługa przypadku, gdy różnicą poligonów jest linia
+                if diff_geometry.wkbType() == QgsWkbTypes.LineString or diff_geometry.wkbType() == QgsWkbTypes.MultiLineString:
+                    geometry = diff_geometry.buffer(0.001, 5)
+
+                else:
+                    geometry = diff_geometry
                 if not geometry:
                     return []
 
@@ -257,8 +265,7 @@ class LayerImportWorker(QObject):
     @classmethod
     def drop_z_from_geom(cls, geom: QgsGeometry, geom_type: QgsWkbTypes):
         target_type = cls._get_non_z_geom_type(geom_type)
-        type_to_convert = QgsWkbTypes.geometryType(target_type)
-        return geom.convertToType(type_to_convert), target_type
+        return geom.coerceToType(target_type), target_type
 
     @staticmethod
     def _get_non_z_geom_type(geom_type: QgsWkbTypes):

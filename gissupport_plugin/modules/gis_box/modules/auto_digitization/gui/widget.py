@@ -7,7 +7,8 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import (Qgis, QgsCoordinateTransform,
-                       QgsCoordinateReferenceSystem, QgsProject, QgsGeometry, QgsApplication
+                       QgsCoordinateReferenceSystem, QgsProject, QgsGeometry, QgsApplication,
+                       QgsMapLayerProxyModel
                        )
 from qgis.utils import iface
 
@@ -31,7 +32,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.areaWidget.setHidden(True)
         self.btnExecute.setEnabled(False)
 
-        self.selectAreaWidget = GsSelectArea()
+        self.selectAreaWidget = GsSelectArea(select_layer_types=[QgsMapLayerProxyModel.PolygonLayer])
 
         self.registerTools()
         self.menageSignals()
@@ -68,9 +69,9 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         """ Zmiana aktywnego narzędzia mapy """
         iface.mapCanvas().setMapTool(tool)
 
-
     def closeEvent(self, event):
         self.closingPlugin.emit()
+        self.selectAreaWidget.closeWidget()
         event.accept()
 
     def showInfo(self):

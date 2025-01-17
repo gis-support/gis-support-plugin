@@ -1,22 +1,32 @@
 # -*- coding: utf-8 -*-
 import os
+from enum import Enum
+from functools import reduce
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QWidget, QSizePolicy
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QCursor, QPixmap, QColor
 from qgis.core import (Qgis, QgsWkbTypes, QgsGeometry, QgsProject, QgsDistanceArea,
-                       QgsCoordinateTransformContext, QgsUnitTypes, QgsPointXY
+                       QgsCoordinateTransformContext, QgsUnitTypes, QgsPointXY,
+                       QgsMapLayerProxyModel
                        )
 from qgis.gui import QgsRubberBand, QgsMapTool, QgsMapToolIdentifyFeature
-from qgis.core import QgsMapLayerProxyModel
-from qgis.PyQt import uic
 from qgis.utils import iface
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'gs_select_area.ui'))
 
+class GsSelectAreaOption(Enum):
+    RECTANGLE = "Prostokątem"
+    FREEHAND = "Swobodnie"
+    LAYER = "Wskaż obiekty"
+
 class GsSelectArea(QWidget, FORM_CLASS):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None,
+                 select_options: list = [GsSelectAreaOption.RECTANGLE.value, GsSelectAreaOption.FREEHAND.value, GsSelectAreaOption.LAYER.value],
+                 select_layer_types: list = [QgsMapLayerProxyModel.PointLayer, QgsMapLayerProxyModel.LineLayer, QgsMapLayerProxyModel.PolygonLayer]
+                 ):
         super(GsSelectArea, self).__init__(parent)
         self.setupUi(self)
 
@@ -25,14 +35,25 @@ class GsSelectArea(QWidget, FORM_CLASS):
             QSizePolicy.Minimum
         )
 
+        self.select_options = select_options
+        self.select_layer_types = select_layer_types
+
+        self.selectAreaBtn.setCheckable(True)
+        self.selectMethodCb.insertItems(0, self.select_options)
+
+        self.selectLayerFeatsCb.setVisible(False)
+        self.selectLayerLabel.setVisible(False)
+        self.selectLayerCb.setVisible(False)
+
         self.selectLayerFeatsCb.setEnabled(False)
         self.selectLayerLabel.setEnabled(False)
         self.selectLayerCb.setEnabled(False)
-        self.selectLayerCb.setFilters(QgsMapLayerProxyModel.PolygonLayer)
-        self.selectLayerCb.layerChanged.connect(self.on_layer_changed)
+
+        filters = reduce(lambda x, y: x | y, self.select_layer_types)
+        self.selectLayerCb.setFilters(filters)
 
         self.selectMethodCb.currentIndexChanged.connect(self.on_method_changed)
-        self.selectAreaBtn.clicked.connect(self.on_select_area_button_pressed)
+        self.selectAreaBtn.toggled.connect(self.on_select_area_button_pressed)
 
         self.select_features_tool = SelectFeaturesTool(self)
         self.select_features_rectangle_tool = SelectRectangleTool(self)
@@ -42,34 +63,54 @@ class GsSelectArea(QWidget, FORM_CLASS):
 
     def on_method_changed(self):
         """Funkcja wywoływana przy zmianie metody wybierania obszaru"""
-        if self.selectMethodCb.currentIndex() == 2:
+        if self.selectMethodCb.currentText() == 'Wskaż obiekty':
             self.tool = self.select_features_tool
+
+            self.selectAreaBtn.setVisible(False)
+            self.selectAreaBtn.setEnabled(False)
+
+            self.selectLayerFeatsCb.setVisible(True)
+            self.selectLayerLabel.setVisible(True)
+            self.selectLayerCb.setVisible(True)
+
             self.selectLayerFeatsCb.setEnabled(True)
             self.selectLayerLabel.setEnabled(True)
             self.selectLayerCb.setEnabled(True)
-            if self.selectLayerCb.currentLayer() is not None:
-                self.selectLayerCb.currentLayer().selectionChanged.connect(self.on_selection_changed)
+
+            self.tool.activate()
+            count = self.selectLayerCb.currentLayer().selectedFeatureCount()
+            self.selectLayerFeatsCb.setText(f"Tylko zaznaczone obiekty [{count}]")
+
         else:
-            if self.selectMethodCb.currentIndex() == 1:
+            if self.selectMethodCb.currentText() == 'Swobodnie':
                 self.tool = self.select_features_freehand_tool
             else:
                 self.tool = self.select_features_rectangle_tool
 
+            self.selectAreaBtn.setEnabled(True)
+            self.selectAreaBtn.setVisible(True)
+
+            self.selectLayerFeatsCb.setVisible(False)
+            self.selectLayerLabel.setVisible(False)
+            self.selectLayerCb.setVisible(False)
+
             self.selectLayerFeatsCb.setEnabled(False)
             self.selectLayerLabel.setEnabled(False)
             self.selectLayerCb.setEnabled(False)
-            self.selectLayerCb.currentLayer().selectionChanged.disconnect()
+
+        if self.selectAreaBtn.isChecked():
+            iface.mapCanvas().setMapTool(self.tool)
+        else:
+            iface.mapCanvas().unsetMapTool(self.tool)
 
     def on_select_area_button_pressed(self):
-        iface.mapCanvas().setMapTool(self.tool)
+        if self.selectAreaBtn.isChecked():
+            iface.mapCanvas().setMapTool(self.tool)
+        else:
+            iface.mapCanvas().unsetMapTool(self.tool)
 
-    def on_layer_changed(self):
-        if self.selectLayerCb.currentLayer() is not None:
-            self.selectLayerCb.currentLayer().selectionChanged.connect(self.on_selection_changed)
-
-    def on_selection_changed(self):
-        count = self.selectLayerCb.currentLayer().selectedFeatureCount()
-        self.selectLayerFeatsCb.setText(f"Tylko zaznaczone obiekty [{count}]")
+    def closeWidget(self):
+        self.tool.reset()
 
 # narzędzia używane w widżecie
 class SelectRectangleTool(QgsMapTool):

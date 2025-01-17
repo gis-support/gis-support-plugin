@@ -24,23 +24,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="selectMethodCb">
-       <item>
-        <property name="text">
-         <string>Prostokątem</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Swobodnie</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Warstwa z projektu</string>
-        </property>
-       </item>
-      </widget>
+      <widget class="QComboBox" name="selectMethodCb"/>
      </item>
      <item>
       <widget class="QLabel" name="selectLayerLabel">

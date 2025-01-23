@@ -52,6 +52,7 @@ class GsSelectArea(QWidget, FORM_CLASS):
 
         filters = reduce(lambda x, y: x | y, self.select_layer_types)
         self.selectLayerCb.setFilters(filters)
+        self.selectLayerCb.layerChanged.connect(self.on_layer_changed)
 
         self.selectMethodCb.currentIndexChanged.connect(self.on_method_changed)
 
@@ -135,8 +136,8 @@ class GsSelectArea(QWidget, FORM_CLASS):
             if layer.dataProvider().featureCount() == 0:
                 return
             self.layer = layer
-            layer.selectionChanged.connect(self.on_selection_changed)
-            self.on_selection_changed(layer.selectedFeatureIds())
+            self.layer.selectionChanged.connect(self.on_selection_changed)
+            self.on_selection_changed(self.layer.selectedFeatureIds())
             self.selectLayerFeatsCb.setEnabled(True)
 
         else:

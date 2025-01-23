@@ -281,7 +281,6 @@ class BDOT10kDownloader:
         """
         classes = self.databox_layers
         self.bdot10k_dockwidget.classComboBox.clear()
-        self.bdot10k_dockwidget.classComboBox.addItem("")
         for item in classes.items():
             display_name = f'{item[0]}'
             self.bdot10k_dockwidget.classComboBox.addItem(display_name, item[1])

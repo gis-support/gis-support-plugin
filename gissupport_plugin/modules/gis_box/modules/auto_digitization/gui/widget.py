@@ -59,6 +59,8 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.select_features_tool.geometryEnded.connect(self.areaEnded)
         self.areaReset.clicked.connect(self.areaInfoReset)
 
+        self.selectAreaWidget.methodChanged.connect(self.on_select_method_changed)
+
     def registerTools(self):
         """ Zarejestrowanie narzędzi jak narzędzi mapy QGIS """
         self.select_features_rectangle_tool = self.selectAreaWidget.select_features_rectangle_tool
@@ -67,6 +69,8 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
     def activateTool(self, tool):
         """ Zmiana aktywnego narzędzia mapy """
+        self.area = 0
+        self.geom = None
         iface.mapCanvas().setMapTool(tool)
 
     def closeEvent(self, event):
@@ -188,8 +192,8 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
     def task_layer_id_updated(self, layer_id: str):
         self.layer_id = layer_id
 
-    def select_tool(self):
-        self.btnSelectArea.menu().exec(QCursor.pos())
+    def on_select_method_changed(self):
+        self.areaInfoReset()
 
     def select_features(self):
         iface.mapCanvas().setMapTool(self.select_features_tool)

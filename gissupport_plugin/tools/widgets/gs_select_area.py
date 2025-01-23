@@ -9,9 +9,9 @@ from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QCursor, QPixmap, QColor
 from qgis.core import (Qgis, QgsWkbTypes, QgsGeometry, QgsProject, QgsDistanceArea,
                        QgsCoordinateTransformContext, QgsUnitTypes, QgsPointXY,
-                       QgsMapLayerProxyModel
+                       QgsMapLayerProxyModel, QgsMapLayer
                        )
-from qgis.gui import QgsRubberBand, QgsMapTool, QgsMapToolIdentifyFeature
+from qgis.gui import QgsRubberBand, QgsMapTool
 from qgis.utils import iface
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -23,6 +23,8 @@ class GsSelectAreaOption(Enum):
     LAYER = "Wskaż obiekty"
 
 class GsSelectArea(QWidget, FORM_CLASS):
+    methodChanged = pyqtSignal()
+
     def __init__(self, parent=None,
                  select_options: list = [GsSelectAreaOption.RECTANGLE.value, GsSelectAreaOption.FREEHAND.value, GsSelectAreaOption.LAYER.value],
                  select_layer_types: list = [QgsMapLayerProxyModel.PointLayer, QgsMapLayerProxyModel.LineLayer, QgsMapLayerProxyModel.PolygonLayer]
@@ -38,7 +40,6 @@ class GsSelectArea(QWidget, FORM_CLASS):
         self.select_options = select_options
         self.select_layer_types = select_layer_types
 
-        self.selectAreaBtn.setCheckable(True)
         self.selectMethodCb.insertItems(0, self.select_options)
 
         self.selectLayerFeatsCb.setVisible(False)
@@ -53,17 +54,22 @@ class GsSelectArea(QWidget, FORM_CLASS):
         self.selectLayerCb.setFilters(filters)
 
         self.selectMethodCb.currentIndexChanged.connect(self.on_method_changed)
-        self.selectAreaBtn.toggled.connect(self.on_select_area_button_pressed)
 
         self.select_features_tool = SelectFeaturesTool(self)
         self.select_features_rectangle_tool = SelectRectangleTool(self)
         self.select_features_freehand_tool = SelectFreehandTool(self)
 
+        self.selectAreaBtn.setCheckable(True)
         self.tool = self.select_features_rectangle_tool
+        self.tool.setButton(self.selectAreaBtn)
+        self.selectAreaBtn.clicked.connect(lambda: iface.mapCanvas().setMapTool(self.tool))
+
+        self.layer = None
 
     def on_method_changed(self):
         """Funkcja wywoływana przy zmianie metody wybierania obszaru"""
         if self.selectMethodCb.currentText() == 'Wskaż obiekty':
+            iface.mapCanvas().unsetMapTool(self.tool)
             self.tool = self.select_features_tool
 
             self.selectAreaBtn.setVisible(False)
@@ -78,7 +84,15 @@ class GsSelectArea(QWidget, FORM_CLASS):
             self.selectLayerCb.setEnabled(True)
 
             self.tool.activate()
-            count = self.selectLayerCb.currentLayer().selectedFeatureCount()
+
+            if layer := self.selectLayerCb.currentLayer():
+                if layer.type() == QgsMapLayer.VectorLayer:
+                    self.selectLayerCb.currentLayer().selectionChanged.connect(self.on_selection_changed)
+                    count = self.selectLayerCb.currentLayer().selectedFeatureCount()
+                else:
+                    count = 0
+            else:
+                count = 0
             self.selectLayerFeatsCb.setText(f"Tylko zaznaczone obiekty [{count}]")
 
         else:
@@ -86,6 +100,9 @@ class GsSelectArea(QWidget, FORM_CLASS):
                 self.tool = self.select_features_freehand_tool
             else:
                 self.tool = self.select_features_rectangle_tool
+
+            self.tool.setButton(self.selectAreaBtn)
+            self.selectAreaBtn.clicked.connect(lambda: iface.mapCanvas().setMapTool(self.tool))
 
             self.selectAreaBtn.setEnabled(True)
             self.selectAreaBtn.setVisible(True)
@@ -103,14 +120,37 @@ class GsSelectArea(QWidget, FORM_CLASS):
         else:
             iface.mapCanvas().unsetMapTool(self.tool)
 
+        self.methodChanged.emit()
+
     def on_select_area_button_pressed(self):
         if self.selectAreaBtn.isChecked():
             iface.mapCanvas().setMapTool(self.tool)
         else:
             iface.mapCanvas().unsetMapTool(self.tool)
 
+    def on_layer_changed(self):
+        layer = self.selectLayerCb.currentLayer()
+
+        if layer:
+            if layer.dataProvider().featureCount() == 0:
+                return
+            self.layer = layer
+            layer.selectionChanged.connect(self.on_selection_changed)
+            self.on_selection_changed(layer.selectedFeatureIds())
+            self.selectLayerFeatsCb.setEnabled(True)
+
+        else:
+            self.layer = None
+            self.selectLayerFeatsCb.setEnabled(False)
+            self.selectLayerFeatsCb.setChecked(False)
+            self.selectLayerFeatsCb.setText("Tylko zaznaczone obiekty [0]")
+
+    def on_selection_changed(self, selected_features):
+        self.selectLayerFeatsCb.setText(f"Tylko zaznaczone obiekty [{len(selected_features)}]")
+
     def closeWidget(self):
         self.tool.reset()
+
 
 # narzędzia używane w widżecie
 class SelectRectangleTool(QgsMapTool):
@@ -175,6 +215,7 @@ class SelectRectangleTool(QgsMapTool):
         self.startPoint = None
 
     def deactivate(self):
+        self.parent.selectAreaBtn.setChecked(False)
         self.reset()
 
 
@@ -194,11 +235,15 @@ class SelectFreehandTool(QgsMapTool):
         self.tempGeom.setFillColor(QColor(255, 0, 0, 33))
         self.tempGeom.setWidth = 10
 
+        self.drawing = False
         self.area = 0
         self.geometry = QgsGeometry()
 
     def canvasPressEvent(self, e):
-        if e.button() == Qt.LeftButton or e.button() == Qt.RightButton:
+        if e.button() == Qt.LeftButton:
+            if self.drawing is False:
+                self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+                self.drawing = True
             self.tempGeom.addPoint(e.mapPoint())
 
             area = QgsDistanceArea()
@@ -210,10 +255,30 @@ class SelectFreehandTool(QgsMapTool):
             self.area = rectangleAreaHectares
             self.geometry = self.tempGeom.asGeometry()
             self.geometryChanged.emit(self.area)
+        elif e.button() == Qt.RightButton and self.drawing:
+            if self.tempGeom.numberOfVertices() > 2:
+                self.tempGeom.removeLastPoint(0)
+                self.drawing = False
+                self.geometry = self.tempGeom.asGeometry()
+                self.tempGeom.setToGeometry(self.geometry, None)
+
+                area = QgsDistanceArea()
+                area.setSourceCrs(QgsProject.instance().crs(), QgsCoordinateTransformContext())
+                area.setEllipsoid('GRS80')
+
+                rectangleArea = area.measureArea(self.tempGeom.asGeometry())
+                rectangleAreaHectares = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaHectares)
+                self.area = rectangleAreaHectares
+                self.geometry = self.tempGeom.asGeometry()
+                self.geometryChanged.emit(self.area)
+                self.geometryEnded.emit(self.area, self.geometry)
+            else:
+                self.reset()
 
     def canvasMoveEvent(self, e):
-        if e.buttons() == Qt.LeftButton or e.buttons() == Qt.RightButton:
-            self.tempGeom.addPoint(e.mapPoint())
+        if self.tempGeom.numberOfVertices() > 0  and self.drawing:
+            self.tempGeom.removeLastPoint(0)
+            self.tempGeom.addPoint(self.toMapCoordinates(e.pos()))
 
             area = QgsDistanceArea()
             area.setSourceCrs(QgsProject.instance().crs(), QgsCoordinateTransformContext())
@@ -224,9 +289,6 @@ class SelectFreehandTool(QgsMapTool):
             self.area = rectangleAreaHectares
             self.geometry = self.tempGeom.asGeometry()
             self.geometryChanged.emit(self.area)
-
-    def canvasReleaseEvent(self, e):
-        self.geometryEnded.emit(self.area, self.geometry)
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
@@ -240,6 +302,7 @@ class SelectFreehandTool(QgsMapTool):
         self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
 
     def deactivate(self):
+        self.parent.selectAreaBtn.setChecked(False)
         self.reset()
 
 
@@ -299,6 +362,7 @@ class SelectFeaturesTool(QgsMapTool):
         self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
 
     def deactivate(self):
+        self.parent.selectAreaBtn.setChecked(False)
         self.reset()
 
 

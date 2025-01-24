@@ -215,7 +215,7 @@ class LayerImportWorker(QObject):
         if self.transformation is not None:
             geometry.transform(self.transformation)
 
-        if geom_type == QgsWkbTypes.LineString or geom_type == QgsWkbTypes.MultiLineString:
+        if geom_type in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
             points_number = 10
             geometry = geometry.buffer(0.001, 2)
 
@@ -229,7 +229,7 @@ class LayerImportWorker(QObject):
                 diff_geometry = geometry.difference(self.parcels_geometry.buffer(0.001, 2))
 
                 # obsługa przypadku, gdy różnicą poligonów jest linia
-                if diff_geometry.wkbType() == QgsWkbTypes.LineString or diff_geometry.wkbType() == QgsWkbTypes.MultiLineString:
+                if diff_geometry.wkbType() in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
                     geometry = diff_geometry.buffer(0.001, 5)
 
                 else:

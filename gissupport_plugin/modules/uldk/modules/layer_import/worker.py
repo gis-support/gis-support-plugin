@@ -104,7 +104,7 @@ class LayerImportWorker(QObject):
         if source_crs != CRS_2180:
             self.transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext())
 
-        geom_type = self._get_non_z_geom_type(source_geom_type)
+        geom_type = QgsWkbTypes.flatType(source_geom_type)
         if geom_type == QgsWkbTypes.Point or geom_type == QgsWkbTypes.MultiPoint:
             self.count_not_found_as_progressed = True
 
@@ -207,8 +207,7 @@ class LayerImportWorker(QObject):
     def _feature_to_points(self, feature, geom_type, additional_attributes):
         geometry = feature.geometry()
 
-        if QgsWkbTypes.hasZ(geom_type):
-            geometry, geom_type = self.drop_z_from_geom(geometry, geom_type)
+        geometry = geometry.coerceToType(QgsWkbTypes.flatType(geometry.wkbType()))[0]
 
         features = []
         points_number = 0
@@ -216,7 +215,7 @@ class LayerImportWorker(QObject):
         if self.transformation is not None:
             geometry.transform(self.transformation)
 
-        if geom_type == QgsWkbTypes.LineString or geom_type == QgsWkbTypes.MultiLineString:
+        if geom_type in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
             points_number = 10
             geometry = geometry.buffer(0.001, 2)
 
@@ -227,8 +226,14 @@ class LayerImportWorker(QObject):
                 if not geometry.isMultipart():
                     geometry.convertToMultiType()
 
-                multi_polygon = QgsGeometry.fromMultiPolygonXY(geometry.asMultiPolygon())
-                geometry = multi_polygon.difference(self.parcels_geometry.buffer(0.001, 2))
+                diff_geometry = geometry.difference(self.parcels_geometry.buffer(0.001, 2))
+
+                # obsługa przypadku, gdy różnicą poligonów jest linia
+                if diff_geometry.wkbType() in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
+                    geometry = diff_geometry.buffer(0.001, 5)
+
+                else:
+                    geometry = diff_geometry
                 if not geometry:
                     return []
 
@@ -253,16 +258,3 @@ class LayerImportWorker(QObject):
             features.append(feature)
 
         return features
-
-    @classmethod
-    def drop_z_from_geom(cls, geom: QgsGeometry, geom_type: QgsWkbTypes):
-        target_type = cls._get_non_z_geom_type(geom_type)
-        type_to_convert = QgsWkbTypes.geometryType(target_type)
-        return geom.convertToType(type_to_convert), target_type
-
-    @staticmethod
-    def _get_non_z_geom_type(geom_type: QgsWkbTypes):
-        if not QgsWkbTypes.hasZ(geom_type):
-            return geom_type
-        else:
-            return QgsWkbTypes.dropZ(geom_type)

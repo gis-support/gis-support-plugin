@@ -134,7 +134,6 @@ class LayerImportWorker(QObject):
                 continue_search = True
 
                 while points != []:
-                    # saved_features = [self._process_feature(point) for point in points]
                     saved_features = []
                     for point_number, point in enumerate(points, start=1):
                         last_point = True if point_number == len(points) else False

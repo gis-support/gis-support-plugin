@@ -51,13 +51,6 @@ class NMPTdownloader:
     def init_nmpt_dockwidget(self):
 
         self.nmpt_dockwidget = NMPTdockWidget()
-        # self.nmpt_dockwidget.projectLayerList.setFilters(QgsMapLayerProxyModel.PointLayer |
-        #                                                  QgsMapLayerProxyModel.LineLayer |
-        #                                                  QgsMapLayerProxyModel.PolygonLayer)
-
-        # self.nmpt_dockwidget.selectedOnlyCheckBox.setEnabled(False)
-        # self.nmpt_dockwidget.selectedOnlyCheckBox.stateChanged.connect(
-        #                                     self.get_bbox_and_area_for_selected)
 
         self.nmpt_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_nmpt)
 
@@ -77,10 +70,6 @@ class NMPTdownloader:
         self.select_features_freehand_tool = self.nmpt_dockwidget.selectAreaWidget.select_features_freehand_tool
         self.select_features_tool = self.nmpt_dockwidget.selectAreaWidget.select_features_tool
 
-        # self.selectRectangleTool = SelectRectangleTool(self.nmpt_dockwidget)
-        # self.selectRectangleTool.setButton(self.nmpt_dockwidget.selectAreaButton)
-        # self.nmpt_dockwidget.selectAreaButton.clicked.connect(lambda: self.activateTool(
-        #                                                         self.selectRectangleTool))
         self.select_features_rectangle_tool.geometryChanged.connect(self.area_changed)
         self.select_features_rectangle_tool.geometryEnded.connect(self.area_ended)
         self.select_features_freehand_tool.geometryChanged.connect(self.area_changed)

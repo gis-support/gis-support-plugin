@@ -45,24 +45,17 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.powComboBox.currentTextChanged.connect(self.get_teryt_pow)
         self.bdot10k_dockwidget.downloadButton.clicked.connect(self.download_bdot10k)
 
-        self.bdot10k_dockwidget.methodComboBox.addItems(['Prostokątem', 'Swobodnie', 'Wskaż obiekty'])
-        self.bdot10k_dockwidget.methodComboBox.currentTextChanged.connect(self.change_selection_method)
+        self.select_features_rectangle_tool = self.bdot10k_dockwidget.selectAreaWidget.select_features_rectangle_tool
+        self.select_features_freehand_tool = self.bdot10k_dockwidget.selectAreaWidget.select_features_freehand_tool
+        self.select_features_tool = self.bdot10k_dockwidget.selectAreaWidget.select_features_tool
 
-        self.drawpolygon = DrawPolygon(self.bdot10k_dockwidget)
-        self.drawrectangle = SelectRectangleTool(self.bdot10k_dockwidget)
-        self.drawrectangle.setButton(self.bdot10k_dockwidget.drawBoundsButton)
-        self.bdot10k_dockwidget.drawBoundsButton.clicked.connect(lambda: self.activateTool(self.drawrectangle))
-        self.drawpolygon.selectionDone.connect(self.set_geometry_from_draw)
-        self.drawrectangle.geometryEnded.connect(lambda area, geometry: self.set_geometry_from_draw(geometry))
+        self.select_features_rectangle_tool.geometryEnded.connect(self.set_geometry_from_draw)
+        self.select_features_freehand_tool.geometryEnded.connect(self.set_geometry_from_draw)
+        self.select_features_tool.geometryEnded.connect(self.set_geometry_from_draw)
 
         self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
         self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)
         self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
-
-        self.bdot10k_dockwidget.fromLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
-        self.bdot10k_dockwidget.fromLayerComboBox.hide()
-        self.bdot10k_dockwidget.fromLayerLabel.hide()
-        self.bdot10k_dockwidget.fromLayerComboBox.layerChanged.connect(self.set_download_button_state)
 
         self.bdot10k_dockwidget.classBrowseButton.clicked.connect(self.browse_filepath_for_class_bdot10k)
         self.bdot10k_dockwidget.classDownloadButton.clicked.connect(self.download_class_bdot10k)
@@ -162,33 +155,7 @@ class BDOT10kDownloader:
                     "Pomyślnie pobrano dane BDOT10k", level=Qgis.Info))
 
 ### pobieranie dla zasięgu
-    def change_selection_method(self):
 
-        self.drawpolygon.deactivate()
-        self.drawrectangle.deactivate()
-
-        if self.bdot10k_dockwidget.methodComboBox.currentText() == 'Wskaż obiekty':
-            self.bdot10k_dockwidget.fromLayerLabel.show()
-            self.bdot10k_dockwidget.fromLayerComboBox.show()
-            self.bdot10k_dockwidget.drawBoundsButton.hide()
-            self.set_download_button_state()
-
-        else:
-            self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
-            self.bdot10k_dockwidget.drawBoundsButton.clicked.disconnect()
-            self.bdot10k_dockwidget.drawBoundsButton.show()
-
-            if self.bdot10k_dockwidget.methodComboBox.currentText() == 'Swobodnie':
-                self.drawpolygon.setButton(self.bdot10k_dockwidget.drawBoundsButton)
-                self.bdot10k_dockwidget.drawBoundsButton.clicked.connect(lambda: self.activateTool(self.drawpolygon))
-
-            elif self.bdot10k_dockwidget.methodComboBox.currentText() == 'Prostokątem':
-                self.drawrectangle.setButton(self.bdot10k_dockwidget.drawBoundsButton)
-                self.bdot10k_dockwidget.drawBoundsButton.clicked.connect(lambda: self.activateTool(self.drawrectangle))
-
-            self.bdot10k_dockwidget.fromLayerLabel.hide()
-            self.bdot10k_dockwidget.fromLayerComboBox.hide()
-    
     def set_download_button_state(self):
         if self.current_layer:
             self.current_layer.selectionChanged.disconnect(self.on_selection_change)
@@ -201,28 +168,28 @@ class BDOT10kDownloader:
             self.current_layer = None
             self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
-    def on_selection_change(self, selected_feature_count: Union[int, List[int]]):
-        selected_feature_count = len(selected_feature_count) if isinstance(selected_feature_count, list) else selected_feature_count
-        self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(selected_feature_count > 0)
-
-    def set_geometry_from_draw(self, geom: QgsGeometry):
+    def set_geometry_from_draw(self, area: float, geom: QgsGeometry):
         self.selected_geom = geom
         if not self.selected_geom.isNull():
             self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
 
+    def on_select_method_changed(self):
+        self.select_features_rectangle_tool.reset_geometry()
+        self.select_features_freehand_tool.reset_geometry()
+        self.select_features_tool.reset_geometry()
+        self.selected_geom = None
+
     def set_geometry_for_selection(self):
-        selected_layer = self.bdot10k_dockwidget.fromLayerComboBox.currentLayer()
+        selected_layer = self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.currentLayer()
         if selected_layer:
             selected_features = selected_layer.getSelectedFeatures()
             geom = QgsGeometry.unaryUnion([f.geometry() for f in selected_features])
             crs_src = selected_layer.crs()
             self.selected_geom  = transform_geometry_to_2180(geom, crs_src)
 
-    def activateTool(self, tool: QgsMapTool):
-        iface.mapCanvas().setMapTool(tool)
 
     def download_bdot10k_from_databox(self):
-        if self.bdot10k_dockwidget.methodComboBox.currentText() == 'Wskaż obiekty':
+        if self.bdot10k_dockwidget.selectAreaWidget.selectMethodCb.currentText() == 'Wskaż obiekty':
             self.set_geometry_for_selection()
         else:
             if self.selected_geom.isMultipart():

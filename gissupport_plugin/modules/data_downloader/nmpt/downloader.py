@@ -51,13 +51,13 @@ class NMPTdownloader:
     def init_nmpt_dockwidget(self):
 
         self.nmpt_dockwidget = NMPTdockWidget()
-        self.nmpt_dockwidget.projectLayerList.setFilters(QgsMapLayerProxyModel.PointLayer |
-                                                         QgsMapLayerProxyModel.LineLayer |
-                                                         QgsMapLayerProxyModel.PolygonLayer)
+        # self.nmpt_dockwidget.projectLayerList.setFilters(QgsMapLayerProxyModel.PointLayer |
+        #                                                  QgsMapLayerProxyModel.LineLayer |
+        #                                                  QgsMapLayerProxyModel.PolygonLayer)
 
-        self.nmpt_dockwidget.selectedOnlyCheckBox.setEnabled(False)
-        self.nmpt_dockwidget.selectedOnlyCheckBox.stateChanged.connect(
-                                            self.get_bbox_and_area_for_selected)
+        # self.nmpt_dockwidget.selectedOnlyCheckBox.setEnabled(False)
+        # self.nmpt_dockwidget.selectedOnlyCheckBox.stateChanged.connect(
+        #                                     self.get_bbox_and_area_for_selected)
 
         self.nmpt_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_nmpt)
 
@@ -73,22 +73,27 @@ class NMPTdownloader:
         self.nmpt_dockwidget.evrfRadioButton.toggled.connect(lambda: self.data_radiobutton_state(
             self.nmpt_dockwidget.evrfRadioButton))
 
-        self.selectRectangleTool = SelectRectangleTool(self.nmpt_dockwidget)
-        self.selectRectangleTool.setButton(self.nmpt_dockwidget.selectAreaButton)
-        self.nmpt_dockwidget.selectAreaButton.clicked.connect(lambda: self.activateTool(
-                                                                self.selectRectangleTool))
-        self.selectRectangleTool.geometryChanged.connect(self.area_changed)
-        self.selectRectangleTool.geometryEnded.connect(self.area_ended)
+        self.select_features_rectangle_tool = self.nmpt_dockwidget.selectAreaWidget.select_features_rectangle_tool
+        self.select_features_freehand_tool = self.nmpt_dockwidget.selectAreaWidget.select_features_freehand_tool
+        self.select_features_tool = self.nmpt_dockwidget.selectAreaWidget.select_features_tool
+
+        # self.selectRectangleTool = SelectRectangleTool(self.nmpt_dockwidget)
+        # self.selectRectangleTool.setButton(self.nmpt_dockwidget.selectAreaButton)
+        # self.nmpt_dockwidget.selectAreaButton.clicked.connect(lambda: self.activateTool(
+        #                                                         self.selectRectangleTool))
+        self.select_features_rectangle_tool.geometryChanged.connect(self.area_changed)
+        self.select_features_rectangle_tool.geometryEnded.connect(self.area_ended)
+        self.select_features_freehand_tool.geometryChanged.connect(self.area_changed)
+        self.select_features_freehand_tool.geometryEnded.connect(self.area_ended)
+        self.select_features_tool.geometryChanged.connect(self.area_changed)
+        self.select_features_tool.geometryEnded.connect(self.area_ended)
+
         self.nmpt_dockwidget.selectedAreaReset.clicked.connect(self.area_info_reset)
         self.nmpt_dockwidget.maxAreaReachedLabel.setVisible(False)
         self.nmpt_dockwidget.areaWidget.setHidden(True)
 
         self.nmpt_dockwidget.downloadButton.clicked.connect(self.download_nmpt)
         self.nmpt_dockwidget.downloadButton.setEnabled(False)
-
-        self.nmpt_dockwidget.projectLayerList.layerChanged.connect(self.on_layer_changed)
-        self.nmpt_dockwidget.projectLayerList.setAllowEmptyLayer(True)
-        self.nmpt_dockwidget.projectLayerList.setCurrentIndex(0)
 
     def change_nmpt_dockwidget_visibility(self):
 

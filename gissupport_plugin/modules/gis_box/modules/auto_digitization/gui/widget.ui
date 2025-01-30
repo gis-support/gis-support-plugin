@@ -93,7 +93,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout"/>
+     <layout class="QVBoxLayout" name="widgetLayout"/>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">

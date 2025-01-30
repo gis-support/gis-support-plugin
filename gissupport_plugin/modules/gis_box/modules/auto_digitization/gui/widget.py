@@ -37,7 +37,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.registerTools()
         self.menageSignals()
 
-        self.verticalLayout.addWidget(self.selectAreaWidget)
+        self.widgetLayout.addWidget(self.selectAreaWidget)
 
         self.task = None
         self.area = 0

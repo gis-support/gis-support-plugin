@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>438</width>
+    <width>449</width>
     <height>672</height>
    </rect>
   </property>
@@ -20,6 +20,7 @@
       <property name="font">
        <font>
         <pointsize>8</pointsize>
+        <weight>50</weight>
         <italic>false</italic>
         <bold>false</bold>
         <kerning>true</kerning>
@@ -40,6 +41,7 @@
      <widget class="QLabel" name="infoLabel">
       <property name="font">
        <font>
+        <weight>75</weight>
         <bold>true</bold>
        </font>
       </property>
@@ -177,28 +179,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QPushButton" name="selectAreaButton">
-         <property name="text">
-          <string>Wskaż obszar</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="projectLayerLabel">
-         <property name="text">
-          <string>lub warstwę z projektu:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QgsMapLayerComboBox" name="projectLayerList"/>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="selectedOnlyCheckBox">
-         <property name="text">
-          <string>Tylko zaznaczone obiekty [0]</string>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout" name="widgetLayout"/>
        </item>
        <item>
         <widget class="QLabel" name="maxAreaReachedLabel">
@@ -317,13 +298,6 @@
    </layout>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QgsMapLayerComboBox</class>
-   <extends>QComboBox</extends>
-   <header>qgsmaplayercombobox.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

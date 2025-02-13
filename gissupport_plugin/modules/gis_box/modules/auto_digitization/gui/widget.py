@@ -60,6 +60,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.areaReset.clicked.connect(self.areaInfoReset)
 
         self.selectAreaWidget.methodChanged.connect(self.on_select_method_changed)
+        self.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_changed)
 
     def registerTools(self):
         """ Zarejestrowanie narzędzi jak narzędzi mapy QGIS """
@@ -104,6 +105,12 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.areaWidget.setHidden(True)
         self.areaInfo.setText("Powierzchnia: {:.2f} ha".format(area))
         self.areaWidget.setHidden(False)
+
+        if self.selectAreaWidget.tool == self.select_features_tool:
+            if self.area > 100:
+                self.btnExecute.setEnabled(False)
+            else:
+                self.btnExecute.setEnabled(True)
 
     def areaInfoReset(self):
         self.lbWarning.setVisible(False)
@@ -194,6 +201,12 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
     def on_select_method_changed(self):
         self.areaInfoReset()
+        if self.selectAreaWidget.tool == self.select_features_tool:
+            self.select_features_tool.activate()
+
+    def on_layer_changed(self):
+        if self.selectAreaWidget.tool == self.select_features_tool:
+            self.select_features_tool.activate()
 
     def select_features(self):
         iface.mapCanvas().setMapTool(self.select_features_tool)

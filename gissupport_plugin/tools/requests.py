@@ -8,6 +8,8 @@ from qgis.PyQt.QtCore import QObject, pyqtSignal
 
 from urllib.parse import urlencode
 
+from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+
 
 class NetworkHandler(QObject):
     downloadProgress: pyqtSignal = pyqtSignal(int)
@@ -57,15 +59,18 @@ class NetworkHandler(QObject):
 
         return self.result
 
-    def post(self, url, reply_only: bool = False, params: dict = None, data: dict = None, srid: str = None, databox: bool = False) -> Union[dict, QNetworkReply]:
+    def post(self, url, reply_only: bool = False, params: dict = None, data: dict = None, srid: str = None, databox: bool = False, token: bool = False) -> Union[dict, QNetworkReply]:
         """Wykonuje żądanie POST do podanego URL"""
         self.result = None
         self.error_occurred = False
 
-        def try_request(url, body, srid: str = None, retry_callback=None):
+        def try_request(url, body, srid: str = None, retry_callback=None, token: bool = False):
             request = QNetworkRequest(QUrl(url))
             if srid:
                 request.setRawHeader(b'X-Response-SRID', srid.encode())
+            if token:
+                request.setRawHeader(b'X-User-Agent', b'qgis_gs')
+                request.setRawHeader(b'X-Access-Token', GISBOX_CONNECTION.token.encode())
             if databox:
                 request.setHeader(QNetworkRequest.ContentTypeHeader, "application/json")
             reply = self.network_manager.post(request, body)
@@ -81,7 +86,7 @@ class NetworkHandler(QObject):
         else:
             data = b''
 
-        reply = try_request(url, data, srid)
+        reply = try_request(url, data, srid, token=token)
 
         app = QCoreApplication.instance()
         while self.result is None and not reply.isFinished():

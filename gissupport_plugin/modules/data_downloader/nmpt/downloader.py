@@ -214,7 +214,10 @@ class NMPTdownloader:
         self.area_under_limit = True
         self.bbox = None
         self.nmpt_dockwidget.selectedAreaLabel.setText("Powierzchnia: 0 ha")
-        self.selectRectangleTool.reset()
+
+        self.select_features_rectangle_tool.reset()
+        self.select_features_freehand_tool.reset()
+        self.select_features_tool.reset()
     
 
     def browse_filepath_for_nmpt(self):

@@ -1,6 +1,7 @@
 from typing import List, Union
 from os.path import expanduser
 
+from qgis._core import QgsCoordinateReferenceSystem
 from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsMapLayerProxyModel, QgsGeometry, QgsWkbTypes
 from qgis.gui import QgsMessageBarItem, QgsMapTool
 from qgis.utils import iface
@@ -60,6 +61,8 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.classBrowseButton.clicked.connect(self.browse_filepath_for_class_bdot10k)
         self.bdot10k_dockwidget.classDownloadButton.clicked.connect(self.download_class_bdot10k)
         self.bdot10k_dockwidget.classComboBox.currentTextChanged.connect(self.get_class)
+
+        self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_changed)
 
 ### pobieranie dla wybranego powiatu
     def browse_filepath_for_bdot10k(self):
@@ -179,13 +182,24 @@ class BDOT10kDownloader:
         self.select_features_tool.reset_geometry()
         self.selected_geom = None
 
+    def on_layer_changed(self):
+        self.set_geometry_for_selection()
+
     def set_geometry_for_selection(self):
         selected_layer = self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.currentLayer()
+
         if selected_layer:
-            selected_features = selected_layer.getSelectedFeatures()
+            if self.bdot10k_dockwidget.selectAreaWidget.selectLayerFeatsCb.isChecked():
+                selected_features = selected_layer.getSelectedFeatures()
+            else:
+                selected_features = selected_layer.getFeatures()
+
             geom = QgsGeometry.unaryUnion([f.geometry() for f in selected_features])
             crs_src = selected_layer.crs()
-            self.selected_geom  = transform_geometry_to_2180(geom, crs_src)
+            if crs_src != QgsCoordinateReferenceSystem.fromEpsgId(2180):
+                self.selected_geom  = transform_geometry_to_2180(geom, crs_src)
+            else:
+                self.selected_geom = geom
 
 
     def download_bdot10k_from_databox(self):

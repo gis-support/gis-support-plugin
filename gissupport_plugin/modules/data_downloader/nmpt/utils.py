@@ -10,6 +10,7 @@ class NMPTdownloadTask(QgsTask):
     
     message_group_name = "GIS Support - Numeryczny Model (Pokrycia) Terenu"
     download_filepath = pyqtSignal(list)
+    task_failed = pyqtSignal(str)
 
     def __init__(
             self,
@@ -61,6 +62,10 @@ class NMPTdownloadTask(QgsTask):
     def run(self):
         handler = NetworkHandler()
         response = handler.get(self.url, True)
+
+        if response.error() != 0:
+            self.task_failed.emit("Błąd połączenia z Geoportalem")
+            return False
 
         data = BytesIO(response.readAll().data())
         base_filepath = os.path.join(self.filepath, f"{self.data_format}{self.file_format}")

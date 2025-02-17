@@ -239,6 +239,7 @@ class NMPTdownloader:
             self.bbox,
             self.nmpt_filepath)
         self.task.download_filepath.connect(self.load_nmpt_to_project)
+        self.task.task_failed.connect(self.handle_task_error)
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
 
@@ -249,3 +250,6 @@ class NMPTdownloader:
         QgsProject.instance().addMapLayer(layer)
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
                     "Pomyślnie pobrano NM(P)T", level=Qgis.Info))
+
+    def handle_task_error(self, error_message):
+        iface.messageBar().pushMessage("Wtyczka GIS Support", error_message, level=Qgis.Critical)

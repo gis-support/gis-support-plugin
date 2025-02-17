@@ -224,8 +224,12 @@ class BDOT10kDownloader:
         layer_name = self.databox_layers.get(layer_name)
         self.task = BDOT10kDataBoxDownloadTask("Pobieranie danych BDOT10k", layer_name, self.selected_geom)
         self.task.downloaded_data.connect(self.add_features_to_map)
+        self.task.downloaded_details.connect(self.show_bdot10k_databox_limit_exceeded_message)
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
+
+    def show_bdot10k_databox_limit_exceeded_message(self, message: str):
+        iface.messageBar().pushMessage(message, level=Qgis.Warning)
     
     def add_features_to_map(self, geojson: str):
         layer_name = self.bdot10k_dockwidget.layerComboBox.currentText()

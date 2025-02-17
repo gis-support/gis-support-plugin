@@ -64,7 +64,7 @@ class NMPTdownloadTask(QgsTask):
         response = handler.get(self.url, True)
 
         if response.error() != 0:
-            self.task_failed.emit("Błąd połączenia z Geoportalem")
+            self.task_failed.emit("Błąd pobierania danych. Sprawdź swoje połączenie z Internetem oraz czy usługa Geoportal.gov.pl działa.")
             return False
 
         data = BytesIO(response.readAll().data())

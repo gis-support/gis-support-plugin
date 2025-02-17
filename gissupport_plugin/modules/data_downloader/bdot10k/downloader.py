@@ -10,8 +10,8 @@ from qgis.PyQt.QtWidgets import QFileDialog
 from gissupport_plugin.modules.data_downloader.bdot10k.bdot10k_dockwidget import BDOT10kDockWidget
 from gissupport_plugin.modules.data_downloader.bdot10k.utils import BDOT10kDownloadTask, DrawPolygon, \
     get_databox_layers, BDOT10kDataBoxDownloadTask, convert_multi_polygon_to_polygon, transform_geometry_to_2180, \
-    BDOT10kClassDownloadTask
-from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchTeryt
+    BDOT10kClassDownloadTask, DataboxResponseException
+from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchTeryt, RequestException
 from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool
 
 
@@ -36,37 +36,50 @@ class BDOT10kDownloader:
 
         self.bdot10k_dockwidget = BDOT10kDockWidget()
 
-        self.fill_woj_combobox()
-        self.databox_layers = get_databox_layers()
-        self.fill_class_combobox()
+        try:
+            self.fill_woj_combobox()
+        except RequestException as e:
+            self.bdot10k_dockwidget.powiat.setEnabled(False)
+            iface.messageBar().pushMessage("Wtyczka GIS Support", f"Błąd połączenia z ULDK: {e}",
+                                           level=Qgis.Critical)
+        else:
+            self.bdot10k_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_bdot10k)
+            self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
+            self.bdot10k_dockwidget.powComboBox.currentTextChanged.connect(self.get_teryt_pow)
+            self.bdot10k_dockwidget.downloadButton.clicked.connect(self.download_bdot10k)
+        
+        try:
+            self.databox_layers = get_databox_layers()
+        except DataboxResponseException as e:
+            self.bdot10k_dockwidget.bounds.setEnabled(False)
+            self.bdot10k_dockwidget.classTab.setEnabled(False)
+            iface.messageBar().pushMessage("Wtyczka GIS Support", f"Błąd połączenia z Databox: {e}",
+                                           level=Qgis.Critical)
+        else:
+            self.fill_class_combobox()
 
-        self.bdot10k_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_bdot10k)
-        self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
-        self.bdot10k_dockwidget.powComboBox.currentTextChanged.connect(self.get_teryt_pow)
-        self.bdot10k_dockwidget.downloadButton.clicked.connect(self.download_bdot10k)
+            self.bdot10k_dockwidget.methodComboBox.addItems(['Prostokątem', 'Swobodnie', 'Wskaż obiekty'])
+            self.bdot10k_dockwidget.methodComboBox.currentTextChanged.connect(self.change_selection_method)
 
-        self.bdot10k_dockwidget.methodComboBox.addItems(['Prostokątem', 'Swobodnie', 'Wskaż obiekty'])
-        self.bdot10k_dockwidget.methodComboBox.currentTextChanged.connect(self.change_selection_method)
+            self.drawpolygon = DrawPolygon(self.bdot10k_dockwidget)
+            self.drawrectangle = SelectRectangleTool(self.bdot10k_dockwidget)
+            self.drawrectangle.setButton(self.bdot10k_dockwidget.drawBoundsButton)
+            self.bdot10k_dockwidget.drawBoundsButton.clicked.connect(lambda: self.activateTool(self.drawrectangle))
+            self.drawpolygon.selectionDone.connect(self.set_geometry_from_draw)
+            self.drawrectangle.geometryEnded.connect(lambda area, geometry: self.set_geometry_from_draw(geometry))
 
-        self.drawpolygon = DrawPolygon(self.bdot10k_dockwidget)
-        self.drawrectangle = SelectRectangleTool(self.bdot10k_dockwidget)
-        self.drawrectangle.setButton(self.bdot10k_dockwidget.drawBoundsButton)
-        self.bdot10k_dockwidget.drawBoundsButton.clicked.connect(lambda: self.activateTool(self.drawrectangle))
-        self.drawpolygon.selectionDone.connect(self.set_geometry_from_draw)
-        self.drawrectangle.geometryEnded.connect(lambda area, geometry: self.set_geometry_from_draw(geometry))
+            self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
+            self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)
+            self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
-        self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
-        self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)
-        self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
+            self.bdot10k_dockwidget.fromLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
+            self.bdot10k_dockwidget.fromLayerComboBox.hide()
+            self.bdot10k_dockwidget.fromLayerLabel.hide()
+            self.bdot10k_dockwidget.fromLayerComboBox.layerChanged.connect(self.set_download_button_state)
 
-        self.bdot10k_dockwidget.fromLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
-        self.bdot10k_dockwidget.fromLayerComboBox.hide()
-        self.bdot10k_dockwidget.fromLayerLabel.hide()
-        self.bdot10k_dockwidget.fromLayerComboBox.layerChanged.connect(self.set_download_button_state)
-
-        self.bdot10k_dockwidget.classBrowseButton.clicked.connect(self.browse_filepath_for_class_bdot10k)
-        self.bdot10k_dockwidget.classDownloadButton.clicked.connect(self.download_class_bdot10k)
-        self.bdot10k_dockwidget.classComboBox.currentTextChanged.connect(self.get_class)
+            self.bdot10k_dockwidget.classBrowseButton.clicked.connect(self.browse_filepath_for_class_bdot10k)
+            self.bdot10k_dockwidget.classDownloadButton.clicked.connect(self.download_class_bdot10k)
+            self.bdot10k_dockwidget.classComboBox.currentTextChanged.connect(self.get_class)
 
 ### pobieranie dla wybranego powiatu
     def browse_filepath_for_bdot10k(self):

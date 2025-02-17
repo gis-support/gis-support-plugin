@@ -106,6 +106,8 @@ def get_databox_layers():
     handler = NetworkHandler()
     url = 'https://api-oze.gisbox.pl/layers'
     response = handler.get(url)
+    if response.get("data") is None:
+        raise DataboxResponseException("Brak odpowiedzi")
     layer_list = json.loads(response.get("data"))
     layer_list = {v: k for k, v in layer_list.items()}
     return layer_list
@@ -174,3 +176,6 @@ class DrawPolygon(QgsMapTool):
         self.drawing = False
         QgsMapTool.deactivate(self)
         self.canvas.unsetMapTool(self)
+
+class DataboxResponseException(Exception):
+    pass

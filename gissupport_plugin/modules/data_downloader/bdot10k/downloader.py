@@ -42,17 +42,6 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
         self.bdot10k_dockwidget.powComboBox.currentTextChanged.connect(self.get_teryt_pow)
         self.bdot10k_dockwidget.downloadButton.clicked.connect(self.download_bdot10k)
-    
-        try:
-            self.databox_layers = get_databox_layers()
-        except DataboxResponseException as e:
-            self.bdot10k_dockwidget.bounds.setEnabled(False)
-            self.bdot10k_dockwidget.classTab.setEnabled(False)
-            iface.messageBar().pushMessage("Wtyczka GIS Support", f"Błąd połączenia z Databox: {e}",
-                                           level=Qgis.Critical)
-            return
-
-        self.fill_class_combobox()
 
         self.bdot10k_dockwidget.methodComboBox.addItems(['Prostokątem', 'Swobodnie', 'Wskaż obiekty'])
         self.bdot10k_dockwidget.methodComboBox.currentTextChanged.connect(self.change_selection_method)
@@ -64,7 +53,6 @@ class BDOT10kDownloader:
         self.drawpolygon.selectionDone.connect(self.set_geometry_from_draw)
         self.drawrectangle.geometryEnded.connect(lambda area, geometry: self.set_geometry_from_draw(geometry))
 
-        self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
         self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)
         self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
@@ -76,6 +64,19 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.classBrowseButton.clicked.connect(self.browse_filepath_for_class_bdot10k)
         self.bdot10k_dockwidget.classDownloadButton.clicked.connect(self.download_class_bdot10k)
         self.bdot10k_dockwidget.classComboBox.currentTextChanged.connect(self.get_class)
+
+
+        try:
+            self.databox_layers = get_databox_layers()
+        except DataboxResponseException as e:
+            self.bdot10k_dockwidget.bounds.setEnabled(False)
+            self.bdot10k_dockwidget.classTab.setEnabled(False)
+            iface.messageBar().pushMessage("Wtyczka GIS Support", f"Błąd połączenia z Databox: {e}",
+                                           level=Qgis.Critical)
+            return
+
+        self.fill_class_combobox()
+        self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
 
 ### pobieranie dla wybranego powiatu
     def browse_filepath_for_bdot10k(self):
@@ -146,6 +147,7 @@ class BDOT10kDownloader:
                                         self.teryt_pow, bdot10k_filepath)
         self.task.progress_updated.connect(self.update_bdok10k_download_progress)
         self.task.download_finished.connect(self.show_bdot10k_success_message)
+        self.task.task_failed.connect(self.handle_task_error)
 
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
@@ -331,3 +333,6 @@ class BDOT10kDownloader:
         """
         current_class = self.bdot10k_dockwidget.classComboBox.currentData()
         self.bdot10k_class = str(current_class).upper()
+
+    def handle_task_error(self, error_message):
+        iface.messageBar().pushMessage("Wtyczka GIS Support", error_message, level=Qgis.Critical)

@@ -134,7 +134,10 @@ class LayerImportWorker(QObject):
                 continue_search = True
 
                 while points != []:
-                    saved_features = [self._process_feature(point) for point in points]
+                    saved_features = []
+                    for point_number, point in enumerate(points, start=1):
+                        last_point = True if point_number == len(points) else False
+                        saved_features.append(self._process_feature(point, last_feature=last_point))
                     if any(saved_features):
                         points = self._feature_to_points(f, source_geom_type, additional_attributes)
                     else:
@@ -156,7 +159,7 @@ class LayerImportWorker(QObject):
         self.layer_found.commitChanges()
         self.layer_not_found.commitChanges()
 
-    def _process_feature(self, source_feature, made_progress=False):
+    def _process_feature(self, source_feature, made_progress=False, last_feature=False):
 
         if QThread.currentThread().isInterruptionRequested():
             self.__commit()
@@ -197,8 +200,10 @@ class LayerImportWorker(QObject):
             if geometry_wkt not in self.not_found_geometries:
                 not_found_feature = self.__make_not_found_feature(geometry, e)
                 self.layer_not_found.dataProvider().addFeature(not_found_feature)
-                self.progressed.emit(self.layer_found, self.layer_not_found, False, 0, saved, made_progress)
                 self.not_found_geometries.append(geometry_wkt)
+                if last_feature:
+                    self.progressed.emit(self.layer_found, self.layer_not_found, False, 0, saved, made_progress)
+
 
         self.parcels_geometry.addPartGeometry(QgsGeometry.fromMultiPolygonXY(found_parcels_geometries))
         self.__commit()

@@ -11,15 +11,13 @@ from gissupport_plugin.modules.data_downloader.bdot10k.bdot10k_dockwidget import
 from gissupport_plugin.modules.data_downloader.bdot10k.utils import BDOT10kDownloadTask, DrawPolygon, \
     get_databox_layers, BDOT10kDataBoxDownloadTask, convert_multi_polygon_to_polygon, transform_geometry_to_2180, \
     BDOT10kClassDownloadTask, DataboxResponseException
-from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchTeryt, RequestException
 from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool
-
+from gissupport_plugin.tools.teryt import Wojewodztwa, POWIATY
 
 class BDOT10kDownloader:
 
     def __init__(self):
         self.task = None
-        self.bdot10k_filepath = expanduser("~")
         self.bdot10k_class_filepath = expanduser("~")
         self.teryt_woj = ""
         self.teryt_pow = ""
@@ -36,18 +34,15 @@ class BDOT10kDownloader:
 
         self.bdot10k_dockwidget = BDOT10kDockWidget()
 
-        try:
-            self.fill_woj_combobox()
-        except RequestException as e:
-            self.bdot10k_dockwidget.powiat.setEnabled(False)
-            iface.messageBar().pushMessage("Wtyczka GIS Support", f"Błąd połączenia z ULDK: {e}",
-                                           level=Qgis.Critical)
-        else:
-            self.bdot10k_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_bdot10k)
-            self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
-            self.bdot10k_dockwidget.powComboBox.currentTextChanged.connect(self.get_teryt_pow)
-            self.bdot10k_dockwidget.downloadButton.clicked.connect(self.download_bdot10k)
-        
+
+        self.fill_woj_combobox()
+        self.fill_pow_combobox()
+    
+        self.bdot10k_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_bdot10k)
+        self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
+        self.bdot10k_dockwidget.powComboBox.currentTextChanged.connect(self.get_teryt_pow)
+        self.bdot10k_dockwidget.downloadButton.clicked.connect(self.download_bdot10k)
+    
         try:
             self.databox_layers = get_databox_layers()
         except DataboxResponseException as e:
@@ -55,41 +50,41 @@ class BDOT10kDownloader:
             self.bdot10k_dockwidget.classTab.setEnabled(False)
             iface.messageBar().pushMessage("Wtyczka GIS Support", f"Błąd połączenia z Databox: {e}",
                                            level=Qgis.Critical)
-        else:
-            self.fill_class_combobox()
+            return
 
-            self.bdot10k_dockwidget.methodComboBox.addItems(['Prostokątem', 'Swobodnie', 'Wskaż obiekty'])
-            self.bdot10k_dockwidget.methodComboBox.currentTextChanged.connect(self.change_selection_method)
+        self.fill_class_combobox()
 
-            self.drawpolygon = DrawPolygon(self.bdot10k_dockwidget)
-            self.drawrectangle = SelectRectangleTool(self.bdot10k_dockwidget)
-            self.drawrectangle.setButton(self.bdot10k_dockwidget.drawBoundsButton)
-            self.bdot10k_dockwidget.drawBoundsButton.clicked.connect(lambda: self.activateTool(self.drawrectangle))
-            self.drawpolygon.selectionDone.connect(self.set_geometry_from_draw)
-            self.drawrectangle.geometryEnded.connect(lambda area, geometry: self.set_geometry_from_draw(geometry))
+        self.bdot10k_dockwidget.methodComboBox.addItems(['Prostokątem', 'Swobodnie', 'Wskaż obiekty'])
+        self.bdot10k_dockwidget.methodComboBox.currentTextChanged.connect(self.change_selection_method)
 
-            self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
-            self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)
-            self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
+        self.drawpolygon = DrawPolygon(self.bdot10k_dockwidget)
+        self.drawrectangle = SelectRectangleTool(self.bdot10k_dockwidget)
+        self.drawrectangle.setButton(self.bdot10k_dockwidget.drawBoundsButton)
+        self.bdot10k_dockwidget.drawBoundsButton.clicked.connect(lambda: self.activateTool(self.drawrectangle))
+        self.drawpolygon.selectionDone.connect(self.set_geometry_from_draw)
+        self.drawrectangle.geometryEnded.connect(lambda area, geometry: self.set_geometry_from_draw(geometry))
 
-            self.bdot10k_dockwidget.fromLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
-            self.bdot10k_dockwidget.fromLayerComboBox.hide()
-            self.bdot10k_dockwidget.fromLayerLabel.hide()
-            self.bdot10k_dockwidget.fromLayerComboBox.layerChanged.connect(self.set_download_button_state)
+        self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
+        self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)
+        self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
-            self.bdot10k_dockwidget.classBrowseButton.clicked.connect(self.browse_filepath_for_class_bdot10k)
-            self.bdot10k_dockwidget.classDownloadButton.clicked.connect(self.download_class_bdot10k)
-            self.bdot10k_dockwidget.classComboBox.currentTextChanged.connect(self.get_class)
+        self.bdot10k_dockwidget.fromLayerComboBox.setFilters(QgsMapLayerProxyModel.PolygonLayer)
+        self.bdot10k_dockwidget.fromLayerComboBox.hide()
+        self.bdot10k_dockwidget.fromLayerLabel.hide()
+        self.bdot10k_dockwidget.fromLayerComboBox.layerChanged.connect(self.set_download_button_state)
+
+        self.bdot10k_dockwidget.classBrowseButton.clicked.connect(self.browse_filepath_for_class_bdot10k)
+        self.bdot10k_dockwidget.classDownloadButton.clicked.connect(self.download_class_bdot10k)
+        self.bdot10k_dockwidget.classComboBox.currentTextChanged.connect(self.get_class)
 
 ### pobieranie dla wybranego powiatu
     def browse_filepath_for_bdot10k(self):
         """
         Uruchamia okno z wyborem miejsca zapisu plików BDOT10k i zapisuje ścieżkę.
         """
-        self.bdot10k_filepath = QFileDialog.getExistingDirectory(self.bdot10k_dockwidget,
-                                                 'Wybierz miejsce zapisu plików BDOT10k',
-                                                 expanduser("~"))
-        self.bdot10k_dockwidget.filepathLine.setText(self.bdot10k_filepath)
+        bdot10k_filepath = QFileDialog.getExistingDirectory(self.bdot10k_dockwidget,
+                                                 'Wybierz miejsce zapisu plików BDOT10k')
+        self.bdot10k_dockwidget.filepathLine.setText(bdot10k_filepath)
 
     def change_bdot10k_dockwidget_visibility(self):
         """
@@ -106,12 +101,11 @@ class BDOT10kDownloader:
         """
         Uzupełnia combobox z województwami. Wywoływane raz, przy starcie pluginu.
         """
-        wojewodztwa = self.get_administratives_bdot10k("wojewodztwo")
+        wojewodztwa = [woj.value for woj in Wojewodztwa]
         self.bdot10k_dockwidget.wojComboBox.clear()
-        self.bdot10k_dockwidget.wojComboBox.addItem("")
         for item in wojewodztwa:
-            display_name = f'{item[0]} | {item[1]}'
-            self.bdot10k_dockwidget.wojComboBox.addItem(display_name, item[1])
+            self.bdot10k_dockwidget.wojComboBox.addItem(item)
+        self.teryt_woj = wojewodztwa[0].split("|")[1].strip()
 
     def fill_pow_combobox(self):
         """
@@ -120,22 +114,11 @@ class BDOT10kDownloader:
         """
         current_woj = self.bdot10k_dockwidget.wojComboBox.currentText()
         self.teryt_woj = current_woj.split("|")[1].strip() if current_woj else ""
-        powiaty = self.get_administratives_bdot10k("powiat", self.teryt_woj)
+        powiaty = POWIATY.get(Wojewodztwa(current_woj), [])
         self.bdot10k_dockwidget.powComboBox.clear()
-        self.bdot10k_dockwidget.powComboBox.addItem("")
         for powiat in powiaty:
-            display_name = f'{powiat[0]} | {powiat[1]}'
-            self.bdot10k_dockwidget.powComboBox.addItem(display_name, powiat[1])
-
-    def get_administratives_bdot10k(self, level: str, teryt: str = ""):
-        """
-        Pobiera dane (województwa, powiaty, gminy) dla comboboxów.
-        """
-        search = ULDKSearchTeryt(level, ("nazwa", "teryt"))
-        result = search.search(teryt)
-        result = [r.split("|") for r in result]
-
-        return result
+            self.bdot10k_dockwidget.powComboBox.addItem(powiat)
+        self.teryt_pow = powiaty[0].split("|")[1].strip()
 
     def get_teryt_pow(self):
         """
@@ -153,8 +136,14 @@ class BDOT10kDownloader:
                                            level=Qgis.Warning)
             return
 
+        bdot10k_filepath = self.bdot10k_dockwidget.filepathLine.text()
+        if not bdot10k_filepath or bdot10k_filepath == "":
+            iface.messageBar().pushMessage("Przed pobraniem należy wybrać ścieżkę zapisu danych",
+                                           level=Qgis.Warning)
+            return
+
         self.task = BDOT10kDownloadTask("Pobieranie danych BDOT10k", self.teryt_woj,
-                                        self.teryt_pow, self.bdot10k_filepath)
+                                        self.teryt_pow, bdot10k_filepath)
         self.task.progress_updated.connect(self.update_bdok10k_download_progress)
         self.task.download_finished.connect(self.show_bdot10k_success_message)
 
@@ -245,8 +234,12 @@ class BDOT10kDownloader:
         layer_name = self.databox_layers.get(layer_name)
         self.task = BDOT10kDataBoxDownloadTask("Pobieranie danych BDOT10k", layer_name, self.selected_geom)
         self.task.downloaded_data.connect(self.add_features_to_map)
+        self.task.downloaded_details.connect(self.show_bdot10k_databox_limit_exceeded_message)
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
+
+    def show_bdot10k_databox_limit_exceeded_message(self, message: str):
+        iface.messageBar().pushMessage(message, level=Qgis.Warning)
     
     def add_features_to_map(self, geojson: str):
         layer_name = self.bdot10k_dockwidget.layerComboBox.currentText()
@@ -302,7 +295,6 @@ class BDOT10kDownloader:
         """
         classes = self.databox_layers
         self.bdot10k_dockwidget.classComboBox.clear()
-        self.bdot10k_dockwidget.classComboBox.addItem("")
         for item in classes.items():
             display_name = f'{item[0]}'
             self.bdot10k_dockwidget.classComboBox.addItem(display_name, item[1])

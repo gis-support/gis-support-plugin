@@ -17,9 +17,6 @@ class DisconnectedFromGisBox(Exception):
         self.show_qgis_message()
 
     def show_qgis_message(self):
-        """
-        Wyświetla komunikat o błędzie pobierania danych BDOT10k z DataBox.
-        """
         iface.messageBar().pushMessage("Wtyczka GIS Support", self.message, level=Qgis.Warning)
 
 

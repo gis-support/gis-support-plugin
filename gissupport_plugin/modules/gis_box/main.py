@@ -163,6 +163,9 @@ class GISBox(BaseModule, Logger):
 
         else:
             # Rozłączono z serwerem lub błąd połączenia
+
+            GISBOX_CONNECTION.disconnect()
+
             self.gisboxAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/disconnected.png"))
             self.connectAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/connected.svg"))
             self.connectAction.setText('Połącz z GIS.Box')

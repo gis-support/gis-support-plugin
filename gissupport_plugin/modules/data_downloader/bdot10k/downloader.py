@@ -5,12 +5,12 @@ from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsMapLa
 from qgis.gui import QgsMessageBarItem, QgsMapTool
 from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtWidgets import QFileDialog
+from qgis.PyQt.QtWidgets import QFileDialog, QPushButton
 
 from gissupport_plugin.modules.data_downloader.bdot10k.bdot10k_dockwidget import BDOT10kDockWidget
 from gissupport_plugin.modules.data_downloader.bdot10k.utils import BDOT10kDownloadTask, DrawPolygon, \
     get_databox_layers, BDOT10kDataBoxDownloadTask, convert_multi_polygon_to_polygon, transform_geometry_to_2180, \
-    BDOT10kClassDownloadTask, DataboxResponseException
+    BDOT10kClassDownloadTask, DataboxResponseException, check_geoportal_connection, GeoportalResponseException
 from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool
 from gissupport_plugin.tools.teryt import Wojewodztwa, POWIATY
 
@@ -42,6 +42,8 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
         self.bdot10k_dockwidget.powComboBox.currentTextChanged.connect(self.get_teryt_pow)
         self.bdot10k_dockwidget.downloadButton.clicked.connect(self.download_bdot10k)
+        self.bdot10k_dockwidget.downloadButton.setEnabled(False)
+        self.bdot10k_dockwidget.filepathLine.textChanged.connect(lambda text: self.set_powiat_class_button_state(text, self.bdot10k_dockwidget.downloadButton))
 
         self.bdot10k_dockwidget.methodComboBox.addItems(['Prostokątem', 'Swobodnie', 'Wskaż obiekty'])
         self.bdot10k_dockwidget.methodComboBox.currentTextChanged.connect(self.change_selection_method)
@@ -63,8 +65,15 @@ class BDOT10kDownloader:
 
         self.bdot10k_dockwidget.classBrowseButton.clicked.connect(self.browse_filepath_for_class_bdot10k)
         self.bdot10k_dockwidget.classDownloadButton.clicked.connect(self.download_class_bdot10k)
+        self.bdot10k_dockwidget.classDownloadButton.setEnabled(False)
         self.bdot10k_dockwidget.classComboBox.currentTextChanged.connect(self.get_class)
+        self.bdot10k_dockwidget.classFilePathLine.textChanged.connect(lambda text: self.set_powiat_class_button_state(text, self.bdot10k_dockwidget.classDownloadButton))
 
+        try:
+            check_geoportal_connection()
+        except GeoportalResponseException as e:
+            self.bdot10k_dockwidget.powiat.setEnabled(False)
+            iface.messageBar().pushMessage("Wtyczka GIS Support", f"Błąd połączenia z Geoportalem: {e}", level=Qgis.Critical)
 
         try:
             self.databox_layers = get_databox_layers()
@@ -77,6 +86,17 @@ class BDOT10kDownloader:
 
         self.fill_class_combobox()
         self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
+
+    def set_powiat_class_button_state(self, text: str, button: QPushButton):
+        """
+        Zmienia status przycisku w zależności czy podano ścieżkę do zapisu plików.
+        Tylko dla zakładek `Dla powiatu` i `Dla klasy`.
+        """
+        if text and len(text) > 0:
+            button.setEnabled(True)
+        else:
+            button.setEnabled(False)
+
 
 ### pobieranie dla wybranego powiatu
     def browse_filepath_for_bdot10k(self):

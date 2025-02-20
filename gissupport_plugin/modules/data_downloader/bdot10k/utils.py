@@ -123,6 +123,14 @@ def get_databox_layers():
     layer_list = {v: k for k, v in layer_list.items()}
     return layer_list
 
+def check_geoportal_connection() -> bool:
+    handler = NetworkHandler()
+    url = "https://opendata.geoportal.gov.pl"
+    response = handler.get(url, True)
+    if response.error() != 0:
+        raise GeoportalResponseException("Brak odpowiedzi")
+    return True
+
 def convert_multi_polygon_to_polygon(geometry: QgsGeometry):
     # rubber bandy zwracają multipoligony, konieczne jest rozbicie geometrii przed wysłaniem do api oze
     geometry.convertToSingleType()
@@ -189,4 +197,7 @@ class DrawPolygon(QgsMapTool):
         self.canvas.unsetMapTool(self)
 
 class DataboxResponseException(Exception):
+    pass
+
+class GeoportalResponseException(Exception):
     pass

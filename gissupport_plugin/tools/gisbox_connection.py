@@ -4,20 +4,9 @@ from PyQt5.QtCore import QObject, QUrl, pyqtSignal, QSettings
 from PyQt5.QtNetwork import QNetworkRequest
 from qgis.core import QgsNetworkAccessManager, Qgis
 import json
-from qgis.utils import iface
 
 from .logger import Logger
 from ..modules.gis_box.gui.two_fa import TwoFADialog
-
-class DisconnectedFromGisBox(Exception):
-
-    def __init__(self, message: str = 'Rozłączono z GIS.Box'):
-        self.message = message
-        super().__init__(self.message)
-        self.show_qgis_message()
-
-    def show_qgis_message(self):
-        iface.messageBar().pushMessage("Wtyczka GIS Support", self.message, level=Qgis.Warning)
 
 
 class GisboxConnection(QObject, Logger):
@@ -123,6 +112,10 @@ class GisboxConnection(QObject, Logger):
         return False
 
     def disconnect(self):
+
+        request = self._createRequest('/api/logout')
+        request.setRawHeader(b'X-Access-Token', bytes(self.token.encode()))
+        self.MANAGER.blockingGet(request)
         self.log("Rozłączono")
         self.on_disconnect.emit()
         self.is_connected = False
@@ -136,9 +129,6 @@ class GisboxConnection(QObject, Logger):
         request.setHeader(QNetworkRequest.ContentTypeHeader, content_type)
         request.setRawHeader(b'X-User-Agent', b'qgis_gs')
         if with_token:
-            if self.token is None:
-                raise DisconnectedFromGisBox()
-
             request.setRawHeader(b'X-Access-Token', bytes(self.token.encode()))
 
         return request

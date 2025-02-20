@@ -160,12 +160,14 @@ class GISBox(BaseModule, Logger):
             GISBOX_CONNECTION.get(
                 "/api/settings/automatic_digitization_module_enabled?value_only=true", callback=self.enableDigitization
             )
+            self.toggle_gisbox_layers_readonly_mode(False)
 
         else:
             # Rozłączono z serwerem lub błąd połączenia
 
             GISBOX_CONNECTION.disconnect()
 
+            self.toggle_gisbox_layers_readonly_mode(True)
             self.gisboxAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/disconnected.png"))
             self.connectAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/connected.svg"))
             self.connectAction.setText('Połącz z GIS.Box')
@@ -242,6 +244,21 @@ class GISBox(BaseModule, Logger):
                 if not layer_class:
                     return
                 layer_class.on_reload.emit(True)
+    
+
+    def toggle_gisbox_layers_readonly_mode(self, turn_on: bool):
+        """
+        Przełącza tryb `read_only` warstw GIS.Box.
+        Wykorzystywane przy łączeniu/rozłączaniu z GIS.Box.
+        """
+        for layer in QgsProject.instance().mapLayers().values():
+            if layers_registry.isGisboxLayer(layer):
+
+                    if turn_on and layer.isEditable():
+                        layer.rollBack()
+
+                    layer.setReadOnly(turn_on)
+
 
     def autoDigitization(self):
         self.dockwidget = AutoDigitizationWidget()

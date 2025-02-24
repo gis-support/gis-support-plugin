@@ -167,7 +167,7 @@ class LayerImport:
 
     def __handle_finished(self, layer_found, layer_not_found):
         self.__cleanup_after_search()
-        iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
+        iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
             f"Import z warstwy: zakończono wyszukiwanie. Zapisano {self.saved_count} {get_obiekty_form(self.saved_count)} do warstwy <b>{self.ui.text_edit_target_layer_name.text()}</b>"))
 
     def __handle_interrupted(self, layer_found, layer_not_found):

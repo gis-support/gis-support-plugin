@@ -84,6 +84,8 @@ class NMPTdownloader:
         self.nmpt_dockwidget.downloadButton.clicked.connect(self.download_nmpt)
         self.nmpt_dockwidget.downloadButton.setEnabled(False)
 
+        self.nmpt_dockwidget.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_change)
+
     def change_nmpt_dockwidget_visibility(self):
 
         if self.nmpt_dockwidget is None:
@@ -119,25 +121,25 @@ class NMPTdownloader:
             if button.text() == "PL-EVRF2007-NH":
                 self.datum_format = "EVRF2007"
 
-    def on_layer_changed(self):
+    def on_layer_change(self):
 
-        layer = self.nmpt_dockwidget.projectLayerList.currentLayer()
+        if self.nmpt_dockwidget.selectAreaWidget.selectMethodCb.currentText() == 'Wskaż obiekty':
+            layer = self.nmpt_dockwidget.selectAreaWidget.selectLayerCb.currentLayer()
+        else:
+            layer = None
 
         if layer:
             if layer.dataProvider().featureCount() == 0:
                 return
+
             self.source_layer = layer
             area = self.get_area_in_ha(self.source_layer.extent())
             self.area_changed(area)
             layer.selectionChanged.connect(self.on_layer_features_selection_changed)
             self.on_layer_features_selection_changed(layer.selectedFeatureIds())
-            self.nmpt_dockwidget.selectedOnlyCheckBox.setEnabled(True)
 
         else:
-            self.nmpt_dockwidget.selectedOnlyCheckBox.setEnabled(False)
-            self.nmpt_dockwidget.selectedOnlyCheckBox.setChecked(False)
             self.source_layer = None
-            self.nmpt_dockwidget.selectedOnlyCheckBox.setText("Tylko zaznaczone obiekty [0]")
             self.area_info_reset()
 
     def get_area_in_ha(self, bbox: QgsRectangle):
@@ -155,15 +157,13 @@ class NMPTdownloader:
 
     def on_layer_features_selection_changed(self, selected_features):
 
-        if self.nmpt_dockwidget.selectedOnlyCheckBox.isChecked():
+        if self.nmpt_dockwidget.selectAreaWidget.selectLayerFeatsCb.isChecked():
             self.get_bbox_and_area_for_selected()
 
-        self.nmpt_dockwidget.selectedOnlyCheckBox.setText(
-            f"Tylko zaznaczone obiekty [{len(selected_features)}]")
 
     def get_bbox_and_area_for_selected(self):
 
-        if self.nmpt_dockwidget.selectedOnlyCheckBox.isChecked():
+        if self.nmpt_dockwidget.selectAreaWidget.selectLayerFeatsCb.isChecked():
             bbox = self.source_layer.boundingBoxOfSelected()
 
         else:

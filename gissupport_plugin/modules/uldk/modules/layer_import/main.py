@@ -157,13 +157,13 @@ class LayerImport:
             progressed_count += self.not_found_count
 
         self.ui.progress_bar.setValue(int(progressed_count/self.source_features_count*100))
-        self.ui.label_status.setText(f"Przetworzono {progressed_count} z {self.source_features_count} obiektów")
-        found_message = f"Znaleziono: {self.saved_count}"
+        self.ui.label_status.setText(f"Postęp przetwarzania: {progressed_count} z {self.source_features_count} obiektów")
+        found_message = f"Znalezione działki: {self.saved_count}"
         if self.omitted_count:
             found_message += f" (pominięto: {self.omitted_count})"
 
         self.ui.label_found_count.setText(found_message)
-        self.ui.label_not_found_count.setText(f"Nie znaleziono: {self.not_found_count}")
+        self.ui.label_not_found_count.setText(f"Brak dopasowań: {self.not_found_count}")
 
     def __handle_finished(self, layer_found, layer_not_found):
         self.__cleanup_after_search()

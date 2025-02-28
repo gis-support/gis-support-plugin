@@ -53,6 +53,7 @@ class BDOT10kDownloadTask(QgsTask):
 class BDOT10kDataBoxDownloadTask(QgsTask):
     download_finished = pyqtSignal(bool)
     downloaded_data = pyqtSignal(str)
+    downloaded_details = pyqtSignal(str)
 
     def __init__(self, description: str, layer: str, geojson: QgsGeometry):
         self.layer = layer
@@ -64,6 +65,11 @@ class BDOT10kDataBoxDownloadTask(QgsTask):
     def run(self):
         handler = NetworkHandler()
         response = handler.post(self.url, data=self.geojson, databox=True)
+        if details := response.get("details"):
+            self.downloaded_details.emit(f"Przekroczono limit danych ({details.get('limit')}) z Data.Box. Próbowano pobrać {details.get('count')} obiektów.")
+            self.download_finished.emit(True)
+            return False
+
         self.downloaded_data.emit(response.get("data"))
         self.download_finished.emit(True)
         return True

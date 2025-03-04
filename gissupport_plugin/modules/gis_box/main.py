@@ -9,6 +9,7 @@ from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
 from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.modules.gis_box.gisbox_dockwidget import GISBoxDockWidget
+
 class GISBox(BaseModule, Logger):
 
     def __init__(self, parent):

@@ -2,9 +2,7 @@ import os
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWebKitWidgets import QWebView    
-from PyQt5.QtGui import QIcon, QDesktopServices
-from qgis.PyQt.QtCore import QUrl
+from PyQt5.QtGui import QIcon
 
 from PyQt5.Qt import QStandardItemModel, QStandardItem, QSortFilterProxyModel
 from qgis.utils import iface
@@ -93,10 +91,9 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
     def add_layers_to_treeview(self, groups: list):
 
         modules_layer_custom_id = -99
-        tree_model = QStandardItemModel()
-        
-        self.proxy_model.setSourceModel(tree_model)
 
+        tree_model = QStandardItemModel()
+        self.proxy_model.setSourceModel(tree_model)
         root_item = tree_model.invisibleRootItem()
 
         def add_layers(layers: list, group_item: QStandardItem):
@@ -118,8 +115,10 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
                     group_item.appendRow(layer_item)
 
         def add_groups(groups: list):
+
             for group in groups:
                 group_layers = group.get('layers')
+
                 if not group_layers:
                     continue
 
@@ -127,6 +126,7 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
                     continue
 
                 scope = group['schema_scope']
+
                 if scope == 'core':
                     group_item = QStandardItem(group['name'])
                     group_item.setData([group['name'], group['id']], Qt.UserRole + 2)
@@ -156,7 +156,3 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
                 if not layer_class:
                     return
                 layer_class.on_reload.emit(True)
-
-    def open_url(self, url):
-        """ Otwarcie linku w przeglądarce """
-        QDesktopServices.openUrl(QUrl(url))

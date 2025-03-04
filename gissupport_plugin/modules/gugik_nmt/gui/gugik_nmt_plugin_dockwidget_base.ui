@@ -24,7 +24,7 @@
     <item>
      <widget class="QLabel" name="infoLabel">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed gravida tellus et quam lacinia commodo. Donec eu pulvinar dui. In eu dui ultrices lacus volutpat pellentesque. Suspendisse vel vulputate nulla, elementum mattis lorem. Pellentesque eu nisi pulvinar, pellentesque orci at, sagittis enim. Cras ornare&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed gravida tellus et quam lacinia commodo. Donec eu pulvinar dui. In eu dui ultrices lacus volutpat pellentesque. Suspendisse vel vulputate nulla, elementum mattis lorem. Pellentesque eu nisi pulvinar, pellentesque orci at, sagittis enim. Cras ornare&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>
@@ -39,13 +39,14 @@
       <property name="font">
        <font>
         <pointsize>8</pointsize>
+        <weight>50</weight>
         <italic>false</italic>
         <bold>false</bold>
         <kerning>true</kerning>
        </font>
       </property>
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Więcej informacji na &lt;/span&gt;&lt;a href=&quot;https://gis-support.pl/wtyczka-gis-support/&quot;&gt;&lt;span style=&quot; font-size:13pt; text-decoration: underline; color:#0000ff;&quot;&gt;stronie wtyczki&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Więcej informacji na &lt;/span&gt;&lt;a href=&quot;https://gis-support.pl/wtyczka-gis-support/&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#0000ff;&quot;&gt;stronie wtyczki&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>

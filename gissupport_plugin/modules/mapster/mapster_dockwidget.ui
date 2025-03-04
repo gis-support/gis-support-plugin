@@ -16,9 +16,9 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QLabel" name="label_2">
+     <widget class="QLabel" name="infoLabel">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed gravida tellus et quam lacinia commodo. Donec eu pulvinar dui. In eu dui ultrices lacus volutpat pellentesque. Suspendisse vel vulputate nulla, elementum mattis lorem. Pellentesque eu nisi pulvinar, pellentesque orci at, sagittis enim. Cras ornare&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed gravida tellus et quam lacinia commodo. Donec eu pulvinar dui. In eu dui ultrices lacus volutpat pellentesque. Suspendisse vel vulputate nulla, elementum mattis lorem. Pellentesque eu nisi pulvinar, pellentesque orci at, sagittis enim. Cras ornare&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -26,9 +26,9 @@
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label_uldk_info">
+     <widget class="QLabel" name="moreInfoLabel">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p  style=&quot; font-size:12pt;&quot;&gt;Więcej informacji na &lt;a href=&quot;https://gis-support.pl/wtyczka-gis-support/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;stronie wtyczki&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p  style=&quot; font-size:10pt;&quot;&gt;Więcej informacji na &lt;a href=&quot;https://gis-support.pl/wtyczka-gis-support/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;stronie wtyczki&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>
@@ -39,7 +39,7 @@
      </widget>
     </item>
     <item>
-     <widget class="Line" name="infoLine">
+     <widget class="Line" name="line">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -92,12 +92,12 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="mapsterLabel">
          <property name="text">
           <string>Wyszukiwarka archiwalnych map Mapster</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>

@@ -35,7 +35,7 @@
        </font>
       </property>
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Więcej informacji na &lt;a href=&quot;https://gis-support.pl/wtyczka-gis-support/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;stronie wtyczki&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p  style=&quot; font-size:12pt;&quot;&gt;Więcej informacji na &lt;a href=&quot;https://gis-support.pl/wtyczka-gis-support/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;stronie wtyczki&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>
@@ -69,7 +69,7 @@
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Stopień podziału administracyjnego:</string>
+          <string>Pobierz granice:</string>
          </property>
         </widget>
        </item>
@@ -77,14 +77,14 @@
         <widget class="QComboBox" name="entity_division_combobox"/>
        </item>
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>Typ jednostki:</string>
+          <string>O nazwie:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="entity_type_combobox"/>
+        <widget class="QComboBox" name="entity_name_combobox"/>
        </item>
        <item>
         <widget class="QLabel" name="label_5">
@@ -99,16 +99,6 @@
           <bool>false</bool>
          </property>
         </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Jednostkę dla jakiej zostanie pobrany podział:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="entity_name_combobox"/>
        </item>
        <item>
         <widget class="QPushButton" name="btn_download">

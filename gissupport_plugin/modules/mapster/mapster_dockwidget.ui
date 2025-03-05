@@ -18,7 +18,7 @@
     <item>
      <widget class="QLabel" name="infoLabel">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed gravida tellus et quam lacinia commodo. Donec eu pulvinar dui. In eu dui ultrices lacus volutpat pellentesque. Suspendisse vel vulputate nulla, elementum mattis lorem. Pellentesque eu nisi pulvinar, pellentesque orci at, sagittis enim. Cras ornare&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Wskaż miejsce na mapie, a w przeglądarce otworzy się strona projektu Mapser ze skanami wszystkich starych map zawierających współrzędne kliknięcia. Jest tego mnóstwo :)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>

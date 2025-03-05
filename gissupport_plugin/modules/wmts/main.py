@@ -41,7 +41,6 @@ class WMTSCacheModule(BaseModule):
 
             for service in services:
                 service_item = QStandardItem(service['name'])
-                print(f"service: {service}")
                 service_item.setData(service)
                 self.list_model.appendRow(service_item)
             
@@ -53,7 +52,6 @@ class WMTSCacheModule(BaseModule):
 
     def addToProject(self, index):
         service_data = self.list_model.itemFromIndex(index).data()
-        print(f"service_data: {service_data}")
         project_crs = iface.mapCanvas().mapSettings().destinationCrs().authid()
         crs = project_crs if project_crs in service_data['supported_crs'] else 'EPSG:2180'
         
@@ -82,5 +80,4 @@ class WMTSCacheModule(BaseModule):
             )
         
     def dialogAccepted(self):
-        print('dialogAccepted')
         self.settings.setValue('/qgis/defaultTileExpiry', self.dockwidget.sbCacheExpiration.value())

@@ -14,15 +14,18 @@ class PRGDownloader:
         self.prg_dockwidget = None
         self.layer = None
         self.task = None
+        self.entity_option = None
 
     def init_prg_dockwidget(self):
         self.prg_dockwidget = PRGDockWidget()
         self.populate_dockwidget_comboboxes()
-        self.prg_dockwidget.entity_type_combobox.currentTextChanged.connect(self.handle_entity_type_changed)
+        # self.prg_dockwidget.entity_type_combobox.currentTextChanged.connect(self.handle_entity_type_changed)
         self.prg_dockwidget.entity_division_combobox.currentTextChanged.connect(self.handle_entity_division_changed)
         self.prg_dockwidget.btn_download.clicked.connect(self.download_prg)
         self.prg_dockwidget.filter_line_edit.textChanged.connect(self.filter_name_combobox)
 
+        self.prg_dockwidget.entity_name_combobox.setVisible(False)
+        self.prg_dockwidget.name_label.setVisible(False)
 
     def change_prg_dockwidget_visibility(self):
         """
@@ -52,7 +55,6 @@ class PRGDownloader:
                 view.setRowHidden(row, False)
 
     def download_prg(self):
-        entity_division = self.prg_dockwidget.entity_division_combobox.currentText()
         entity_teryt = self.prg_dockwidget.entity_name_combobox.currentData()
 
         crs = QgsCoordinateReferenceSystem.fromEpsgId(2180)
@@ -66,49 +68,62 @@ class PRGDownloader:
         self.layer.updateFields()
 
         self.task = PRGDownloadTask("Pobieranie danych PRG", 75, self.layer,
-                                    entity_division, entity_teryt)
-        
+                                    self.entity_option, entity_teryt)
+
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
         self.task.taskCompleted.connect(self.add_result_layer)
 
     def populate_dockwidget_comboboxes(self):
-        self.prg_dockwidget.entity_division_combobox.addItem(EntityOption.WOJEWODZTWO.value)
-        self.prg_dockwidget.entity_division_combobox.addItem(EntityOption.POWIAT.value)
-        self.prg_dockwidget.entity_division_combobox.addItem(EntityOption.GMINA.value)
 
-        self.prg_dockwidget.entity_type_combobox.addItem(EntityOption.BRAK.value)
-        self.prg_dockwidget.entity_type_combobox.addItem(EntityOption.WOJEWODZTWO.value)
-        self.prg_dockwidget.entity_type_combobox.addItem(EntityOption.POWIAT.value)
-        self.prg_dockwidget.entity_type_combobox.addItem(EntityOption.GMINA.value)
+        value_list = [
+            "województw dla całego kraju",
+            "wybranego województwa",
+            "powiatów dla całego kraju",
+            "powiatów dla wybranego województwa",
+            "wybranego powiatu",
+            "gmin dla całego kraju",
+            "gmin dla wybranego województwa",
+            "gmin dla wybranego powiatu",
+            "wybranej gminy"
+        ]
+
+        self.prg_dockwidget.entity_division_combobox.addItems(value_list)
 
     def handle_entity_division_changed(self, entity_division_value: str):
-        model = self.prg_dockwidget.entity_type_combobox.model()
-        item = model.item(0, 0)
+        first_word = entity_division_value.split(" ")[0]
+        last_word = entity_division_value.split(" ")[-1]
 
-        if entity_division_value == EntityOption.GMINA.value:
-            item.setEnabled(False)
-            self.prg_dockwidget.entity_type_combobox.setCurrentIndex(1)
-        else:
-            item.setEnabled(True)
-
-    def handle_entity_type_changed(self, entity_option_value: str):
         self.prg_dockwidget.entity_name_combobox.clear()
-        self.prg_dockwidget.filter_line_edit.clear()
 
-        if entity_option_value == EntityOption.WOJEWODZTWO.value:
-            data = self.get_administratives("wojewodztwo")
-        elif entity_option_value == EntityOption.POWIAT.value:
-            data = self.get_administratives("powiat")
-        elif entity_option_value == EntityOption.GMINA.value:
-            data = self.get_administratives("gmina")
+        if last_word == "kraju":
+            self.prg_dockwidget.entity_name_combobox.setVisible(False)
+            self.prg_dockwidget.name_label.setVisible(False)
+            self.entity_option = EntityOption(first_word[:3])
+        
         else:
-            self.prg_dockwidget.filter_line_edit.setEnabled(False)
-            return
+            self.prg_dockwidget.entity_name_combobox.setVisible(True)
+            self.prg_dockwidget.name_label.setVisible(True)
 
-        for item in data:
-            display_name = f'{item[0]} | {item[1]}'
-            self.prg_dockwidget.entity_name_combobox.addItem(display_name, item[1])
+            if first_word in ["wybranego", "wybranej"]:
+                self.prg_dockwidget.filter_line_edit.setEnabled(False)
+                self.entity_option = EntityOption(last_word[:3])
+
+            else:
+                self.entity_option = EntityOption(first_word[:3])
+
+            if last_word == "województwa":
+                data = self.get_administratives("wojewodztwo")
+            elif last_word == "powiatu":
+                data = self.get_administratives("powiat")
+            elif last_word == "gminy":
+                data = self.get_administratives("gmina")
+
+            for item in data:
+                display_name = f'{item[0]} | {item[1]}'
+                self.prg_dockwidget.entity_name_combobox.addItem(display_name, item[1])
+
+            self.prg_dockwidget.filter_line_edit.setEnabled(True)
 
     def add_result_layer(self):
         QgsProject.instance().addMapLayer(self.layer)

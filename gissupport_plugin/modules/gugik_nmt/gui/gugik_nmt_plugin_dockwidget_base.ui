@@ -24,12 +24,15 @@
     <item>
      <widget class="QLabel" name="infoLabel">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed gravida tellus et quam lacinia commodo. Donec eu pulvinar dui. In eu dui ultrices lacus volutpat pellentesque. Suspendisse vel vulputate nulla, elementum mattis lorem. Pellentesque eu nisi pulvinar, pellentesque orci at, sagittis enim. Cras ornare&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Narzędzia działają w oparciu o &lt;a href=&quot;https://services.gugik.gov.pl/nmt/&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#0000ff;&quot;&gt;NMT API&lt;/span&gt;&lt;/a&gt; udostępnione przez Główny Urząd Geodezji i Kartografii (GUGiK).&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>
       </property>
       <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+      <property name="openExternalLinks">
        <bool>true</bool>
       </property>
      </widget>
@@ -39,7 +42,6 @@
       <property name="font">
        <font>
         <pointsize>8</pointsize>
-        <weight>50</weight>
         <italic>false</italic>
         <bold>false</bold>
         <kerning>true</kerning>

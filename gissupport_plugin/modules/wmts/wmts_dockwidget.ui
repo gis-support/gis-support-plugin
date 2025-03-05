@@ -23,7 +23,7 @@
        </font>
       </property>
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed gravida tellus et quam lacinia commodo. Donec eu pulvinar dui. In eu dui ultrices lacus volutpat pellentesque. Suspendisse vel vulputate nulla, elementum mattis lorem. Pellentesque eu nisi pulvinar, pellentesque orci at, sagittis enim. Cras ornare&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Narzędzie pozwala dodać warstwę WMTS z geoportal.gov.pl z opcją przechowywania cache po stronie komputera. Innymi słowy: raz pobrane &quot;kafelki&quot; zostaną zapisane na dysku komputera (na czas określony w ustawieniach) ZNACZNIE przyspieszając działanie warstwy.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -35,7 +35,6 @@
       <property name="font">
        <font>
         <pointsize>10</pointsize>
-        <weight>50</weight>
         <italic>false</italic>
         <bold>false</bold>
         <kerning>true</kerning>

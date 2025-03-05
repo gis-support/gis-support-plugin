@@ -18,12 +18,15 @@
     <item>
      <widget class="QLabel" name="infoLabel">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed gravida tellus et quam lacinia commodo. Donec eu pulvinar dui. In eu dui ultrices lacus volutpat pellentesque. Suspendisse vel vulputate nulla, elementum mattis lorem. Pellentesque eu nisi pulvinar, pellentesque orci at, sagittis enim. Cras ornare&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Narzędzie działa w oparciu o &lt;a href=&quot;https://uldk.gugik.gov.pl/opis.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Usługę Lokalizacji Działek Katastralnych (ULDK)&lt;/span&gt;&lt;/a&gt; udostępnioną przez Główny Urząd Geodezji i Kartografii (GUGiK).&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>
       </property>
       <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+      <property name="openExternalLinks">
        <bool>true</bool>
       </property>
      </widget>
@@ -142,7 +145,6 @@
             <property name="font">
              <font>
               <pointsize>8</pointsize>
-              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -167,8 +169,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>574</width>
-         <height>512</height>
+         <width>568</width>
+         <height>525</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">

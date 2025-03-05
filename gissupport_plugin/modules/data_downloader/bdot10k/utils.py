@@ -15,6 +15,7 @@ class BDOT10kDownloadTask(QgsTask):
     message_group_name = "GIS Support - BDOT10k Baza Danych Obiektów Topograficznych"
     progress_updated = pyqtSignal(float)
     download_finished = pyqtSignal(bool)
+    task_failed = pyqtSignal(str)
 
     def __init__(self, description: str, teryt_woj: str, teryt_pow: str, filepath: str):
         self.teryt_woj = teryt_woj
@@ -26,6 +27,10 @@ class BDOT10kDownloadTask(QgsTask):
     def run(self):
         handler = NetworkHandler()
         response = handler.get(self.url, True)
+
+        if response.error() != 0:
+            self.task_failed.emit("Błąd pobierania danych. Sprawdź swoje połączenie z Internetem oraz czy usługa Geoportal.gov.pl działa.")
+            return False
 
         total_size = int(response.header(QNetworkRequest.ContentLengthHeader)) or 0
         data = BytesIO(response.readAll().data())
@@ -112,9 +117,19 @@ def get_databox_layers():
     handler = NetworkHandler()
     url = 'https://api-oze.gisbox.pl/layers'
     response = handler.get(url)
+    if response.get("data") is None:
+        raise DataboxResponseException("Brak odpowiedzi")
     layer_list = json.loads(response.get("data"))
     layer_list = {v: k for k, v in layer_list.items()}
     return layer_list
+
+def check_geoportal_connection() -> bool:
+    handler = NetworkHandler()
+    url = "https://opendata.geoportal.gov.pl"
+    response = handler.get(url, True)
+    if response.error() != 0:
+        raise GeoportalResponseException("Brak odpowiedzi")
+    return True
 
 def convert_multi_polygon_to_polygon(geometry: QgsGeometry):
     # rubber bandy zwracają multipoligony, konieczne jest rozbicie geometrii przed wysłaniem do api oze
@@ -180,3 +195,9 @@ class DrawPolygon(QgsMapTool):
         self.drawing = False
         QgsMapTool.deactivate(self)
         self.canvas.unsetMapTool(self)
+
+class DataboxResponseException(Exception):
+    pass
+
+class GeoportalResponseException(Exception):
+    pass

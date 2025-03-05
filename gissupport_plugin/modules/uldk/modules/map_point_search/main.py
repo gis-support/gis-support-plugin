@@ -62,12 +62,12 @@ class MapPointSearch(QgsMapToolEmitPoint):
             added_feature = self.result_collector.update(uldk_response_row)
         except self.result_collector.BadGeometryException:
             iface.messageBar().pushCritical(
-                "Wtyczka ULDK",f"Działka posiada niepoprawną geometrię")
+                "Wtyczka GIS Support","Działka posiada niepoprawną geometrię")
         # self.found.emit(added_feature)
 
     def __handle_not_found(self, uldk_point, exception):
         iface.messageBar().pushCritical(
-            "Wtyczka ULDK",f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")
+            "Wtyczka GIS Support",f"Nie znaleziono działki w usłudze ULDK - odpowiedź z GUGIK: '{str(exception)}'")
         # self.not_found.emit(exception)
 
     def __handle_finished(self):

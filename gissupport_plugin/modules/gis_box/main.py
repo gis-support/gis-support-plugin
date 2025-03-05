@@ -32,6 +32,7 @@ class GISBox(BaseModule, Logger):
 
         layers_registry.on_schema.connect(self.readProject)
         QgsProject.instance().readProject.connect(self.readProject)
+        QgsProject.instance().readProject.connect(self.toggle_gisbox_layers_readonly_mode)
         self.dockwidget.connectButton.clicked.connect(self.onConnection)
         self.mount_autodigitization_widget()
 
@@ -53,6 +54,9 @@ class GISBox(BaseModule, Logger):
 
         else:
             # Rozłączono z serwerem lub błąd połączenia
+
+            GISBOX_CONNECTION.disconnect()
+
             self.dockwidgetAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/disconnected.png"))
             self.dockwidget.connectButton.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/widget_connect.svg"))
             self.dockwidget.connectButton.setText('Zaloguj się')
@@ -60,7 +64,34 @@ class GISBox(BaseModule, Logger):
             self.dockwidget.connectButton.setChecked(False)
             self.dockwidget.clear_treeview()
             self.dockwidget.vectorTab.setEnabled(False)
+        
+        self.toggle_gisbox_layers_readonly_mode()
 
+
+    def toggle_gisbox_layers_readonly_mode(self):
+        """
+        Przełącza tryb `read_only` warstw GIS.Box.
+        Wykorzystywane przy łączeniu/rozłączaniu z GIS.Box.
+        """
+        is_connected = GISBOX_CONNECTION.is_connected
+        for layer in QgsProject.instance().mapLayers().values():
+            if layers_registry.isGisboxLayer(layer):
+
+                if is_connected:
+                    # Odczytywanie uprawnień użytkownika do edycji warstwy
+                    layer_id = layer.customProperty('gisbox/layer_id')
+                    layer_permission = GISBOX_CONNECTION.current_user['permissions']['layers'].get(int(layer_id))
+
+                    if layer_permission['main_value'] == 2:
+                        layer.setReadOnly(False)
+                    
+                    else:
+                        layer.setReadOnly(True)
+
+                else:
+                    if layer.isEditable():
+                        layer.rollBack()
+                    layer.setReadOnly(True)
 
     def readProject(self):
         if not GISBOX_CONNECTION.is_connected:
@@ -81,14 +112,11 @@ class GISBox(BaseModule, Logger):
 
     def enableDigitization(self, data):
         if data["data"]:
-            GISBOX_CONNECTION.get(
-                "/api/users/current_user", callback=self.checkDigitizationPermissions
-            )
+            self.checkDigitizationPermissions()
 
-    def checkDigitizationPermissions(self, user_data):
-        if modules := user_data["data"]["permissions"]["modules"]:
-            for module in modules:
-                if module["module_name"] == "AUTOMATIC_DIGITIZATION" and module["main_value"] == 1:
-                    self.dockwidget.vectorTab.setEnabled(True)
-                    self.autoDigitizationWidget.getOptions()
-                    return
+    def checkDigitizationPermissions(self):
+        module = GISBOX_CONNECTION.current_user["permissions"]["modules"].get("AUTOMATIC_DIGITIZATION")
+        if module["main_value"] == 1:
+            self.dockwidget.vectorTab.setEnabled(True)
+            self.autoDigitizationWidget.getOptions()
+            return

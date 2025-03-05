@@ -196,7 +196,7 @@ class CSVImport:
             else:
                 form = "obiektów"
 
-        iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
+        iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
             f"Import CSV: zakończono wyszukiwanie. Zapisano {found_count} {form} do warstwy <b>{self.ui.text_edit_layer_name.text()}</b>"))
         if self.not_found_count > 0:
             self.ui.button_save_not_found.setEnabled(True)
@@ -225,7 +225,7 @@ class CSVImport:
                     teryt = self.ui.table_errors.item(row, 0).text()
                     error = self.ui.table_errors.item(row, 1).text()
                     writer.writerow([teryt, error])
-                iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
+                iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
                     "Pomyślnie wyeksportowano nieznalezione działki."))
 
     def _add_table_errors_row(self, teryt, exception_message):

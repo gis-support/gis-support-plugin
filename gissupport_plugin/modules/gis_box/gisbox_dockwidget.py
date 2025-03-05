@@ -2,7 +2,7 @@ import os
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QDropEvent, QDragEnterEvent
 
 from PyQt5.Qt import QStandardItemModel, QStandardItem, QSortFilterProxyModel
 from qgis.utils import iface
@@ -28,30 +28,32 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
         self.setupUi(self)
         self.loginSettingsDialog = LoginSettingsDialog(self)
 
-
-        # przyciski na górze widgetu
         self.connectButton.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/widget_connect.svg"))
         self.connectButton.setCheckable(True)
 
         self.authSettingsButton.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/widget_settings.svg"))
         self.authSettingsButton.clicked.connect(self.show_login_settings)
-        
 
-        # zakładka Dane
-        self.refreshButton.clicked.connect(self.refresh_layer)
-        self.refreshButton.setEnabled(False)
+        self.layerBrowser.textChanged.connect(self.filter_tree_view)
 
-        self.refreshButton.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/refresh.svg"))
         self.layerTreeView.doubleClicked.connect(self.add_layer_to_map)
         self.layerTreeView.setDragEnabled(True)
+        self.layerTreeView.setAcceptDrops(False)
+        self.layerTreeView.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
 
         self.proxy_model = QSortFilterProxyModel()
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.proxy_model.setRecursiveFilteringEnabled(True)
 
-        self.layerBrowser.textChanged.connect(self.filter_tree_view)
-
         layers_registry.on_schema.connect(self.add_layers_to_treeview)
+
+        self.refreshButton.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/refresh.svg"))
+        self.refreshButton.clicked.connect(self.refresh_layers)
+        self.refreshButton.setEnabled(False)
+
+        self.mapCanvas = iface.mapCanvas()
+        self.mapCanvas.setAcceptDrops(True)
+        self.mapCanvas.installEventFilter(self)
 
 
     def closeEvent(self, event):
@@ -59,37 +61,55 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
         event.accept()
 
 
+    def toggle_widget_visibility(self):
+        """
+        Dodaje/ukrywa widget z QGIS.
+        """
+        if self.isVisible():
+            iface.removeDockWidget(self)
+
+        else:
+            iface.addDockWidget(Qt.RightDockWidgetArea, self)
+
+
     def filter_tree_view(self, text):
+        """
+        Filtruje drzewko warstw po nazwach warstw.
+        Wywoływane po wpisywaniu tekstu w label layerBrowser.
+        """
         self.proxy_model.setFilterFixedString(text)
-        
+
         if text:
             self.layerTreeView.expandAll()
         else:
             self.layerTreeView.collapseAll()
 
+
     def show_login_settings(self):
-        """ Wyświetlenie okna ustawień logowania """
+        """
+        Wyświetla okno ustawień połączenia z serwerem.
+        """
         self.loginSettingsDialog.show()
 
-    def toggle_visibility(self):
-        if self.isVisible():
-            iface.removeDockWidget(self)
+
+    def clear_treeview(self):
+        """
+        Usuwa wzystkie warstwy z drzewa warstw.
+        Wywoływane po wylogowaniu.
+        """
+
+        if self.proxy_model.sourceModel():
+            self.proxy_model.sourceModel().clear()
+
         else:
-            iface.addDockWidget(Qt.RightDockWidgetArea, self)
-    
-    def add_layer_to_map(self, index):
-        source_index = self.proxy_model.mapToSource(index)
-        source_model = self.proxy_model.sourceModel()
-        item = source_model.itemFromIndex(source_index)
+            self.layerTreeView.setModel(None)
 
-        if group_data := item.data(Qt.UserRole + 2):
-            layers_registry.loadGroup(group_data)
-
-        elif layer_class := item.data(Qt.UserRole + 1):
-            layer_class.loadLayer()
 
     def add_layers_to_treeview(self, groups: list):
-
+        """
+        Dodaje warstwy/grupy do drzewka warstw.
+        Wywoływane po zalogowaniu.
+        """
         modules_layer_custom_id = -99
 
         tree_model = QStandardItemModel()
@@ -111,7 +131,6 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
 
                     layer_item = QStandardItem(layer_class.name)
                     layer_item.setData(layer_class, Qt.UserRole + 1)
-                
                     group_item.appendRow(layer_item)
 
         def add_groups(groups: list):
@@ -140,13 +159,66 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
         self.layerTreeView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.message('Pobrano schemat warstw')
 
-    def clear_treeview(self):
-        if self.proxy_model.sourceModel():
-            self.proxy_model.sourceModel().clear()
-        else:
-            self.layerTreeView.setModel(None)
 
-    def refresh_layer(self):
+    def add_layer_to_map(self, index):
+        """
+        Dodaje wybraną warstwę/grupę do projektu.
+        """
+        source_index = self.proxy_model.mapToSource(index)
+        source_model = self.proxy_model.sourceModel()
+        item = source_model.itemFromIndex(source_index)
+
+        if group_data := item.data(Qt.UserRole + 2):
+            layers_registry.loadGroup(group_data)
+
+        elif layer_class := item.data(Qt.UserRole + 1):
+            layer_class.loadLayer()
+
+
+    def eventFilter(self, obj, event):
+        """
+        Event obsługujący dodawanie warstw/grup po przeciągnięciu na panel mapowy.
+        """
+        if obj == self.mapCanvas:
+            if event.type() == QDragEnterEvent.DragEnter:
+                return self.handle_map_canvas_drag_enter(event)
+
+            if event.type() == QDropEvent.Drop:
+                return self.handle_map_canvas_drop(event)
+
+        return super().eventFilter(obj, event)
+
+
+    def handle_map_canvas_drag_enter(self, event):
+        """
+        Sprawdza, czy przeciągany obiekt posiada dane tego samego typu, co obiekty z drzewa warstw.
+        """
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+            event.acceptProposedAction()
+            return True
+
+        return False
+
+
+    def handle_map_canvas_drop(self, event):
+        """
+        Wywołuje dodanie upuszczonej warstwy/grupy do projektu. 
+        """
+        selected_indexes = self.layerTreeView.selectedIndexes()
+
+        if not selected_indexes:
+            return False
+
+        self.add_layer_to_map(selected_indexes[0])
+
+        event.acceptProposedAction()
+        return True
+
+
+    def refresh_layers(self):
+        """
+        Odświeżanie warstw GIS.Box, które obecnie znajdują się w projekcie.
+        """
         if not GISBOX_CONNECTION.is_connected:
             return
         for layer in QgsProject.instance().mapLayers().values():

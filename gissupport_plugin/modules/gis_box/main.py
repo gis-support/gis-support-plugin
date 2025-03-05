@@ -21,7 +21,7 @@ class GISBox(BaseModule, Logger):
         self.dockwidgetAction = self.parent.add_action(
             icon_path=":/plugins/gissupport_plugin/gis_box/disconnected.png",
             text = 'GIS.Box',
-            callback=self.dockwidget.toggle_visibility,
+            callback=self.dockwidget.toggle_widget_visibility,
             parent=iface.mainWindow(),
             add_to_menu=False,
             add_to_topmenu=False,

@@ -14,7 +14,6 @@ class NMPTdockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def __init__(self, parent=None):
         super(NMPTdockWidget, self).__init__(parent)
         self.setupUi(self)
-        self.setWindowTitle("NM(P)T - Numeryczny Model (Pokrycia) Terenu")
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

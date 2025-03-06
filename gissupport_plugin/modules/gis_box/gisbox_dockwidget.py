@@ -1,7 +1,7 @@
 import os
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QEvent
 from PyQt5.QtGui import QIcon, QDropEvent, QDragEnterEvent
 
 from PyQt5.Qt import QStandardItemModel, QStandardItem, QSortFilterProxyModel
@@ -36,10 +36,10 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
 
         self.layerBrowser.textChanged.connect(self.filter_tree_view)
 
-        self.layerTreeView.doubleClicked.connect(self.add_layer_to_map)
         self.layerTreeView.setDragEnabled(True)
         self.layerTreeView.setAcceptDrops(False)
         self.layerTreeView.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.layerTreeView.viewport().installEventFilter(self)
 
         self.proxy_model = QSortFilterProxyModel()
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
@@ -177,7 +177,9 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
 
     def eventFilter(self, obj, event):
         """
-        Event obsługujący dodawanie warstw/grup po przeciągnięciu na panel mapowy.
+        Event obsługujący dwa wydarzenia: 
+        1. dodawanie warstw/grup po przeciągnięciu na panel mapowy.
+        2. dodawanie warstw/grup po dwukrotnym kliknięciu lewym przyciskiem myszy na drzewku warstw.
         """
         if obj == self.mapCanvas:
             if event.type() == QDragEnterEvent.DragEnter:
@@ -185,6 +187,14 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
 
             if event.type() == QDropEvent.Drop:
                 return self.handle_map_canvas_drop(event)
+
+
+        if obj == self.layerTreeView.viewport() and event.type() == QEvent.MouseButtonDblClick:
+            if event.button() == Qt.LeftButton:
+                index = self.layerTreeView.indexAt(event.pos())
+                if index.isValid():
+                    self.add_layer_to_map(index)
+                    return True
 
         return super().eventFilter(obj, event)
 

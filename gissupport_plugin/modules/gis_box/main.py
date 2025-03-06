@@ -26,10 +26,11 @@ class GISBox(BaseModule, Logger):
             add_to_menu=False,
             add_to_topmenu=False,
             add_to_toolbar=True,
-            checkable=False,
+            checkable=True,
             enabled=True
         )
 
+        self.dockwidget.visibilityChanged.connect(self.dockwidgetAction.setChecked)
         layers_registry.on_schema.connect(self.readProject)
         QgsProject.instance().readProject.connect(self.readProject)
         QgsProject.instance().readProject.connect(self.toggle_gisbox_layers_readonly_mode)
@@ -45,7 +46,7 @@ class GISBox(BaseModule, Logger):
             # Połączono z serwerem
             self.dockwidgetAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/connected.png"))
             self.dockwidget.connectButton.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/widget_disconnect.svg"))
-            self.dockwidget.connectButton.setText('Wyloguj się')
+            self.dockwidget.connectButton.setText('Wyloguj')
             self.dockwidget.refreshButton.setEnabled(True)
 
             GISBOX_CONNECTION.get(
@@ -59,7 +60,7 @@ class GISBox(BaseModule, Logger):
 
             self.dockwidgetAction.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/disconnected.png"))
             self.dockwidget.connectButton.setIcon(QIcon(":/plugins/gissupport_plugin/gis_box/widget_connect.svg"))
-            self.dockwidget.connectButton.setText('Zaloguj się')
+            self.dockwidget.connectButton.setText('Zaloguj')
             self.dockwidget.refreshButton.setEnabled(False)
             self.dockwidget.connectButton.setChecked(False)
             self.dockwidget.clear_treeview()

@@ -6,6 +6,7 @@ from qgis.core import Qgis, QgsRasterLayer, QgsProject
 from os import path
 import json
 
+from PyQt5 import QtWidgets
 from PyQt5.Qt import QStandardItemModel, QStandardItem
 
 from gissupport_plugin.modules.wmts.wmts_dockwidget import WMTSDockWidget
@@ -28,6 +29,7 @@ class WMTSCacheModule(BaseModule):
         )
         self.settings = QSettings()
 
+        self.dockwidget.visibilityChanged.connect(self.action.setChecked)
         self.dockwidget.lbInfoCacheExpiration.setPixmap(QPixmap(':/plugins/plugin/info.png'))
         self.dockwidget.lbInfoCacheExpiration.setToolTip('Maksymalnie 720 godz. (30 dni)')
         self.dockwidget.saveButton.clicked.connect(self.dialogAccepted)
@@ -46,6 +48,7 @@ class WMTSCacheModule(BaseModule):
             
         self.dockwidget.listView.setModel(self.list_model)
         self.dockwidget.listView.doubleClicked.connect(self.addToProject)
+        self.dockwidget.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         tile_expiry = int(self.settings.value('/qgis/defaultTileExpiry', 24))
         self.dockwidget.sbCacheExpiration.setValue(tile_expiry)
 

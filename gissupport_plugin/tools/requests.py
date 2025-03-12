@@ -48,7 +48,7 @@ class NetworkHandler(QObject):
             request = QNetworkRequest(QUrl(url))
             
             reply = self.network_manager.get(request)
-            reply.downloadProgress.connect( lambda recv, total: self.downloadProgress.emit( int(100*recv/total) ) )
+            reply.downloadProgress.connect( lambda recv, total: self.downloadProgress.emit(self.set_progress(recv, total)))
             reply.finished.connect(lambda: self.handle_response(reply, retry_callback, reply_only))
             return reply
 
@@ -78,7 +78,7 @@ class NetworkHandler(QObject):
             if databox:
                 request.setHeader(QNetworkRequest.ContentTypeHeader, "application/json")
             reply = self.network_manager.post(request, body)
-            reply.downloadProgress.connect( lambda recv, total: self.downloadProgress.emit( int(100*recv/total) ) )
+            reply.downloadProgress.connect( lambda recv, total: self.downloadProgress.emit(self.set_progress(recv, total)))
             reply.finished.connect(lambda: self.handle_response(reply, retry_callback, reply_only))
             return reply
 
@@ -97,3 +97,9 @@ class NetworkHandler(QObject):
             app.processEvents()
 
         return self.result
+
+    def set_progress(self, recv, total):
+
+        if total == 0:
+            return 0
+        return int(100*recv/total)

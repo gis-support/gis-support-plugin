@@ -72,7 +72,7 @@ class TerytSearch(QObject):
 
     def _zoom_to_lpis(self, lpis_response):
         teryt = lpis_response["identyfikator"]
-        iface.messageBar().pushSuccess("Wtyczka ULDK", f"Znaleziono historyczną lokację działki '{teryt}'")
+        iface.messageBar().pushSuccess("Wtyczka GIS Support", f"Znaleziono historyczną lokację działki '{teryt}'")
         canvas_crs = self.canvas.mapSettings().destinationCrs()
         lpis_bbox = extract_lpis_bbox(lpis_response, canvas_crs)
         self.canvas.setExtent(lpis_bbox)
@@ -243,7 +243,7 @@ class TerytSearch(QObject):
 
     def __handle_finished_precinct_unknown(self):
         self.result_collector_precinct_unknown.update_with_features(self.plots_found)
-        iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka ULDK",
+        iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
             f"Wyszukiwanie działek: zapisano znalezione działki do warstwy <b>{self.result_collector_precinct_unknown.layer.sourceName()}</b>"))
         self.ui.button_search_uldk.show()
         self.ui.progress_bar_precinct_unknown.hide()
@@ -265,7 +265,7 @@ class TerytSearch(QObject):
                     sheet_name = row_split[-1].split('.')[2]
 
                     self.ui.combobox_sheet.addItem(sheet_name, row)
-                self.message_bar_item = QgsMessageBarItem("Wtyczka ULDK", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
+                self.message_bar_item = QgsMessageBarItem("Wtyczka GIS Support", "Wybrana działka znajduje się na różnych arkuszach map. Wybierz z listy jedną z nich.")
                 iface.messageBar().widgetRemoved.connect(self.__delete_message_bar)
                 iface.messageBar().pushWidget(self.message_bar_item)
             else:
@@ -274,18 +274,18 @@ class TerytSearch(QObject):
                 try:
                     added_feature = self.result_collector.update(result)
                 except self.result_collector.BadGeometryException:
-                    iface.messageBar().pushCritical("Wtyczka ULDK", f"Działka posiada niepoprawną geometrię")
+                    iface.messageBar().pushCritical("Wtyczka GIS Support", "Działka posiada niepoprawną geometrię")
                     return
                 self.result_collector.zoom_to_feature(added_feature)
 
                 if self.message_bar_item:
                     iface.messageBar().popWidget(self.message_bar_item)
 
-                iface.messageBar().pushSuccess("Wtyczka ULDK", "Zaaktualizowano warstwę '{}'"
+                iface.messageBar().pushSuccess("Wtyczka GIS Support", "Zaaktualizowano warstwę '{}'"
                                                 .format(self.result_collector.layer.sourceName()))
     
     def __handle_not_found(self, teryt, exception):
-        iface.messageBar().pushCritical("Wtyczka ULDK", f"Nie znaleziono działki - odpowiedź serwera: '{str(exception)}'")
+        iface.messageBar().pushCritical("Wtyczka GIS Support", f"Nie znaleziono działki w usłudze ULDK - odpowiedź z GUGIK: '{str(exception)}'")
 
     def __handle_found_precinct_unknown(self, uldk_response_rows):
         # Iteracja po zagnieżdżonych listach

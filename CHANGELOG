@@ -1,3 +1,13 @@
+2.7
+Obsługa limitu danych w API dla danych BDOT10k
+Zmiana w wyświetlaniu informacji o nieznalezionych działkach ULDK
+Obbsługa błędów przy niedziałającej usłudze ULDK
+Poprawione działanie wyszukiwarki działek z warstwy
+Naprawione wczytywanie styli QGIS z GIS.Box
+Poprawione działanie wtyczki przy braku Internetu
+Naprawiono błąd zapisu wyniku automatycznej wektoryzacji
+Poprawki drobnych błędów w module GIS.Box
+
 2.6
 Nowe narzędzie do pobierania danych BDOT10k dla wybranej klasy
 Dodanie kolumny z adresem w oknie wczytywania warstw WMS/WFS

@@ -31,7 +31,8 @@ class AutoDigitizationTask(QgsTask):
             GISBOX_CONNECTION.host + f"/api/automatic_digitization/{self.digitization_option[0]}?trim={self.clip}",
             True,
             data=self.data,
-            srid='2180'
+            srid='2180',
+            token=True
         )
         try:
             data = json.loads(response.readAll().data().decode())

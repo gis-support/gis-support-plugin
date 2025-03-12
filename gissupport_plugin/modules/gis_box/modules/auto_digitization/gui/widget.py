@@ -171,6 +171,10 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
 
+        self.select_features_tool.deactivate()
+        self.select_features_freehand_tool.deactivate()
+        self.select_features_rectangle_tool.deactivate()
+
     def task_downloaded_data(self):
         iface.messageBar().pushMessage(
             "Automatyczna wektoryzacja", "Trwa zapisywanie danych do warstwy tymczasowej.", level=Qgis.Info)

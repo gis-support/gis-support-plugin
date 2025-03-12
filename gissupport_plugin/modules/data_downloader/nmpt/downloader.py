@@ -240,6 +240,10 @@ class NMPTdownloader:
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
 
+        self.select_features_tool.deactivate()
+        self.select_features_freehand_tool.deactivate()
+        self.select_features_rectangle_tool.deactivate()
+
     def load_nmpt_to_project(self, filepath_and_layer_name: list):
 
         layer = QgsRasterLayer(*filepath_and_layer_name)

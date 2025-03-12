@@ -168,6 +168,10 @@ class BDOT10kDownloader:
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
 
+        self.select_features_tool.deactivate()
+        self.select_features_freehand_tool.deactivate()
+        self.select_features_rectangle_tool.deactivate()
+
     def update_bdok10k_download_progress(self, value: int):
         """
         Aktualizuje pasek postępu pobierania danych BDOT10k.

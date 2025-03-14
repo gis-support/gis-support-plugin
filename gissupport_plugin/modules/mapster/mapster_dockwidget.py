@@ -16,8 +16,6 @@ class MapsterDockwidget(QtWidgets.QDockWidget, FORM_CLASS):
         super(MapsterDockwidget, self).__init__(parent)
         self.setupUi(self)
 
-
-
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()

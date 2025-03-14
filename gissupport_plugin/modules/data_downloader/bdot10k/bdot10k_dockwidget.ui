@@ -316,16 +316,6 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_7">
            <item>
-            <widget class="QLabel" name="classLabel">
-             <property name="text">
-              <string>Wybierz klasę:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="classComboBox"/>
-           </item>
-           <item>
             <widget class="QLabel" name="downloadLabel">
              <property name="text">
               <string>Ścieżka zapisu:</string>
@@ -345,6 +335,16 @@
               </widget>
              </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QLabel" name="classLabel">
+             <property name="text">
+              <string>Wybierz klasę:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="classComboBox"/>
            </item>
            <item>
             <widget class="QPushButton" name="classDownloadButton">

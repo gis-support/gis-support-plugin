@@ -55,6 +55,8 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
         self.mapCanvas.setAcceptDrops(True)
         self.mapCanvas.installEventFilter(self)
 
+        iface.addDockWidget(Qt.RightDockWidgetArea, self)
+        self.hide()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

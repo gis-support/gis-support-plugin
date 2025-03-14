@@ -19,7 +19,7 @@ class MapsterModule( BaseModule ):
         action = self.parent.add_action(
             ':/plugins/gissupport_plugin/mapster/mapster.svg',
             self.module_name,
-            self.toggle_visibility,
+            self.dockwidget.setVisible,
             parent=iface.mainWindow(),
             checkable=True,
             add_to_topmenu=True
@@ -32,6 +32,9 @@ class MapsterModule( BaseModule ):
         self.dockwidget.searchButton.clicked.connect(self.setMapsterTool)
         self.dockwidget.visibilityChanged.connect(action.setChecked)
         self.dockwidget.visibilityChanged.connect(self.unset_point_tool)
+
+        iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        self.dockwidget.hide()
 
     def setMapsterTool( self, checked: bool ):
 
@@ -48,13 +51,6 @@ class MapsterModule( BaseModule ):
         url = 'http://igrek.amzp.pl/result.php?cmd=pt&lat={}&lon={}&hideempty=on'.format( point.y(), point.x() )
         
         QDesktopServices.openUrl(QUrl(url))
-
-    def toggle_visibility(self):
-        if self.dockwidget.isVisible():
-            iface.removeDockWidget(self.dockwidget)
-            self.unset_point_tool(False)
-        else:
-            iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
     
     def unset_point_tool(self, visible: bool):
         if not visible:

@@ -19,13 +19,10 @@ class WMTSDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         super(WMTSDockWidget, self).__init__(parent)
         self.setupUi(self)
 
+        iface.addDockWidget(Qt.RightDockWidgetArea, self)
+        self.hide()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
 
-    def toggle_visibility(self):
-        if self.isVisible():
-            iface.removeDockWidget(self)
-        else:
-            iface.addDockWidget(Qt.RightDockWidgetArea, self)

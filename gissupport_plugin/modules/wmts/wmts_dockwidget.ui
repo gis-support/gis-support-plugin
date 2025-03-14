@@ -76,7 +76,7 @@
            <string comment="Maksymalnie 720h (30 dni)"/>
           </property>
           <property name="text">
-           <string>Czas do wygaśnięcia cache (godz.):</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Czas do wygaśnięcia cache (godz.):&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::AutoText</enum>

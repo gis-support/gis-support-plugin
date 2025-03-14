@@ -27,16 +27,16 @@ class PRGDownloader:
         self.prg_dockwidget.entity_name_combobox.setVisible(False)
         self.prg_dockwidget.name_label.setVisible(False)
 
+        iface.addDockWidget(Qt.RightDockWidgetArea, self.prg_dockwidget)
+        self.prg_dockwidget.hide()
+
     def change_prg_dockwidget_visibility(self):
         """
         Zmienia widoczność widgetu prg przy wyborze z menu. Inicjuje widget przy pierwszym uruchomieniu.
         """
         if self.prg_dockwidget is None:
             self.init_prg_dockwidget()
-        if not self.prg_dockwidget.isVisible():
-            iface.addDockWidget(Qt.RightDockWidgetArea, self.prg_dockwidget)
-        else:
-            iface.removeDockWidget(self.prg_dockwidget)
+        self.prg_dockwidget.setVisible(not self.prg_dockwidget.isVisible())
 
     def filter_name_combobox(self, text: str):
         model = self.prg_dockwidget.entity_name_combobox.model()

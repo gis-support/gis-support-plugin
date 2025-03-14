@@ -22,7 +22,7 @@ class WMTSCacheModule(BaseModule):
         self.action = self.parent.add_action(
             ':/plugins/gissupport_plugin/wmts/wmts.svg',
             self.module_name,
-            callback = self.dockwidget.toggle_visibility,
+            callback = self.dockwidget.setVisible,
             parent=iface.mainWindow(),
             checkable=True,
             add_to_topmenu=True

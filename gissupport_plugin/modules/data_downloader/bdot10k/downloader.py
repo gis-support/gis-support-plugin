@@ -33,7 +33,8 @@ class BDOT10kDownloader:
     def init_bdot10k_dockwidget(self):
 
         self.bdot10k_dockwidget = BDOT10kDockWidget()
-
+        iface.addDockWidget(Qt.RightDockWidgetArea, self.bdot10k_dockwidget)
+        self.bdot10k_dockwidget.hide()
 
         self.fill_woj_combobox()
         self.fill_pow_combobox()
@@ -87,6 +88,8 @@ class BDOT10kDownloader:
         self.fill_class_combobox()
         self.bdot10k_dockwidget.layerComboBox.addItems(list(self.databox_layers.keys()))
 
+
+
     def set_powiat_class_button_state(self, text: str, button: QPushButton):
         """
         Zmienia status przycisku w zależności czy podano ścieżkę do zapisu plików.
@@ -113,10 +116,8 @@ class BDOT10kDownloader:
         """
         if self.bdot10k_dockwidget is None:
             self.init_bdot10k_dockwidget()
-        if not self.bdot10k_dockwidget.isVisible():
-            iface.addDockWidget(Qt.RightDockWidgetArea, self.bdot10k_dockwidget)
-        else:
-            iface.removeDockWidget(self.bdot10k_dockwidget)
+       
+        self.bdot10k_dockwidget.setVisible(not self.bdot10k_dockwidget.isVisible())
 
     def fill_woj_combobox(self):
         """

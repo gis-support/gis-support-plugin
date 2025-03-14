@@ -20,5 +20,8 @@
 <file>gis_box/digitization.svg</file>
 <file>gis_box/connected.png</file>
 <file>gis_box/disconnected.png</file>
+<file>gis_box/widget_settings.svg</file>
+<file>gis_box/widget_connect.svg</file>
+<file>gis_box/widget_disconnect.svg</file>
     </qresource>
 </RCC>

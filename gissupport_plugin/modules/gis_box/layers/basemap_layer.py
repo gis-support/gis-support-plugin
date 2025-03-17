@@ -38,7 +38,12 @@ class BaseMapLayer(BaseLayer):
     def wmtsUrl(self):
         """ Budowanie adresu dla WMTS """
         cap = WebMapTileService(self.url)
-        layer = cap.contents[self.service_layers_names]
+
+        try:
+            layer = cap.contents[self.service_layers_names]
+        except KeyError:
+            layer = cap.contents[list(cap.contents.keys())[0]]
+
         crs = self.getCrs(layer.tilematrixsetlinks)
         style = self.getStyle(layer.styles)
         layer_format = self.getFormat(layer.formats)
@@ -132,6 +137,10 @@ class BaseMapLayer(BaseLayer):
             except CapabilitiesConnectionException as e:
                 self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem (kod: {e.code}). Upewnij się, że połączenie sieciowe i usługa działają poprawnie", level=Qgis.Critical)
                 return
+            # except KeyError as e:
+            #     self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem.", level=Qgis.Critical)
+            #     return
+
         self.setLayer(layer)
         QgsProject.instance().addMapLayer(layer, False)
         if group is None:

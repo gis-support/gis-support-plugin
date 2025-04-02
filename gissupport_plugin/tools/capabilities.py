@@ -1,4 +1,4 @@
-
+from owslib.wmts import WebMapTileService
 from qgis.core import QgsNetworkAccessManager
 from owslib.wms import WebMapService
 from owslib.wfs import WebFeatureService
@@ -32,3 +32,5 @@ def get_capabilities(url: str, type: str) -> Union[WebMapService, WebFeatureServ
         return WebMapService(url="", version=version, xml=data)
     elif type == "WFS":
         return WebFeatureService(url="", version=version, xml=data)
+    elif type == "WMTS":
+        return WebMapTileService(url="", version=version, xml=data)

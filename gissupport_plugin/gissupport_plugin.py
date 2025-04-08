@@ -25,7 +25,7 @@ import os.path
 
 from PyQt5.QtCore import (QCoreApplication, Qt, QUrl)
 from PyQt5.QtGui import QDesktopServices, QIcon
-from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QAction, QDockWidget
 from pathlib import Path
 import inspect
 from importlib import util
@@ -96,7 +96,7 @@ class GISSupportPlugin:
 
         return action
 
-    def add_dockwidget_action(self, dockwidget, icon_path, text, add_to_topmenu=False):
+    def add_dockwidget_action(self, dockwidget: QDockWidget, icon_path: str, text: str, add_to_topmenu: bool = False):
 
         dockwidget_action = dockwidget.toggleViewAction()
         dockwidget_action.setIcon(QIcon(icon_path))

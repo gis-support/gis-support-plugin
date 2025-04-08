@@ -96,6 +96,19 @@ class GISSupportPlugin:
 
         return action
 
+    def add_dockwidget_action(self, dockwidget, icon_path, text, add_to_topmenu=False):
+
+        dockwidget_action = dockwidget.toggleViewAction()
+        dockwidget_action.setIcon(QIcon(icon_path))
+        dockwidget_action.setText(text)
+
+        self.toolbar.addAction(dockwidget_action)
+
+        if add_to_topmenu:
+            self.topMenu.addAction(dockwidget_action)
+
+        return dockwidget_action
+
     def initModules(self, modules: list = ['uldk', 'gugik_nmt', 'wms', 'wmts', 'mapster', 'data_downloader']):
         """ Włączenie modułów """
 

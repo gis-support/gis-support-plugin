@@ -16,12 +16,10 @@ class MapsterModule( BaseModule ):
         self.dockwidget = MapsterDockwidget()
         self.point_tool = QgsMapToolEmitPoint( iface.mapCanvas() )
 
-        action = self.parent.add_action(
-            ':/plugins/gissupport_plugin/mapster/mapster.svg',
-            self.module_name,
-            self.dockwidget.setVisible,
-            parent=iface.mainWindow(),
-            checkable=True,
+        action = self.parent.add_dockwidget_action(
+            dockwidget=self.dockwidget,
+            icon_path=':/plugins/gissupport_plugin/mapster/mapster.svg',
+            text=self.module_name,
             add_to_topmenu=True
         )
         self.point_tool.canvasClicked.connect( self.canvasClicked )
@@ -30,7 +28,6 @@ class MapsterModule( BaseModule ):
 
         self.dockwidget.searchButton.setIcon(QIcon(":/plugins/gissupport_plugin/mapster/mapster.svg"))
         self.dockwidget.searchButton.clicked.connect(self.setMapsterTool)
-        self.dockwidget.visibilityChanged.connect(action.setChecked)
         self.dockwidget.visibilityChanged.connect(self.unset_point_tool)
 
         iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)

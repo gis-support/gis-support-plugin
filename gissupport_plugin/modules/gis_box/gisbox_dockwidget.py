@@ -63,15 +63,6 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
         event.accept()
 
 
-    def toggle_widget_visibility(self):
-        """
-        Dodaje/ukrywa widget z QGIS.
-        """
-        if self.isVisible():
-            iface.removeDockWidget(self)
-
-        else:
-            iface.addDockWidget(Qt.RightDockWidgetArea, self)
 
 
     def filter_tree_view(self, text):

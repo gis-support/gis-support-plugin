@@ -80,16 +80,12 @@ class Main(BaseModule):
 
         iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
 
-        self.uldk_toolbar_action = self.parent.add_action(
-            ":/plugins/gissupport_plugin/uldk/uldk.svg",
-            self.module_name,
-            lambda state: self.dockwidget.setHidden(not state),
-            checkable = True,
-            parent = iface.mainWindow(),
+        self.uldk_toolbar_action = self.parent.add_dockwidget_action(
+            dockwidget=self.dockwidget,
+            icon_path=':/plugins/gissupport_plugin/uldk/uldk.svg',
+            text=self.module_name,
             add_to_topmenu=True
         )
-
-        self.dockwidget.visibilityChanged.connect(self.uldk_toolbar_action.setChecked)
 
         self.identify_action = self.parent.add_action(
             ":/plugins/gissupport_plugin/uldk/uldk_identify.svg",

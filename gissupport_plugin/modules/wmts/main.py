@@ -19,17 +19,14 @@ class WMTSCacheModule(BaseModule):
         self.dockwidget = WMTSDockWidget()
         self.list_model = QStandardItemModel()
 
-        self.action = self.parent.add_action(
-            ':/plugins/gissupport_plugin/wmts/wmts.svg',
-            self.module_name,
-            callback = self.dockwidget.setVisible,
-            parent=iface.mainWindow(),
-            checkable=True,
+        self.action = self.parent.add_dockwidget_action(
+            dockwidget=self.dockwidget,
+            icon_path=':/plugins/gissupport_plugin/wmts/wmts.svg',
+            text=self.module_name,
             add_to_topmenu=True
         )
         self.settings = QSettings()
 
-        self.dockwidget.visibilityChanged.connect(self.action.setChecked)
         self.dockwidget.lbInfoCacheExpiration.setPixmap(QPixmap(':/plugins/plugin/info.png'))
         self.dockwidget.lbInfoCacheExpiration.setToolTip('Maksymalnie 720 godz. (30 dni)')
         self.dockwidget.saveButton.clicked.connect(self.dialogAccepted)

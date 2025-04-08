@@ -18,19 +18,12 @@ class GISBox(BaseModule, Logger):
         self.dockwidget = GISBoxDockWidget()
         self.autoDigitizationWidget = None
 
-        self.dockwidgetAction = self.parent.add_action(
+        self.dockwidgetAction = self.parent.add_dockwidget_action(
+            dockwidget = self.dockwidget,
             icon_path=":/plugins/gissupport_plugin/gis_box/disconnected.png",
-            text = 'GIS.Box',
-            callback= self.dockwidget.setVisible,
-            parent=iface.mainWindow(),
-            add_to_menu=False,
-            add_to_topmenu=False,
-            add_to_toolbar=True,
-            checkable=True,
-            enabled=True
-        )
+            text = 'GIS.Box'
+            )
 
-        self.dockwidget.visibilityChanged.connect(self.dockwidgetAction.setChecked)
         layers_registry.on_schema.connect(self.readProject)
         QgsProject.instance().readProject.connect(self.readProject)
         QgsProject.instance().readProject.connect(self.toggle_gisbox_layers_readonly_mode)

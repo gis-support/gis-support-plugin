@@ -90,7 +90,7 @@ class Main(BaseModule):
         self.identify_action = self.parent.add_action(
             ":/plugins/gissupport_plugin/uldk/uldk_identify.svg",
             text = "Identifykacja ULDK",
-            callback = lambda toggle: iface.mapCanvas().setMapTool( self.module_map_point_search ),
+            callback = self.toggle_map_point_search_tool,
             parent = iface.mainWindow(),
             checkable = True,
             add_to_topmenu=False
@@ -155,3 +155,11 @@ class Main(BaseModule):
         if layer.customProperty("ULDK") == "wms_kieg_layer":
             self.wms_kieg_layer = None
 
+    def toggle_map_point_search_tool(self, checked):
+        """
+        Włącza/wyłącza narzędzie identyfikacji działek w zależności od stanu akcji.
+        """
+        if checked:
+            iface.mapCanvas().setMapTool(self.module_map_point_search)
+        else:
+            iface.mapCanvas().unsetMapTool(self.module_map_point_search)

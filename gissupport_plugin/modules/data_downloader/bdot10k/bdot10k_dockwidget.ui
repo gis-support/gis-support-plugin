@@ -46,7 +46,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="bounds">
        <attribute name="title">
@@ -79,44 +79,10 @@
             <widget class="QComboBox" name="layerComboBox"/>
            </item>
            <item>
-            <widget class="QLabel" name="methodLabel">
-             <property name="font">
-              <font>
-               <kerning>true</kerning>
-              </font>
-             </property>
-             <property name="text">
-              <string>Wybierz sposób wskazania obszaru:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="methodComboBox"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="fromLayerLabel">
-             <property name="font">
-              <font>
-               <kerning>true</kerning>
-              </font>
-             </property>
-             <property name="text">
-              <string>Wybierz warstę z obiektami:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QgsMapLayerComboBox" name="fromLayerComboBox"/>
+            <layout class="QVBoxLayout" name="widgetLayout"/>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QPushButton" name="drawBoundsButton">
-               <property name="text">
-                <string>Wskaż obszar</string>
-               </property>
-              </widget>
-             </item>
              <item>
               <widget class="QPushButton" name="boundsDownloadButton">
                <property name="text">
@@ -384,13 +350,6 @@
    </layout>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QgsMapLayerComboBox</class>
-   <extends>QComboBox</extends>
-   <header>qgsmaplayercombobox.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

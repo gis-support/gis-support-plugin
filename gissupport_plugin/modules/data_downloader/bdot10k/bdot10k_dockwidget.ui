@@ -7,33 +7,44 @@
     <x>0</x>
     <y>0</y>
     <width>301</width>
-    <height>424</height>
+    <height>495</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>BDOT10k - Baza Danych Obiektów Topograficznych</string>
+   <string>Wtyczka GIS Support - BDOT10k - Baza Danych Obiektów Topograficznych</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
-     <widget class="QLabel" name="moreinfoLabel">
-      <property name="font">
-       <font>
-        <pointsize>8</pointsize>
-        <weight>50</weight>
-        <italic>false</italic>
-        <bold>false</bold>
-        <kerning>true</kerning>
-       </font>
-      </property>
+     <widget class="QLabel" name="infoLabel_2">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Więcej informacji na &lt;a href=&quot;https://gis-support.pl/wtyczka-gis-support/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;stronie wtyczki&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Narzędzie pozwala pobrać warstwy wektorowe z &lt;a href=&quot;https://www.geoportal.gov.pl/pl/dane/baza-danych-obiektow-topograficznych-bdot10k/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Bazy danych obiektów topograficznych (BDOT10k)&lt;/span&gt;&lt;/a&gt;. Administratorem danych jest GUGiK. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+      <property name="openExternalLinks">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="moreInfoLabel">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p  style=&quot; font-size:10pt;&quot;&gt;Więcej informacji na &lt;a href=&quot;https://gis-support.pl/wtyczka-gis-support/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;stronie wtyczki&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>
       </property>
       <property name="openExternalLinks">
        <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
@@ -46,7 +57,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="bounds">
        <attribute name="title">
@@ -186,7 +197,6 @@
             <widget class="QLabel" name="infoLabel">
              <property name="font">
               <font>
-               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -306,16 +316,6 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_7">
            <item>
-            <widget class="QLabel" name="classLabel">
-             <property name="text">
-              <string>Wybierz klasę:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="classComboBox"/>
-           </item>
-           <item>
             <widget class="QLabel" name="downloadLabel">
              <property name="text">
               <string>Ścieżka zapisu:</string>
@@ -335,6 +335,16 @@
               </widget>
              </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QLabel" name="classLabel">
+             <property name="text">
+              <string>Wybierz klasę:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="classComboBox"/>
            </item>
            <item>
             <widget class="QPushButton" name="classDownloadButton">

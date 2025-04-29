@@ -1,4 +1,5 @@
 import time
+from typing import List, Union
 
 from qgis.PyQt.QtCore import pyqtSignal, QObject
 from qgis.core import QgsProject
@@ -115,11 +116,11 @@ class LayersRegistry(QObject, Logger):
             return
         return layers_registry.layers.get(int(layer.customProperty('gisbox/layer_id')))
 
-    def loadGroup(self):
-        action = self.sender()
-        group_id = action.data()
+    def loadGroup(self, group_data: List[Union[str, int]]):
+
+        group_name = group_data[0]
+        group_id = group_data[1]
         group = self.getGroupById(group_id)
-        group_name = action.parent().title()
 
         root = QgsProject.instance().layerTreeRoot()
         qgis_group = root.addGroup(group_name)

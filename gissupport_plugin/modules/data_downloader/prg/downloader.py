@@ -14,7 +14,7 @@ class PRGDownloader:
         self.prg_dockwidget = None
         self.layer = None
         self.task = None
-        self.entity_option = None
+        self.entity_option = EntityOption.WOJEWODZTWO
 
     def init_prg_dockwidget(self):
         self.prg_dockwidget = PRGDockWidget()

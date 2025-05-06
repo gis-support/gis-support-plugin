@@ -82,7 +82,7 @@ class PRGDownloader:
             "powiatów dla całego kraju",
             "powiatów dla wybranego województwa",
             "wybranego powiatu",
-            "gmin dla całego kraju",
+            # "gmin dla całego kraju",
             "gmin dla wybranego województwa",
             "gmin dla wybranego powiatu",
             "wybranej gminy"

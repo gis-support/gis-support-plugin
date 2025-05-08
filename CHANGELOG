@@ -1,3 +1,9 @@
+2.8
+Zmiany w GUI wtyczki - narzędzia `GIS.Box`, `WMTS` i `Mapster` otrzymały dedykowane panele boczne
+Poprawienie obsługi braku geometrii w GIS Box po zmianach w nowszych wersjach QGIS
+Obsługa błędów w Capabilities warstw usług GIS.Box
+Wyłączenie możliwości pobierania gmin dla całej Polski ze względu na problem z usługą ULDK
+
 2.7
 Obsługa limitu danych w API dla danych BDOT10k
 Zmiana w wyświetlaniu informacji o nieznalezionych działkach ULDK

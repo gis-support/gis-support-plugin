@@ -14,7 +14,6 @@ class BDOT10kDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def __init__(self, parent=None):
         super(BDOT10kDockWidget, self).__init__(parent)
         self.setupUi(self)
-        self.setWindowTitle("BDOT10k - Baza Danych Obiektów Topograficznych")
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

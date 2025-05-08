@@ -25,7 +25,7 @@ import os.path
 
 from PyQt5.QtCore import (QCoreApplication, Qt, QUrl)
 from PyQt5.QtGui import QDesktopServices, QIcon
-from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QAction, QDockWidget
 from pathlib import Path
 import inspect
 from importlib import util
@@ -95,6 +95,19 @@ class GISSupportPlugin:
         self.actions.append(action)
 
         return action
+
+    def add_dockwidget_action(self, dockwidget: QDockWidget, icon_path: str, text: str, add_to_topmenu: bool = False):
+
+        dockwidget_action = dockwidget.toggleViewAction()
+        dockwidget_action.setIcon(QIcon(icon_path))
+        dockwidget_action.setText(text)
+
+        self.toolbar.addAction(dockwidget_action)
+
+        if add_to_topmenu:
+            self.topMenu.addAction(dockwidget_action)
+
+        return dockwidget_action
 
     def initModules(self, modules: list = ['uldk', 'gugik_nmt', 'wms', 'wmts', 'mapster', 'data_downloader']):
         """ Włączenie modułów """

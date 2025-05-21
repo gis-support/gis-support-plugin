@@ -275,7 +275,7 @@
     "source": "Główny Urząd Geodezji i Kartografii (GUGiK) - Geoportal.gov.pl",
     "type": "WMS",
     "name": "Sekcje mapy w układzie 1992",
-    "url": "http://integracja.gugik.gov.pl/cgi-bin/puwg1992",
+    "url": "https://mapy.geoportal.gov.pl/wss/service/PUWG1992",
     "description": "-",
     "id": 35
   },
@@ -947,7 +947,7 @@
     "source": "Powiat bolesławiecki",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/0201",
+    "url": "https://geoportal.powiatboleslawiecki.pl/ggp",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 119
   },
@@ -1107,7 +1107,7 @@
     "source": "Powiat wałbrzyski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/0221",
+    "url": "https://walbrzyski-wms.webewid.pl/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 139
   },
@@ -1163,7 +1163,7 @@
     "source": "Powiat Legnica",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.legnica.eu/mapserv/262011/geoportal/",
+    "url": "https://wms.legnica.eu/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 146
   },
@@ -1227,7 +1227,7 @@
     "source": "Powiat grudziądzki",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/0406",
+    "url": "https://wms.powiatgrudziadzki.pl/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 154
   },
@@ -1283,7 +1283,7 @@
     "source": "Powiat sępoleński",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/0413",
+    "url": "https://sepolenski-wms.webewid.pl/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 161
   },
@@ -1507,7 +1507,7 @@
     "source": "Powiat tomaszowski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "http://tomaszowlubelski.geoportal2.pl/map/geoportal/wfsg.php",
+    "url": "http://tomaszowlubelski.geoportal2.pl/map/geoportal/wfs.php",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 189
   },
@@ -1827,7 +1827,7 @@
     "source": "Powiat zgierski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/1020",
+    "url": "https://zgierski-wms.webewid.pl:743/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 229
   },
@@ -1883,7 +1883,7 @@
     "source": "Powiat chrzanowski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/1203",
+    "url": "https://chrzanowski.webewid.pl:22443/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 236
   },
@@ -1899,7 +1899,7 @@
     "source": "Powiat gorlicki",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/1205",
+    "url": "https://gorlicki.webewid.pl:4443/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 238
   },
@@ -2019,7 +2019,7 @@
     "source": "Powiat Kraków",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://msip.um.krakow.pl/arcgis/services/ZSOZ/EGIB_WFS/MapServer/WFSServer",
+    "url": "https://msip.um.krakow.pl/arcgis/services/ZSOZ/EGIB_udostepnianie/MapServer/WFSServer",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 253
   },
@@ -2355,7 +2355,7 @@
     "source": "Powiat Radom",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/1463",
+    "url": "https://ikerg.modgik.radom.pl/radom-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 295
   },
@@ -2411,7 +2411,7 @@
     "source": "Powiat krapkowicki",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/1605",
+    "url": "https://ikerg.powiatkrapkowicki.pl/krapkowice-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 302
   },
@@ -2419,7 +2419,7 @@
     "source": "Powiat namysłowski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/1606",
+    "url": "https://iegib.namyslow.pl/cgi-bin/namyslow-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 303
   },
@@ -2827,7 +2827,7 @@
     "source": "Powiat człuchowski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/2203",
+    "url": "https://wms.czluchow.org.pl/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 354
   },
@@ -2867,7 +2867,7 @@
     "source": "Powiat lęborski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/2208",
+    "url": "https://leborski.webewid.pl:44443/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 359
   },
@@ -2883,7 +2883,7 @@
     "source": "Powiat nowodworski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/2210",
+    "url": "https://nowodworski.webewid.pl:4444/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 361
   },
@@ -3011,7 +3011,7 @@
     "source": "Powiat kłobucki",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.powiatklobucki.pl/ggp",
+    "url": "http://powiatklobucki.geoportal2.pl/map/geoportal/wfs.php",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 377
   },
@@ -3035,7 +3035,7 @@
     "source": "Powiat myszkowski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/2409",
+    "url": "https://imapa.powiatmyszkowski.pl/myszkow-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 380
   },
@@ -3203,7 +3203,7 @@
     "source": "Powiat Rybnik",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/2473",
+    "url": "https://geodeta.gpue.rybnik.eu/rybnik-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 401
   },
@@ -3251,7 +3251,7 @@
     "source": "Powiat Żory",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "http://wfs.geoportal.zory.pl/gugik",
+    "url": "https://geoportal.zory.pl/usluga/iip/wfs/geodezja",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 407
   },
@@ -3355,7 +3355,7 @@
     "source": "Powiat włoszczowski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "http://wloszczowa.geoportal2.pl/map/geoportal/wfsg.php",
+    "url": "https://wloszczowa.geoportal2.pl/map/geoportal/wfs.php",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 420
   },
@@ -3363,7 +3363,7 @@
     "source": "Powiat Kielce",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/2661",
+    "url": "https://wms.kielce.eu/kielce-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 421
   },
@@ -3603,7 +3603,7 @@
     "source": "Powiat kolski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/3009",
+    "url": "https://ikerg.starostwokolskie.pl/powiatkolski-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 451
   },
@@ -3659,7 +3659,7 @@
     "source": "Powiat obornicki",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/3016",
+    "url": "https://ikerg.powiatobornicki.pl/oborniki-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 458
   },
@@ -3683,7 +3683,7 @@
     "source": "Powiat pilski",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/3019",
+    "url": "https://ikerg.powiat.pila.pl/pila-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 461
   },
@@ -3707,7 +3707,7 @@
     "source": "Powiat rawicki",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/3022",
+    "url": "https://ikerg.powiatrawicki.pl/rawicz-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 464
   },
@@ -3715,7 +3715,7 @@
     "source": "Powiat słupecki",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/3023",
+    "url": "https://ikerg.powiat-slupca.pl/slupca-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 465
   },
@@ -3803,7 +3803,7 @@
     "source": "Powiat Leszno",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/3063",
+    "url": "https://imapa.leszno.pl/mleszno-egib",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 476
   },
@@ -3939,7 +3939,7 @@
     "source": "Powiat świdwiński",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/3216",
+    "url": "https://swidwinski-wms.webewid.pl/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 493
   },

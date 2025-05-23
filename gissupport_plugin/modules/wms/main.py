@@ -225,16 +225,15 @@ class Main(BaseModule):
 
     def populateCrsCb(self, crses):
         self.dlg.crsCb.clear()
-        default = 'EPSG:2180'
-        project_crs = QgsProject.instance().crs().authid()
-        if project_crs:
-            crses.insert(0, project_crs)
-        elif default in crses:
-            crses.insert(0, crses.pop(crses.index(default)))
-
         for index, crs in enumerate(crses, start=1):
             if self.dlg.crsCb.findText(crs) == -1:
                 self.dlg.crsCb.insertItem(index, crs)
+        
+        # Ustawiamy domyślny układ, jeśli jest na liście
+        for crs in (QgsProject.instance().crs().authid(), 'EPSG:2180'):
+            if (cid := self.dlg.crsCb.findText(crs)) != -1:
+                self.dlg.crsCb.setCurrentIndex(cid)
+                break
 
     def populateFormatCb(self, formats):
         self.dlg.formatCb.clear()

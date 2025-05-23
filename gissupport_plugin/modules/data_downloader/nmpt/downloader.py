@@ -86,16 +86,15 @@ class NMPTdownloader:
 
         self.nmpt_dockwidget.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_change)
 
+        iface.addDockWidget(Qt.RightDockWidgetArea, self.nmpt_dockwidget)
+        self.nmpt_dockwidget.hide()
+
     def change_nmpt_dockwidget_visibility(self):
 
         if self.nmpt_dockwidget is None:
             self.init_nmpt_dockwidget()
-
-        if not self.nmpt_dockwidget.isVisible():
-            iface.addDockWidget(Qt.RightDockWidgetArea, self.nmpt_dockwidget)
-
-        else:
-            iface.removeDockWidget(self.nmpt_dockwidget)
+        
+        self.nmpt_dockwidget.setVisible(not self.nmpt_dockwidget.isVisible())
 
     @update_download_button_state_dec
     def data_radiobutton_state(self, button):

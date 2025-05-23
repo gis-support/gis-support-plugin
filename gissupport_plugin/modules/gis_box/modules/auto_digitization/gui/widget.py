@@ -46,7 +46,6 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.layer_id = None
         self.projected = False
 
-        self.getOptions()
 
     def menageSignals(self):
         """ Zarządzanie sygnałami """

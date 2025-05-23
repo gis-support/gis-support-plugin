@@ -9,10 +9,10 @@ from gissupport_plugin.tools.requests import NetworkHandler
 
 
 class EntityOption(Enum):
-    GMINA = "Gmina"
-    POWIAT = "Powiat"
-    WOJEWODZTWO = "Wojewodztwo"
-    BRAK = "Brak (dla całego kraju)"
+    GMINA = "gmi"
+    POWIAT = "pow"
+    WOJEWODZTWO = "woj"
+    BRAK = "brak"
 
 
 class PRGDownloadTask(QgsTask):
@@ -22,19 +22,19 @@ class PRGDownloadTask(QgsTask):
     url = "https://uldk.gugik.gov.pl"
 
     search_types_by_options = {
-        "Gmina": {
+        EntityOption.GMINA: {
             "param": "GetCommuneById",
             "name": "commune"
         },
-        "Powiat": {
+        EntityOption.POWIAT: {
            "param": "GetCountyById",
            "name": "county"
         },
-        "Wojewodztwo": {
+        EntityOption.WOJEWODZTWO: {
             "param": "GetVoivodeshipById",
             "name": "voivodeship"
         },
-        "Brak": {
+        EntityOption.BRAK: {
             "name": "",
             "param": ""
         }

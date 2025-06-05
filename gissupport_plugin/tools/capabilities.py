@@ -15,7 +15,6 @@ class CapabilitiesConnectionException(Exception):
 
 def get_capabilities(url: str, type: str) -> Union[WebMapService, WebFeatureService]:
     manager = QgsNetworkAccessManager()
-    manager.setTransferTimeout(60000)
     
     url = f'{url}?service={type}&request=GetCapabilities'
     request = QNetworkRequest(QUrl(url))

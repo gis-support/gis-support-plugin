@@ -15,7 +15,7 @@ class GisboxConnection(QObject, Logger):
     on_error = pyqtSignal(dict)
 
     MANAGER = QgsNetworkAccessManager()
-    MANAGER.setTimeout(600000)
+    MANAGER.setTransferTimeout(600000)
     QUEUE = {}
 
     def __init__(self, parent=None):

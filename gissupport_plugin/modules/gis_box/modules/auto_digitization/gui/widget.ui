@@ -16,6 +16,9 @@
     <height>552</height>
    </size>
   </property>
+  <property name="features">
+   <set>QDockWidget::NoDockWidgetFeatures</set>
+  </property>
   <property name="windowTitle">
    <string>Automatyczna wektoryzacja</string>
   </property>

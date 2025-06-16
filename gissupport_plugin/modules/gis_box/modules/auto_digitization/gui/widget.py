@@ -94,6 +94,9 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         if area > 100:
             self.lbWarning.setVisible(True)
             self.btnExecute.setEnabled(False)
+        elif area <= 0:
+            self.lbWarning.setVisible(False)
+            self.btnExecute.setEnabled(False)
         else:
             self.lbWarning.setVisible(False)
             self.btnExecute.setEnabled(True)
@@ -107,6 +110,8 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
         if self.selectAreaWidget.tool == self.select_features_tool:
             if self.area > 100:
+                self.btnExecute.setEnabled(False)
+            elif self.area <= 0:
                 self.btnExecute.setEnabled(False)
             else:
                 self.btnExecute.setEnabled(True)
@@ -206,8 +211,18 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.areaInfoReset()
         if self.selectAreaWidget.tool == self.select_features_tool:
             self.select_features_tool.activate()
+            self.selectAreaWidget.selectLayerFeatsCb.stateChanged.connect(self.on_change_checkbox_state)
 
     def on_layer_changed(self):
+        if self.selectAreaWidget.tool == self.select_features_tool:
+            self.selectAreaWidget.selectLayerCb.currentLayer().selectionChanged.connect(self.on_selection_changed)
+            self.select_features_tool.activate()
+
+    def on_selection_changed(self):
+        if self.selectAreaWidget.tool == self.select_features_tool:
+            self.select_features_tool.activate()
+            
+    def on_change_checkbox_state(self):
         if self.selectAreaWidget.tool == self.select_features_tool:
             self.select_features_tool.activate()
 

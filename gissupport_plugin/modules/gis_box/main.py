@@ -99,9 +99,10 @@ class GISBox(BaseModule, Logger):
 
     def mount_autodigitization_widget(self):
         self.autoDigitizationWidget = AutoDigitizationWidget()
+        content_widget = self.autoDigitizationWidget.widget()
         layout = QtWidgets.QVBoxLayout()
         self.dockwidget.vectorTab.setLayout(layout)
-        layout.addWidget(self.autoDigitizationWidget)
+        layout.addWidget(content_widget)
         self.dockwidget.vectorTab.setEnabled(False)
 
     def enableDigitization(self, data):

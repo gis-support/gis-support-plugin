@@ -66,7 +66,7 @@ class GisboxConnection(QObject, Logger):
         host = settings.value('host')
 
         o = urllib.parse.urlsplit(host)
-        if not o.netloc:
+        if not o.scheme:
             host = "https://" + host
 
         return host

@@ -143,8 +143,16 @@ class Main(BaseModule):
                     )
                     return 1
 
-                formatOptions = wfsCapabilities.getOperationByName('GetFeature').formatOptions
-                self.populateFormatCb(formatOptions)
+                try:
+                    formatOptions = wfsCapabilities.getOperationByName('GetFeature').formatOptions
+                    self.populateFormatCb(formatOptions)
+                except AttributeError:
+                    iface.messageBar().pushMessage(
+                        'Baza krajowych usług WFS',
+                        f'Błąd połączenia z serwerem WFS.',
+                        level=Qgis.Critical
+                    )
+                    return 1
 
                 for nr, layer in enumerate(list(wfsCapabilities.contents)):
                     wfsLayer = wfsCapabilities[layer]

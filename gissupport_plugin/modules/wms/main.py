@@ -138,13 +138,12 @@ class Main(BaseModule):
                 except CapabilitiesConnectionException as e:
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WFS',
-                        'Błąd połączenia z serwerem WFS.',
+                        f'Błąd połączenia z serwerem WFS (kod: {e.code}).',
                         level=Qgis.Critical
                     )
                     return 1
 
                 formatOptions = wfsCapabilities.getOperationByName('GetFeature').formatOptions
-
                 self.populateFormatCb(formatOptions)
 
                 for nr, layer in enumerate(list(wfsCapabilities.contents)):

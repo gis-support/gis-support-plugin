@@ -211,6 +211,8 @@ class Main(BaseModule):
                         typename='{}' 
                         url='{}' 
                         version='2.0.0'
+                        preferCoordinatesForWfsT11='false'
+                        restrictToRequestBBOX='1' 
                     """
                     ).format(
                         self.dlg.crsCb.currentText(),

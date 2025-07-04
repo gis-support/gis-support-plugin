@@ -1,5 +1,6 @@
 import time
 from typing import List, Union
+import json
 
 from qgis.PyQt.QtCore import pyqtSignal, QObject
 from qgis.core import QgsProject
@@ -104,7 +105,16 @@ class LayersRegistry(QObject, Logger):
         if layer is None:
             # Brak warstw
             return False
-        return bool(layer.customProperty('gisbox/is_gisbox_layer'))
+        
+        project = QgsProject.instance()
+        custom_variables = project.customVariables()
+        stored_mappings = custom_variables.get('gisbox/layer_mappings') or ''
+        mappings = json.loads(stored_mappings) if stored_mappings else {}
+        
+        if mappings.get(layer.id()) is None:
+            return False
+
+        return True
 
     def getLayerClass(self, layer=None):
         """ Zwraca klasę danej warstwy """
@@ -114,7 +124,15 @@ class LayersRegistry(QObject, Logger):
         if not self.isGisboxLayer(layer):
             # To nie jest warstwa gisbox
             return
-        return layers_registry.layers.get(int(layer.customProperty('gisbox/layer_id')))
+
+        project = QgsProject.instance()
+        custom_variables = project.customVariables()
+        stored_mappings = custom_variables.get('gisbox/layer_mappings') or ''
+        mappings = json.loads(stored_mappings) if stored_mappings else {}
+        
+        layer_id = mappings.get(layer.id())
+
+        return layers_registry.layers.get(int(layer_id))
 
     def loadGroup(self, group_data: List[Union[str, int]]):
 

@@ -1,3 +1,5 @@
+import json
+
 from qgis.PyQt.QtGui import QIcon
 from qgis.utils import iface
 from qgis.core import QgsProject
@@ -67,13 +69,20 @@ class GISBox(BaseModule, Logger):
         Przełącza tryb `read_only` warstw GIS.Box.
         Wykorzystywane przy łączeniu/rozłączaniu z GIS.Box.
         """
+
+        project = QgsProject.instance()
+        custom_variables = project.customVariables()
+        stored_mappings = custom_variables.get('gisbox/layer_mappings') or ''
+        mappings = json.loads(stored_mappings) if stored_mappings else {}
+        
         is_connected = GISBOX_CONNECTION.is_connected
-        for layer in QgsProject.instance().mapLayers().values():
+        for layer in project.mapLayers().values():
             if layers_registry.isGisboxLayer(layer):
 
                 if is_connected:
                     # Odczytywanie uprawnień użytkownika do edycji warstwy
-                    layer_id = layer.customProperty('gisbox/layer_id')
+                    layer_qgis_id = layer.id()
+                    layer_id = mappings.get(layer_qgis_id)
                     layer_permission = GISBOX_CONNECTION.current_user['permissions']['layers'].get(int(layer_id))
 
                     if layer_permission['main_value'] == 2:
@@ -90,10 +99,18 @@ class GISBox(BaseModule, Logger):
     def readProject(self):
         if not GISBOX_CONNECTION.is_connected:
             return
+
+        project = QgsProject.instance()
+        custom_variables = project.customVariables()
+        stored_mappings = custom_variables.get('gisbox/layer_mappings') or ''
+        mappings = json.loads(stored_mappings) if stored_mappings else {}
+
         for layer in QgsProject.instance().mapLayers().values():
             if layers_registry.isGisboxLayer(layer):
-                layer_class = layers_registry.layers[int(
-                    layer.customProperty('gisbox/layer_id'))]
+                
+                layer_qgis_id = layer.id()
+                layer_id = mappings.get(layer_qgis_id)
+                layer_class = layers_registry.layers[int(layer_id)]
                 layer_class.setLayer(layer, from_project=True)
                 
 

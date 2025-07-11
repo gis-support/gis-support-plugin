@@ -1,6 +1,5 @@
 import time
 from typing import List, Union
-import json
 
 from qgis.PyQt.QtCore import pyqtSignal, QObject
 from qgis.core import QgsProject
@@ -13,6 +12,8 @@ from .gisbox_datasource import GisboxFeatureLayer
 
 from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+from gissupport_plugin.tools.project_variables import get_layer_mappings
+
 
 class LayersRegistry(QObject, Logger):
     """ Klasa służy do zarządzania warstwami gisbox """
@@ -105,12 +106,8 @@ class LayersRegistry(QObject, Logger):
         if layer is None:
             # Brak warstw
             return False
-        
-        project = QgsProject.instance()
-        custom_variables = project.customVariables()
-        stored_mappings = custom_variables.get('gisbox/layer_mappings') or ''
-        mappings = json.loads(stored_mappings) if stored_mappings else {}
-        
+
+        mappings = get_layer_mappings()
         if mappings.get(layer.id()) is None:
             return False
 
@@ -125,10 +122,7 @@ class LayersRegistry(QObject, Logger):
             # To nie jest warstwa gisbox
             return
 
-        project = QgsProject.instance()
-        custom_variables = project.customVariables()
-        stored_mappings = custom_variables.get('gisbox/layer_mappings') or ''
-        mappings = json.loads(stored_mappings) if stored_mappings else {}
+        mappings = get_layer_mappings()
         
         layer_id = mappings.get(layer.id())
 

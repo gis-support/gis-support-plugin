@@ -1,5 +1,3 @@
-import json
-
 from qgis.PyQt.QtGui import QIcon
 from qgis.utils import iface
 from qgis.core import QgsProject
@@ -11,6 +9,8 @@ from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
 from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.modules.gis_box.gisbox_dockwidget import GISBoxDockWidget
+from gissupport_plugin.tools.project_variables import get_layer_mappings
+
 
 class GISBox(BaseModule, Logger):
 
@@ -70,13 +70,9 @@ class GISBox(BaseModule, Logger):
         Wykorzystywane przy łączeniu/rozłączaniu z GIS.Box.
         """
 
-        project = QgsProject.instance()
-        custom_variables = project.customVariables()
-        stored_mappings = custom_variables.get('gisbox/layer_mappings') or ''
-        mappings = json.loads(stored_mappings) if stored_mappings else {}
-        
+        mappings = get_layer_mappings()        
         is_connected = GISBOX_CONNECTION.is_connected
-        for layer in project.mapLayers().values():
+        for layer in QgsProject.instance().mapLayers().values():
             if layers_registry.isGisboxLayer(layer):
 
                 if is_connected:
@@ -100,11 +96,7 @@ class GISBox(BaseModule, Logger):
         if not GISBOX_CONNECTION.is_connected:
             return
 
-        project = QgsProject.instance()
-        custom_variables = project.customVariables()
-        stored_mappings = custom_variables.get('gisbox/layer_mappings') or ''
-        mappings = json.loads(stored_mappings) if stored_mappings else {}
-
+        mappings = get_layer_mappings()
         for layer in QgsProject.instance().mapLayers().values():
             if layers_registry.isGisboxLayer(layer):
                 

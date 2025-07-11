@@ -1,12 +1,11 @@
 # coding: utf-8
-import json
-
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem,
                        QgsProject, QgsMapLayer)
 from qgis.utils import iface
 from qgis.PyQt.QtCore import QObject
 
 from gissupport_plugin.tools.logger import Logger
+from gissupport_plugin.tools.project_variables import get_layer_mappings, save_layer_mappings
 
 
 class BaseLayer(QObject, Logger):
@@ -36,10 +35,7 @@ class BaseLayer(QObject, Logger):
 
     def setLayer(self, layer=None):
         """ Rejestracja warstwy QGIS """
-
-        project = QgsProject.instance()
-
-        if layer and not project.layerTreeRoot().findLayers():
+        if layer and not QgsProject.instance().layerTreeRoot().findLayers():
             self.first = True
         else:
             self.first = False
@@ -56,14 +52,10 @@ class BaseLayer(QObject, Logger):
         # Ustawienia warstwy
         layer.setCustomProperty("skipMemoryLayersCheck", 1)
 
-        custom_variables = project.customVariables()
-        stored_mappings = custom_variables.get("gisbox/layer_mappings") or ''
-        mappings = json.loads(stored_mappings) if stored_mappings else {}
+        mappings = get_layer_mappings()
         layer_qgis_id = layer.id()
         mappings[layer_qgis_id] = self.id
-        
-        custom_variables["gisbox/layer_mappings"] = json.dumps(mappings)
-        project.setCustomVariables(custom_variables)
+        save_layer_mappings(mappings)        
 
         # Zarejestrowanie warstwy
         self.layers.append(layer)

@@ -1,5 +1,4 @@
 import os
-import json
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal, QEvent
@@ -14,6 +13,7 @@ from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_regi
 from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.modules.gis_box.gui.login_settings import LoginSettingsDialog
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+from gissupport_plugin.tools.project_variables import get_layer_mappings
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -226,12 +226,9 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
         if not GISBOX_CONNECTION.is_connected:
             return
 
-        project = QgsProject.instance()
-        custom_variables = project.customVariables()
-        stored_mappings = custom_variables.get('gisbox/layer_mappings') or ''
-        mappings = json.loads(stored_mappings) if stored_mappings else {}
+        mappings = get_layer_mappings()
 
-        for layer in project.mapLayers().values():
+        for layer in QgsProject.instance().mapLayers().values():
             if layers_registry.isGisboxLayer(layer):
                 layer_qgis_id = layer.id()
                 layer_id = mappings.get(layer_qgis_id)

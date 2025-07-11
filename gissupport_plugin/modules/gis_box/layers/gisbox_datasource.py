@@ -1,5 +1,4 @@
 import time
-import json
 
 from typing import List, Iterable, Any
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
@@ -14,6 +13,8 @@ from . import DATA_SOURCE_REGISTRY, RELATION_VALUES_MAPPING_REGISTRY
 from gissupport_plugin.tools.logger import Logger
 from .geojson import geojson2geom
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+from gissupport_plugin.tools.project_variables import get_layer_mappings, save_layer_mappings
+
 
 class GisboxDataSource(QObject, Logger):
     """ Klasa bazowa dla źródeł danych GISBox """
@@ -75,10 +76,7 @@ class GisboxFeatureLayer(QObject, Logger):
 
     def setLayer(self, layer=None, from_project=False):
         """ Rejestracja warstwy QGIS """
-
-        project = QgsProject.instance()
-
-        if layer and not project.layerTreeRoot().findLayers():
+        if layer and not QgsProject.instance().layerTreeRoot().findLayers():
             self.first = True
         else:
             self.first = False
@@ -102,14 +100,10 @@ class GisboxFeatureLayer(QObject, Logger):
         layer.setCustomProperty('gisbox/layer_type', self.datasource_name)
         layer.setCustomProperty('gisbox/layer_scope', self.layer_scope)
 
-        custom_variables = project.customVariables()
-        stored_mappings = custom_variables.get("gisbox/layer_mappings") or ''
-        mappings = json.loads(stored_mappings) if stored_mappings else {}
+        mappings = get_layer_mappings()
         layer_qgis_id = layer.id()
         mappings[layer_qgis_id] = self.id
-        
-        custom_variables["gisbox/layer_mappings"] = json.dumps(mappings)
-        project.setCustomVariables(custom_variables)
+        save_layer_mappings(mappings)        
 
         # Zarejestrowanie warstwy
         self.layers.append(layer)

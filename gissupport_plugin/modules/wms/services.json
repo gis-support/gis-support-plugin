@@ -2651,7 +2651,7 @@
     "source": "Powiat łomżyński",
     "type": "WFS",
     "name": "Usługa WFS z ewidencją gruntów i budynków (EGIB)",
-    "url": "https://mapy.geoportal.gov.pl/wss/ext/PowiatoweBazyEwidencjiGruntow/2007",
+    "url": "https://lomzynski-wms.webewid.pl/iip/ows",
     "description": "Usługa WFS dostarczana przez powiat",
     "id": 332
   },

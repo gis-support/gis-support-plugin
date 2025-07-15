@@ -12,7 +12,7 @@ from .gisbox_datasource import GisboxFeatureLayer
 
 from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
-from gissupport_plugin.tools.project_variables import get_layer_mappings
+from gissupport_plugin.tools.project_variables import get_layer_mapping
 
 
 class LayersRegistry(QObject, Logger):
@@ -107,8 +107,11 @@ class LayersRegistry(QObject, Logger):
             # Brak warstw
             return False
 
-        mappings = get_layer_mappings()
-        if mappings.get(layer.id()) is None:
+        if layer.customProperty('gisbox/is_gisbox_layer'):
+            return bool(layer.customProperty('gisbox/is_gisbox_layer'))
+
+        layer_gisbox_id = get_layer_mapping(layer.id())
+        if layer_gisbox_id == -1:
             return False
 
         return True
@@ -122,11 +125,8 @@ class LayersRegistry(QObject, Logger):
             # To nie jest warstwa gisbox
             return
 
-        mappings = get_layer_mappings()
-        
-        layer_id = mappings.get(layer.id())
-
-        return layers_registry.layers.get(int(layer_id))
+        layer_gisbox_id = get_layer_mapping(layer.id())
+        return layers_registry.layers.get(layer_gisbox_id)
 
     def loadGroup(self, group_data: List[Union[str, int]]):
 

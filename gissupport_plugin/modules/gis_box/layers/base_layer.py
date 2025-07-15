@@ -5,7 +5,7 @@ from qgis.utils import iface
 from qgis.PyQt.QtCore import QObject
 
 from gissupport_plugin.tools.logger import Logger
-from gissupport_plugin.tools.project_variables import get_layer_mappings, save_layer_mappings
+from gissupport_plugin.tools.project_variables import save_layer_mapping
 
 
 class BaseLayer(QObject, Logger):
@@ -52,10 +52,7 @@ class BaseLayer(QObject, Logger):
         # Ustawienia warstwy
         layer.setCustomProperty("skipMemoryLayersCheck", 1)
 
-        mappings = get_layer_mappings()
-        layer_qgis_id = layer.id()
-        mappings[layer_qgis_id] = self.id
-        save_layer_mappings(mappings)        
+        save_layer_mapping(layer_qgis_id=layer.id(), layer_gisbox_id=self.id)
 
         # Zarejestrowanie warstwy
         self.layers.append(layer)

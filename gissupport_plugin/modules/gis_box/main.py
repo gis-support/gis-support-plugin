@@ -101,7 +101,7 @@ class GISBox(BaseModule, Logger):
 
                 migrate_layer_gisbox_id_variable(layer)
 
-                if GISBOX_CONNECTION.is_connected:
+                if GISBOX_CONNECTION.is_connected and mappings:
                     layer_qgis_id = layer.id()
                     layer_id = mappings.get(layer_qgis_id)
                     layer_class = layers_registry.layers[layer_id]

@@ -9,6 +9,8 @@ from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
 from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.modules.gis_box.gisbox_dockwidget import GISBoxDockWidget
+from gissupport_plugin.tools.project_variables import get_layer_mappings, migrate_layer_gisbox_id_variable, remove_layer_mapping
+
 
 class GISBox(BaseModule, Logger):
 
@@ -27,6 +29,7 @@ class GISBox(BaseModule, Logger):
         layers_registry.on_schema.connect(self.readProject)
         QgsProject.instance().readProject.connect(self.readProject)
         QgsProject.instance().readProject.connect(self.toggle_gisbox_layers_readonly_mode)
+        QgsProject.instance().layerRemoved.connect(remove_layer_mapping)
         self.dockwidget.connectButton.clicked.connect(self.onConnection)
         self.mount_autodigitization_widget()
 
@@ -67,14 +70,17 @@ class GISBox(BaseModule, Logger):
         Przełącza tryb `read_only` warstw GIS.Box.
         Wykorzystywane przy łączeniu/rozłączaniu z GIS.Box.
         """
+
+        mappings = get_layer_mappings()        
         is_connected = GISBOX_CONNECTION.is_connected
         for layer in QgsProject.instance().mapLayers().values():
             if layers_registry.isGisboxLayer(layer):
 
                 if is_connected:
                     # Odczytywanie uprawnień użytkownika do edycji warstwy
-                    layer_id = layer.customProperty('gisbox/layer_id')
-                    layer_permission = GISBOX_CONNECTION.current_user['permissions']['layers'].get(int(layer_id))
+                    layer_qgis_id = layer.id()
+                    layer_id = mappings.get(layer_qgis_id)
+                    layer_permission = GISBOX_CONNECTION.current_user['permissions']['layers'].get(layer_id)
 
                     if layer_permission['main_value'] == 2:
                         layer.setReadOnly(False)
@@ -88,13 +94,18 @@ class GISBox(BaseModule, Logger):
                     layer.setReadOnly(True)
 
     def readProject(self):
-        if not GISBOX_CONNECTION.is_connected:
-            return
+
+        mappings = get_layer_mappings()
         for layer in QgsProject.instance().mapLayers().values():
             if layers_registry.isGisboxLayer(layer):
-                layer_class = layers_registry.layers[int(
-                    layer.customProperty('gisbox/layer_id'))]
-                layer_class.setLayer(layer, from_project=True)
+
+                migrate_layer_gisbox_id_variable(layer)
+
+                if GISBOX_CONNECTION.is_connected and mappings:
+                    layer_qgis_id = layer.id()
+                    layer_id = mappings.get(layer_qgis_id)
+                    layer_class = layers_registry.layers[layer_id]
+                    layer_class.setLayer(layer, from_project=True)
                 
 
     def mount_autodigitization_widget(self):

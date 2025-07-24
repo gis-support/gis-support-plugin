@@ -51,13 +51,6 @@ class NMPTdownloader:
     def init_nmpt_dockwidget(self):
 
         self.nmpt_dockwidget = NMPTdockWidget()
-        self.nmpt_dockwidget.projectLayerList.setFilters(QgsMapLayerProxyModel.PointLayer |
-                                                         QgsMapLayerProxyModel.LineLayer |
-                                                         QgsMapLayerProxyModel.PolygonLayer)
-
-        self.nmpt_dockwidget.selectedOnlyCheckBox.setEnabled(False)
-        self.nmpt_dockwidget.selectedOnlyCheckBox.stateChanged.connect(
-                                            self.get_bbox_and_area_for_selected)
 
         self.nmpt_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_nmpt)
 
@@ -73,12 +66,17 @@ class NMPTdownloader:
         self.nmpt_dockwidget.evrfRadioButton.toggled.connect(lambda: self.data_radiobutton_state(
             self.nmpt_dockwidget.evrfRadioButton))
 
-        self.selectRectangleTool = SelectRectangleTool(self.nmpt_dockwidget)
-        self.selectRectangleTool.setButton(self.nmpt_dockwidget.selectAreaButton)
-        self.nmpt_dockwidget.selectAreaButton.clicked.connect(lambda: self.activateTool(
-                                                                self.selectRectangleTool))
-        self.selectRectangleTool.geometryChanged.connect(self.area_changed)
-        self.selectRectangleTool.geometryEnded.connect(self.area_ended)
+        self.select_features_rectangle_tool = self.nmpt_dockwidget.selectAreaWidget.select_features_rectangle_tool
+        self.select_features_freehand_tool = self.nmpt_dockwidget.selectAreaWidget.select_features_freehand_tool
+        self.select_features_tool = self.nmpt_dockwidget.selectAreaWidget.select_features_tool
+
+        self.select_features_rectangle_tool.geometryChanged.connect(self.area_changed)
+        self.select_features_rectangle_tool.geometryEnded.connect(self.area_ended)
+        self.select_features_freehand_tool.geometryChanged.connect(self.area_changed)
+        self.select_features_freehand_tool.geometryEnded.connect(self.area_ended)
+        self.select_features_tool.geometryChanged.connect(self.area_changed)
+        self.select_features_tool.geometryEnded.connect(self.area_ended)
+
         self.nmpt_dockwidget.selectedAreaReset.clicked.connect(self.area_info_reset)
         self.nmpt_dockwidget.maxAreaReachedLabel.setVisible(False)
         self.nmpt_dockwidget.areaWidget.setHidden(True)
@@ -86,9 +84,7 @@ class NMPTdownloader:
         self.nmpt_dockwidget.downloadButton.clicked.connect(self.download_nmpt)
         self.nmpt_dockwidget.downloadButton.setEnabled(False)
 
-        self.nmpt_dockwidget.projectLayerList.layerChanged.connect(self.on_layer_changed)
-        self.nmpt_dockwidget.projectLayerList.setAllowEmptyLayer(True)
-        self.nmpt_dockwidget.projectLayerList.setCurrentIndex(0)
+        self.nmpt_dockwidget.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_change)
 
         iface.addDockWidget(Qt.RightDockWidgetArea, self.nmpt_dockwidget)
         self.nmpt_dockwidget.hide()
@@ -124,25 +120,25 @@ class NMPTdownloader:
             if button.text() == "PL-EVRF2007-NH":
                 self.datum_format = "EVRF2007"
 
-    def on_layer_changed(self):
+    def on_layer_change(self):
 
-        layer = self.nmpt_dockwidget.projectLayerList.currentLayer()
+        if self.nmpt_dockwidget.selectAreaWidget.selectMethodCb.currentText() == 'Wskaż obiekty':
+            layer = self.nmpt_dockwidget.selectAreaWidget.selectLayerCb.currentLayer()
+        else:
+            layer = None
 
         if layer:
             if layer.dataProvider().featureCount() == 0:
                 return
+
             self.source_layer = layer
             area = self.get_area_in_ha(self.source_layer.extent())
             self.area_changed(area)
             layer.selectionChanged.connect(self.on_layer_features_selection_changed)
             self.on_layer_features_selection_changed(layer.selectedFeatureIds())
-            self.nmpt_dockwidget.selectedOnlyCheckBox.setEnabled(True)
 
         else:
-            self.nmpt_dockwidget.selectedOnlyCheckBox.setEnabled(False)
-            self.nmpt_dockwidget.selectedOnlyCheckBox.setChecked(False)
             self.source_layer = None
-            self.nmpt_dockwidget.selectedOnlyCheckBox.setText("Tylko zaznaczone obiekty [0]")
             self.area_info_reset()
 
     def get_area_in_ha(self, bbox: QgsRectangle):
@@ -160,15 +156,13 @@ class NMPTdownloader:
 
     def on_layer_features_selection_changed(self, selected_features):
 
-        if self.nmpt_dockwidget.selectedOnlyCheckBox.isChecked():
+        if self.nmpt_dockwidget.selectAreaWidget.selectLayerFeatsCb.isChecked():
             self.get_bbox_and_area_for_selected()
 
-        self.nmpt_dockwidget.selectedOnlyCheckBox.setText(
-            f"Tylko zaznaczone obiekty [{len(selected_features)}]")
 
     def get_bbox_and_area_for_selected(self):
 
-        if self.nmpt_dockwidget.selectedOnlyCheckBox.isChecked():
+        if self.nmpt_dockwidget.selectAreaWidget.selectLayerFeatsCb.isChecked():
             bbox = self.source_layer.boundingBoxOfSelected()
 
         else:
@@ -219,7 +213,10 @@ class NMPTdownloader:
         self.area_under_limit = True
         self.bbox = None
         self.nmpt_dockwidget.selectedAreaLabel.setText("Powierzchnia: 0 ha")
-        self.selectRectangleTool.reset()
+
+        self.select_features_rectangle_tool.reset()
+        self.select_features_freehand_tool.reset()
+        self.select_features_tool.reset()
     
 
     def browse_filepath_for_nmpt(self):
@@ -241,6 +238,10 @@ class NMPTdownloader:
         self.task.task_failed.connect(self.handle_task_error)
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
+
+        self.select_features_tool.deactivate()
+        self.select_features_freehand_tool.deactivate()
+        self.select_features_rectangle_tool.deactivate()
 
     def load_nmpt_to_project(self, filepath_and_layer_name: list):
 

@@ -1,5 +1,7 @@
 # coding: utf-8
+import urllib
 import uuid
+
 from PyQt5.QtCore import QObject, QUrl, pyqtSignal, QSettings
 from PyQt5.QtNetwork import QNetworkRequest
 from qgis.core import QgsNetworkAccessManager, Qgis
@@ -62,7 +64,11 @@ class GisboxConnection(QObject, Logger):
         settings = QSettings()
         settings.beginGroup('gissupport/gisbox_connection')
         host = settings.value('host')
-        self.host = host
+
+        o = urllib.parse.urlsplit(host)
+        if not o.scheme:
+            host = "https://" + host
+
         return host
 
     def authenticate(self) -> bool:

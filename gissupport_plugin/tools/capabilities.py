@@ -6,6 +6,7 @@ from owslib.wfs import WebFeatureService
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtCore import QUrl
 from typing import Union
+from urllib.parse import urlencode, parse_qs, urlsplit, urlunsplit
 
 try:
   import defusedxml.ElementTree as et
@@ -21,8 +22,14 @@ class CapabilitiesConnectionException(Exception):
 
 def get_capabilities(url: str, type: str) -> Union[WebMapService, WebFeatureService]:
     manager = QgsNetworkAccessManager()
-    
-    request_url = f'{url}?service={type}&request=GetCapabilities'
+
+    scheme, netloc, path, params, _ = urlsplit(url)
+    query_params = parse_qs(params)
+    query_params["service"] = [f"{type}"]
+    query_params["request"] = ["GetCapabilities"]
+    new_params = urlencode(query_params, doseq=True)
+
+    request_url = urlunsplit((scheme, netloc, path, new_params, _))
     request = QNetworkRequest(QUrl(request_url))
     reply = manager.blockingGet(request)
     

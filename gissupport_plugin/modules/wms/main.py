@@ -138,13 +138,20 @@ class Main(BaseModule):
                 except CapabilitiesConnectionException as e:
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WFS',
-                        'Błąd połączenia z serwerem WFS.',
+                        f'Błąd połączenia z serwerem WFS (kod: {e.code}).',
+                        level=Qgis.Critical
+                    )
+                    return 1
+
+                if not wfsCapabilities:
+                    iface.messageBar().pushMessage(
+                        'Baza krajowych usług WFS',
+                        f'Błąd połączenia z serwerem WFS.',
                         level=Qgis.Critical
                     )
                     return 1
 
                 formatOptions = wfsCapabilities.getOperationByName('GetFeature').formatOptions
-
                 self.populateFormatCb(formatOptions)
 
                 for nr, layer in enumerate(list(wfsCapabilities.contents)):
@@ -204,6 +211,8 @@ class Main(BaseModule):
                         typename='{}' 
                         url='{}' 
                         version='2.0.0'
+                        preferCoordinatesForWfsT11='false'
+                        restrictToRequestBBOX='1' 
                     """
                     ).format(
                         self.dlg.crsCb.currentText(),
@@ -225,16 +234,15 @@ class Main(BaseModule):
 
     def populateCrsCb(self, crses):
         self.dlg.crsCb.clear()
-        default = 'EPSG:2180'
-        project_crs = QgsProject.instance().crs().authid()
-        if project_crs:
-            crses.insert(0, project_crs)
-        elif default in crses:
-            crses.insert(0, crses.pop(crses.index(default)))
-
         for index, crs in enumerate(crses, start=1):
             if self.dlg.crsCb.findText(crs) == -1:
                 self.dlg.crsCb.insertItem(index, crs)
+        
+        # Ustawiamy domyślny układ, jeśli jest na liście
+        for crs in (QgsProject.instance().crs().authid(), 'EPSG:2180'):
+            if (cid := self.dlg.crsCb.findText(crs)) != -1:
+                self.dlg.crsCb.setCurrentIndex(cid)
+                break
 
     def populateFormatCb(self, formats):
         self.dlg.formatCb.clear()

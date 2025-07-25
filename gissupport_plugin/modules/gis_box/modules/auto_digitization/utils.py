@@ -8,7 +8,6 @@ from qgis.core import (QgsPointXY, QgsGeometry, QgsFeature, QgsProject, QgsJsonU
 
 from gissupport_plugin.modules.gis_box.layers.geojson import geojson2geom
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
-from gissupport_plugin.tools.requests import NetworkHandler
 
 
 class AutoDigitizationTask(QgsTask):
@@ -26,16 +25,14 @@ class AutoDigitizationTask(QgsTask):
         self.clip = clip
 
     def run(self):
-        handler = NetworkHandler()
-        response = handler.post(
-            GISBOX_CONNECTION.host + f"/api/automatic_digitization/{self.digitization_option[0]}?trim={self.clip}",
-            True,
-            data=self.data,
+        response = GISBOX_CONNECTION.post(
+            f"/api/automatic_digitization/{self.digitization_option[0]}?trim={self.clip}",
+            self.data,
             srid='2180',
-            token=True
+            sync=True
         )
         try:
-            data = json.loads(response.readAll().data().decode())
+            data = response
         except JSONDecodeError:
             self.task_failed.emit("Błąd odczytu danych nadesłanych z API")
             return False
@@ -77,6 +74,10 @@ class AutoDigitizationTask(QgsTask):
                 QgsProject.instance().addMapLayer(layer)
             else:
                 layer.reload()
+
+        elif error_msg := data.get("error_message"):
+            self.task_failed.emit(error_msg)
+            return False
 
         else:
             self.task_failed.emit(None)

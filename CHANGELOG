@@ -1,3 +1,12 @@
+2.9
+Możliwość podawania adresu GIS.Box bez schematu `https`
+Ujednolicenie narzędzia zaznaczania/wyboru w modułach `Automatyczna wektoryzacja`, `BDOT 10k` i `NM(P)T`
+Aktualizacja adresów WMS/WFS
+Poprawione wykrywanie domyślnego układu w module Baza WMS/WFS
+Dodanie walidacji Capabilities przed popularnymi atakami
+Ustawianie limitu czasu zapytań dla GIS.Box nie zmienia ustawień QGIS
+Poprawki UX panelu GIS.Box
+
 2.8
 Zmiany w GUI wtyczki - narzędzia `GIS.Box`, `WMTS` i `Mapster` otrzymały dedykowane panele boczne
 Poprawienie obsługi braku geometrii w GIS Box po zmianach w nowszych wersjach QGIS

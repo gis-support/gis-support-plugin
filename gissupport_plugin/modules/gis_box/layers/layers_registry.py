@@ -12,6 +12,8 @@ from .gisbox_datasource import GisboxFeatureLayer
 
 from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+from gissupport_plugin.tools.project_variables import get_layer_mapping
+
 
 class LayersRegistry(QObject, Logger):
     """ Klasa służy do zarządzania warstwami gisbox """
@@ -104,7 +106,15 @@ class LayersRegistry(QObject, Logger):
         if layer is None:
             # Brak warstw
             return False
-        return bool(layer.customProperty('gisbox/is_gisbox_layer'))
+
+        if layer.customProperty('gisbox/is_gisbox_layer'):
+            return bool(layer.customProperty('gisbox/is_gisbox_layer'))
+
+        layer_gisbox_id = get_layer_mapping(layer.id())
+        if layer_gisbox_id == -1:
+            return False
+
+        return True
 
     def getLayerClass(self, layer=None):
         """ Zwraca klasę danej warstwy """
@@ -114,7 +124,9 @@ class LayersRegistry(QObject, Logger):
         if not self.isGisboxLayer(layer):
             # To nie jest warstwa gisbox
             return
-        return layers_registry.layers.get(int(layer.customProperty('gisbox/layer_id')))
+
+        layer_gisbox_id = get_layer_mapping(layer.id())
+        return layers_registry.layers.get(layer_gisbox_id)
 
     def loadGroup(self, group_data: List[Union[str, int]]):
 

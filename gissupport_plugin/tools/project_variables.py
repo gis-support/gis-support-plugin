@@ -81,6 +81,9 @@ def migrate_layer_gisbox_id_variable(layer: QgsVectorLayer):
     if layer_gisbox_id:
         layer.removeCustomProperty('gisbox/layer_id')
         layer.removeCustomProperty('gisbox/is_gisbox_layer')
+        layer.removeCustomProperty('gisbox/layer_scope')
+        layer.removeCustomProperty('gisbox/layer_type')
+        layer.removeCustomProperty('gisbox/topological')
         save_layer_mapping(layer_qgis_id=layer.id(), layer_gisbox_id=layer_gisbox_id)
 
     return

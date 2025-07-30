@@ -96,9 +96,6 @@ class GisboxFeatureLayer(QObject, Logger):
             self.datasource = self._get_datasource(self.datasource_name)
         # Ustawienia warstwy
         layer.setCustomProperty("skipMemoryLayersCheck", 1)
-        layer.setCustomProperty('gisbox/topological', self.topo_layer)
-        layer.setCustomProperty('gisbox/layer_type', self.datasource_name)
-        layer.setCustomProperty('gisbox/layer_scope', self.layer_scope)
 
         save_layer_mapping(layer_qgis_id=layer.id(), layer_gisbox_id=self.id)
 

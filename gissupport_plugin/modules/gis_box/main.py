@@ -9,7 +9,7 @@ from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
 from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.modules.gis_box.gisbox_dockwidget import GISBoxDockWidget
-from gissupport_plugin.tools.project_variables import get_layer_mappings, migrate_layer_gisbox_id_variable, remove_layer_mapping
+from gissupport_plugin.tools.project_variables import get_layer_mapping, migrate_layer_gisbox_id_variable, remove_layer_mapping
 
 
 class GISBox(BaseModule, Logger):
@@ -71,7 +71,6 @@ class GISBox(BaseModule, Logger):
         Wykorzystywane przy łączeniu/rozłączaniu z GIS.Box.
         """
 
-        mappings = get_layer_mappings()        
         is_connected = GISBOX_CONNECTION.is_connected
         for layer in QgsProject.instance().mapLayers().values():
             if layers_registry.isGisboxLayer(layer):
@@ -79,7 +78,7 @@ class GISBox(BaseModule, Logger):
                 if is_connected:
                     # Odczytywanie uprawnień użytkownika do edycji warstwy
                     layer_qgis_id = layer.id()
-                    layer_id = mappings.get(layer_qgis_id)
+                    layer_id = get_layer_mapping(layer_qgis_id)
                     layer_permission = GISBOX_CONNECTION.current_user['permissions']['layers'].get(layer_id)
 
                     if layer_permission['main_value'] == 2:
@@ -95,15 +94,13 @@ class GISBox(BaseModule, Logger):
 
     def readProject(self):
 
-        mappings = get_layer_mappings()
         for layer in QgsProject.instance().mapLayers().values():
             if layers_registry.isGisboxLayer(layer):
 
                 migrate_layer_gisbox_id_variable(layer)
-
-                if GISBOX_CONNECTION.is_connected and mappings:
+                if GISBOX_CONNECTION.is_connected:
                     layer_qgis_id = layer.id()
-                    layer_id = mappings.get(layer_qgis_id)
+                    layer_id = get_layer_mapping(layer_qgis_id)
                     layer_class = layers_registry.layers[layer_id]
                     layer_class.setLayer(layer, from_project=True)
                 

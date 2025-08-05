@@ -23,5 +23,6 @@
 <file>gis_box/widget_settings.svg</file>
 <file>gis_box/widget_connect.svg</file>
 <file>gis_box/widget_disconnect.svg</file>
+<file>usemaps_lite/zielen_v1.jpg</file>
     </qresource>
 </RCC>

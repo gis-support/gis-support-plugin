@@ -148,7 +148,7 @@ class GISSupportPlugin:
             add_to_toolbar=True
         )
         
-        self.initModules(["gis_box"])
+        self.initModules(["usemaps_lite"])
 
         self.add_action(
             icon_path=":/plugins/gissupport_plugin/kursy.svg",

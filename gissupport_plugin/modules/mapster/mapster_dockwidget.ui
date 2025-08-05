@@ -94,7 +94,7 @@
        <item>
         <widget class="QLabel" name="mapsterLabel">
          <property name="text">
-          <string>Wyszukiwarka archiwalnych map Mapster</string>
+          <string>Kliknij powyższą ikonę, aby włączyć/wyłączyć celownik</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

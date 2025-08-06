@@ -2,9 +2,9 @@ import csv
 import os
 from collections import defaultdict
 
-from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import QThread, pyqtSignal, QVariant
-from PyQt5.QtGui import QKeySequence, QPixmap
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtCore import QThread, QVariant
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
@@ -114,16 +114,11 @@ class CSVImport:
         self.ui.label_found_count.setText("")
         self.ui.label_not_found_count.setText("")
         self.ui.button_cancel.clicked.connect(self.__stop)
-        self.ui.layer_select.setFilters(
-            QgsMapLayerProxyModel.PointLayer |
-            QgsMapLayerProxyModel.LineLayer |
-            QgsMapLayerProxyModel.PolygonLayer |
-            QgsMapLayerProxyModel.NoGeometry
-        )
-        self.ui.layer_select.layerChanged.connect(self.__on_layer_changed)
+        self.ui.layer_select.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.ui.layer_select.layerChanged.connect(self.ui.combobox_teryt_column.setLayer)
         self.ui.button_save_not_found.clicked.connect(self._export_table_errors_to_csv)
         self.__init_table()
-        self.__on_layer_changed()
+        self.ui.combobox_teryt_column.setLayer(self.ui.layer_select.currentLayer())
 
     def __init_table(self):
         table = self.ui.table_errors
@@ -136,22 +131,6 @@ class CSVImport:
         teryt_column_size = table.width()/3
         header.resizeSection(0, 200)
 
-    def __on_layer_changed(self):
-        suggested_target_layer_name = ""
-        if self.ui.layer_select.currentLayer() is not None:
-            self.ui.button_start.setEnabled(True)
-            self.__fill_column_select()
-            suggested_target_layer_name = self.ui.layer_select.currentLayer().name()
-        else:
-            self.ui.combobox_teryt_column.clear()
-            self.ui.combobox_teryt_column.setLayer(None)
-        self.ui.text_edit_layer_name.setText(suggested_target_layer_name)
-
-
-    def __fill_column_select(self):
-        self.ui.combobox_teryt_column.clear()
-        self.ui.combobox_teryt_column.setLayer(self.ui.layer_select.currentLayer())
-    
     def __handle_found(self, uldk_response_dict):
         for id_, uldk_response_rows in uldk_response_dict.items():
             for row in uldk_response_rows:

@@ -115,10 +115,18 @@ class CSVImport:
         self.ui.label_not_found_count.setText("")
         self.ui.button_cancel.clicked.connect(self.__stop)
         self.ui.layer_select.setFilters(QgsMapLayerProxyModel.VectorLayer)
+
         self.ui.layer_select.layerChanged.connect(self.ui.combobox_teryt_column.setLayer)
+        self.ui.layer_select.layerChanged.connect(
+            lambda layer: self.ui.text_edit_layer_name.setText(layer.name() if layer else "")
+        )
+        self.ui.layer_select.layerChanged.connect(
+            lambda layer: self.ui.button_start.setEnabled(bool(layer))
+        )
+
         self.ui.button_save_not_found.clicked.connect(self._export_table_errors_to_csv)
         self.__init_table()
-        self.ui.combobox_teryt_column.setLayer(self.ui.layer_select.currentLayer())
+
 
     def __init_table(self):
         table = self.ui.table_errors

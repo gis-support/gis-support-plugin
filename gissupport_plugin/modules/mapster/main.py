@@ -35,11 +35,12 @@ class MapsterModule( BaseModule ):
         self.dockwidget.hide()
 
     def setMapsterTool( self, checked: bool ):
-
         if checked:
             iface.mapCanvas().setMapTool( self.point_tool )
+            self.dockwidget.searchButton.setChecked(True)
         else:
             iface.mapCanvas().unsetMapTool( self.point_tool )
+            self.dockwidget.searchButton.setChecked(False)
     
     def canvasClicked( self, point, button ):
         project = QgsProject.instance()

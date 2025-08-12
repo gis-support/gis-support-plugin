@@ -30,6 +30,7 @@ class MapsterModule( BaseModule ):
         self.dockwidget.searchButton.clicked.connect(self.setMapsterTool)
         self.action.triggered.connect(self.setMapsterTool)
         self.dockwidget.visibilityChanged.connect(self.unset_point_tool)
+        iface.mapCanvas().mapToolSet.connect(self.on_map_tool_changed)
 
         iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.dockwidget.hide()
@@ -54,4 +55,8 @@ class MapsterModule( BaseModule ):
     def unset_point_tool(self, visible: bool):
         if not visible:
             iface.mapCanvas().unsetMapTool(self.point_tool)
+            self.dockwidget.searchButton.setChecked(False)
+
+    def on_map_tool_changed(self, tool):
+        if self.dockwidget.searchButton.isChecked() and tool != self.point_tool:
             self.dockwidget.searchButton.setChecked(False)

@@ -16,7 +16,7 @@ class MapsterModule( BaseModule ):
         self.dockwidget = MapsterDockwidget()
         self.point_tool = QgsMapToolEmitPoint( iface.mapCanvas() )
 
-        action = self.parent.add_dockwidget_action(
+        self.action = self.parent.add_dockwidget_action(
             dockwidget=self.dockwidget,
             icon_path=':/plugins/gissupport_plugin/mapster/mapster.svg',
             text=self.module_name,
@@ -28,17 +28,20 @@ class MapsterModule( BaseModule ):
 
         self.dockwidget.searchButton.setIcon(QIcon(":/plugins/gissupport_plugin/mapster/mapster.svg"))
         self.dockwidget.searchButton.clicked.connect(self.setMapsterTool)
+        self.action.triggered.connect(self.setMapsterTool)
         self.dockwidget.visibilityChanged.connect(self.unset_point_tool)
+        iface.mapCanvas().mapToolSet.connect(self.on_map_tool_changed)
 
         iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.dockwidget.hide()
 
     def setMapsterTool( self, checked: bool ):
-
         if checked:
             iface.mapCanvas().setMapTool( self.point_tool )
+            self.dockwidget.searchButton.setChecked(True)
         else:
             iface.mapCanvas().unsetMapTool( self.point_tool )
+            self.dockwidget.searchButton.setChecked(False)
     
     def canvasClicked( self, point, button ):
         project = QgsProject.instance()
@@ -52,4 +55,8 @@ class MapsterModule( BaseModule ):
     def unset_point_tool(self, visible: bool):
         if not visible:
             iface.mapCanvas().unsetMapTool(self.point_tool)
+            self.dockwidget.searchButton.setChecked(False)
+
+    def on_map_tool_changed(self, tool):
+        if self.dockwidget.searchButton.isChecked() and tool != self.point_tool:
             self.dockwidget.searchButton.setChecked(False)

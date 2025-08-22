@@ -29,7 +29,8 @@ TRANSLATIONS = {
         "ogr error": {"pl": "Wystąpił błąd serwera przy wgrywaniu warstwy.", "en": "A server error occurred while uploading the layer."},
         "reset password": {"pl": "Błąd resetowania hasła", "en": "Password reset error"},
         "api error": {"pl": "Błąd połączenia z serwerem", "en": "Server connection error"},
-        "limit exceeded": {"pl": "Wykorzystano dostępny limit na dane w GIS.Box Lite. Aby kontynuować, usuń część danych lub skontaktuj się z zespołem GIS Support", "en": "The available data limit in GIS.Box Lite has been reached. To continue, please delete some data or contact the GIS Support team"}
+        "limit exceeded": {"pl": "Wykorzystano dostępny limit na dane w GIS.Box Lite. Aby kontynuować, usuń część danych lub skontaktuj się z zespołem GIS Support", "en": "The available data limit in GIS.Box Lite has been reached. To continue, please delete some data or contact the GIS Support team"},
+        "cannot load empty gpkg": {"pl": "Nie można wczytać pustej warstwy.", "en": "Cannot load empty layer."}
     },
     "ui": {
         "info_label": {"pl": 'GIS.Box Lite to darmowa część platformy do współpracy na mapach GIS.Box. Pozwala na łatwą pracę zespołową w QGIS. Dowiedz się więcej na <a href="https://gis-support.pl/gis-box-lite">stronie GIS.Box Lite</a>.', "en": 'GIS.Box Lite is the free version of the GIS.Box platform for collaborative mapping. It enables easy teamwork in QGIS. Learn more on <a href="https://gis-support.pl/gis-box-lite">the GIS.Box Lite website</a>.'},

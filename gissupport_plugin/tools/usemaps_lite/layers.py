@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QStandardItem
 from qgis.PyQt.QtCore import Qt, QMetaType,  QDate, QDateTime, QTime, pyqtSignal
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, QVariant
 from qgis.utils import iface
 from qgis.core import (
     QgsVectorLayer,
@@ -19,7 +19,9 @@ from qgis.core import (
     QgsFeatureRequest,
     QgsEditorWidgetSetup,
     QgsTask,
-    QgsApplication
+    QgsApplication,
+    Qgis,
+    QgsGeometry
 )
 
 from gissupport_plugin.tools.usemaps_lite.base_logic_class import BaseLogicClass
@@ -87,7 +89,7 @@ class Layers(BaseLogicClass, QObject):
 
         self.task = self.LoadLayerToQgisTask(self.selected_layer_name, self.selected_layer_uuid,
                                             layer, self)
-        self.task.download_finished.connect(lambda _: self.on_load_layer_finished(layer))
+        self.task.download_finished.connect(lambda was_downloaded: self.on_load_layer_finished(was_downloaded, layer))
 
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
@@ -116,19 +118,35 @@ class Layers(BaseLogicClass, QObject):
             provider = self.layer.dataProvider()
 
             fields = QgsFields()
+            features = self.data["features"]
 
-            example_props = self.data["features"][0].get("properties", {})
+            if not features:
+                self.download_finished.emit(False)
+                return False
 
-            fields.append(QgsField("_id", QMetaType.Int))
+            example_props = features[0].get("properties", {})
 
-            for key, value in example_props.items():
-                value_type = type(value)
-                if value_type == int:
-                    fields.append(QgsField(key, QMetaType.Int))
-                elif value_type == float:
-                    fields.append(QgsField(key, QMetaType.Double))
-                else:
-                    fields.append(QgsField(key, QMetaType.QString))
+            if Qgis.QGIS_VERSION_INT >= 34000:  # QGIS 3.40+
+                fields.append(QgsField("_id", QMetaType.Int))
+
+                for key, value in example_props.items():
+                    if isinstance(value, int):
+                        fields.append(QgsField(key, QMetaType.Int))
+                    elif isinstance(value, float):
+                        fields.append(QgsField(key, QMetaType.Double))
+                    else:
+                        fields.append(QgsField(key, QMetaType.QString))
+
+            else:  # starsze QGIS < 3.40
+                fields.append(QgsField("_id", QVariant.Int))
+
+                for key, value in example_props.items():
+                    if isinstance(value, int):
+                        fields.append(QgsField(key, QVariant.Int))
+                    elif isinstance(value, float):
+                        fields.append(QgsField(key, QVariant.Double))
+                    else:
+                        fields.append(QgsField(key, QVariant.String))
 
             provider.addAttributes(fields)
             self.layer.updateFields()
@@ -146,7 +164,16 @@ class Layers(BaseLogicClass, QObject):
                         attributes.append(feat_data["properties"].get(field.name()))
                 feat.setAttributes(attributes)
 
-                geometry = QgsJsonUtils.geometryFromGeoJson(json.dumps(feat_data.get("geometry")))
+                geojson_str = json.dumps(feat_data.get("geometry"))
+
+                if Qgis.QGIS_VERSION_INT >= 33600:
+                    # Dostępna metoda od QGIS 3.36
+                    geometry = QgsJsonUtils.geometryFromGeoJson(geojson_str)
+                else:
+                    feats = QgsJsonUtils.stringToFeatureList(
+                        f'{{"type":"Feature","geometry":{geojson_str}}}', QgsFields())
+                    geometry = feats[0].geometry() if feats else QgsGeometry()
+
                 feat.setGeometry(geometry)
 
                 provider.addFeatures([feat])
@@ -174,10 +201,15 @@ class Layers(BaseLogicClass, QObject):
         def finished(self, result: bool):
             pass
 
-    def on_load_layer_finished(self, layer):
+    def on_load_layer_finished(self, was_downloaded, layer):
         """
         Usuwa ikonkę warstwy tymczasowej i wyświetla komunikat wczytania warstwy
         """
+        
+        if not was_downloaded:
+            self.show_error_message(f"{TRANSLATOR.translate_error('cannot load empty gpkg')}")
+            return
+        
         node = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
         indicators = iface.layerTreeView().indicators(node)
         if indicators:
@@ -305,9 +337,6 @@ class Layers(BaseLogicClass, QObject):
                 else:
                     self.show_error_message(f"{TRANSLATOR.translate_error('import layer')}: {error_msg}")
                     return
-
-            else:
-                self.show_success_message(TRANSLATOR.translate_info('import layer success'))
 
             # Sprzątanie: usuń plik TYLKO jeśli był to plik tymczasowy
             if self.is_temp_file and os.path.exists(self.file_path_to_upload):
@@ -637,7 +666,16 @@ class Layers(BaseLogicClass, QObject):
 
             feat.setAttributes(attributes)
 
-            geometry = QgsJsonUtils.geometryFromGeoJson(json.dumps(feat_data.get("geometry")))
+            geojson_str = json.dumps(feat_data.get("geometry"))
+
+            if Qgis.QGIS_VERSION_INT >= 33600:
+                # Dostępna metoda od QGIS 3.36
+                geometry = QgsJsonUtils.geometryFromGeoJson(geojson_str)
+            else:
+                feats = QgsJsonUtils.stringToFeatureList(
+                    f'{{"type":"Feature","geometry":{geojson_str}}}', QgsFields())
+                geometry = feats[0].geometry() if feats else QgsGeometry()
+
             feat.setGeometry(geometry)
 
             new_features.append(feat)

@@ -407,7 +407,7 @@ POWIATY = {
          "powiat wągrowiecki | 3028",
          "powiat wolsztyński | 3029",
          "powiat wrzesiński | 3030",
-         "powiat złotowski | 3031",
+         "powiat złotowski | 3031"
     ],
     Wojewodztwa.ZACHODNIOPOMORSKIE: [
         "powiat białogardzki | 3201",

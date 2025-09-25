@@ -159,6 +159,11 @@ class CSVImport:
                     e = self.result_collector.BadGeometryException(e.feature, "Niepoprawna geometria")
                     self._handle_bad_geometry(e.feature, e)
                     return
+                except self.result_collector.ResponseDataException as e:
+                    e = self.result_collector.ResponseDataException("Błąd przetwarzania danych wynikowych")
+                    self._handle_data_error(self.worker.teryt_ids[id_]["teryt"], e)
+                    return
+
                 self.features_found.append(feature)
                 self.found_count += 1
 
@@ -168,6 +173,10 @@ class CSVImport:
 
     def _handle_bad_geometry(self, feature, exception):
         self._add_table_errors_row(feature.attribute("teryt"), str(exception))
+        self.not_found_count += 1
+
+    def _handle_data_error(self, teryt, exception):
+        self._add_table_errors_row(teryt, str(exception))
         self.not_found_count += 1
 
     def __progressed(self):

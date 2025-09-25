@@ -23,6 +23,10 @@ class ResultCollector:
             super().__init__(*args, **kwargs)
             self.feature = feature
 
+    class ResponseDataException(Exception):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
     @classmethod
     def default_layer_factory(cls, name = "Wyniki wyszukiwania ULDK",
             epsg = 2180, custom_properties = {"ULDK":"plots_layer"},
@@ -45,8 +49,11 @@ class ResultCollector:
             else:
                 return None
 
-        geom_wkt, province, county, municipality, precinct, plot_id, teryt = \
-            response_row.split("|")
+        try:
+            geom_wkt, province, county, municipality, precinct, plot_id, teryt = \
+                response_row.split("|")
+        except ValueError:
+            raise cls.ResponseDataException()
 
         sheet = get_sheet(teryt)
         

@@ -11,7 +11,7 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("arkusz", QVariant.String),
     QgsField("nr_dzialki", QVariant.String),
     QgsField("teryt", QVariant.String),
-    QgsField("pow_m2", QVariant.String),
+    QgsField("pow_m2", QVariant.Double, prec=2),
 ]
 
 

@@ -2,13 +2,13 @@ import csv
 import os
 from collections import defaultdict
 
-from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import QThread, pyqtSignal, QVariant
-from PyQt5.QtGui import QKeySequence, QPixmap
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtCore import QThread, QVariant
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
-from qgis.core import QgsField
+from qgis.core import QgsField, QgsMapLayerProxyModel
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
 
@@ -42,7 +42,7 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
 
         self.frame_how_it_works.setToolTip((
             "Narzędzie wyszukuje działki na podstawie listy:\n"
-            "załaduj plik CSV, wskaż kolumnę z TERYT i uruchom wyszukiwanie."))   
+            "załaduj warstwę z projektu, wskaż kolumnę z TERYT i uruchom wyszukiwanie."))
         self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
 
 class CSVImport:
@@ -68,16 +68,16 @@ class CSVImport:
         
         teryts = {}
         self.additional_attributes = defaultdict(list)
-        with open(self.file_path, encoding='utf-8', errors='replace') as f:
-            teryt_column = self.ui.combobox_teryt_column.currentText()
-            csv_read = csv.DictReader(f)
-            additional_fields = [name for name in csv_read.fieldnames if name != teryt_column]
-            for i, row in enumerate(csv_read):
-                teryt = row.pop(teryt_column)
-                teryts[i] = {"teryt": teryt}
-                if additional_fields:
-                    for value in row.values():
-                        self.additional_attributes[i].append(value)
+
+        teryt_column = self.ui.combobox_teryt_column.currentText()
+        additional_fields = [name for name in self.ui.layer_select.currentLayer().fields().names() if name != teryt_column]
+
+        for i, row in enumerate(self.ui.layer_select.currentLayer().getFeatures()):
+            teryt = row[teryt_column]
+            teryts[i] = {"teryt": teryt}
+            if additional_fields:
+                for field in additional_fields:
+                    self.additional_attributes[i].append(row[field])
 
         layer_name = self.ui.text_edit_layer_name.text()
         layer = self.layer_factory(
@@ -114,9 +114,19 @@ class CSVImport:
         self.ui.label_found_count.setText("")
         self.ui.label_not_found_count.setText("")
         self.ui.button_cancel.clicked.connect(self.__stop)
-        self.ui.file_select.fileChanged.connect(self.__on_file_changed)
+        self.ui.layer_select.setFilters(QgsMapLayerProxyModel.VectorLayer)
+
+        self.ui.layer_select.layerChanged.connect(self.ui.combobox_teryt_column.setLayer)
+        self.ui.layer_select.layerChanged.connect(
+            lambda layer: self.ui.text_edit_layer_name.setText(layer.name() if layer else "")
+        )
+        self.ui.layer_select.layerChanged.connect(
+            lambda layer: self.ui.button_start.setEnabled(bool(layer))
+        )
+
         self.ui.button_save_not_found.clicked.connect(self._export_table_errors_to_csv)
         self.__init_table()
+
 
     def __init_table(self):
         table = self.ui.table_errors
@@ -129,26 +139,6 @@ class CSVImport:
         teryt_column_size = table.width()/3
         header.resizeSection(0, 200)
 
-    def __on_file_changed(self, path):
-        suggested_target_layer_name = ""
-        if os.path.exists(path):
-            self.ui.button_start.setEnabled(True)
-            self.file_path = path
-            self.__fill_column_select()
-            suggested_target_layer_name = os.path.splitext(os.path.relpath(path))[0]
-        else:
-            self.file_path = None
-            self.ui.combobox_teryt_column.clear()
-        self.ui.text_edit_layer_name.setText(suggested_target_layer_name)
-
-
-    def __fill_column_select(self):
-        self.ui.combobox_teryt_column.clear()
-        with open(self.file_path, encoding='utf-8', errors='replace') as f:
-            csv_read = csv.DictReader(f)
-            columns = csv_read.fieldnames
-        self.ui.combobox_teryt_column.addItems(columns)
-    
     def __handle_found(self, uldk_response_dict):
         for id_, uldk_response_rows in uldk_response_dict.items():
             for row in uldk_response_rows:
@@ -206,7 +196,7 @@ class CSVImport:
                 form = "obiektów"
 
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
-            f"Import CSV: zakończono wyszukiwanie. Zapisano {found_count} {form} do warstwy <b>{self.ui.text_edit_layer_name.text()}</b>"))
+            f"Wyszukiwanie z listy: zakończono wyszukiwanie. Zapisano {found_count} {form} do warstwy <b>{self.ui.text_edit_layer_name.text()}</b>"))
         if self.not_found_count > 0:
             self.ui.button_save_not_found.setEnabled(True)
 
@@ -264,7 +254,7 @@ class CSVImport:
     def __set_controls_enabled(self, enabled):
         self.ui.text_edit_layer_name.setEnabled(enabled)
         self.ui.button_start.setEnabled(enabled)
-        self.ui.file_select.setEnabled(enabled)
+        self.ui.layer_select.setEnabled(enabled)
         self.ui.combobox_teryt_column.setEnabled(enabled)
 
     def __stop(self):

@@ -143,7 +143,7 @@ class GISSupportPlugin:
             text="Szkolenia GIS Support",
             add_to_menu=False,
             add_to_topmenu=True,
-            callback=lambda: self.open_url("https://gis-support.pl/szkolenia-gis/"),
+            callback=lambda: self.open_url("https://gis-support.pl/szkolenia-gis?source=gissupport-plugin"),
             parent=self.iface.mainWindow(),
             add_to_toolbar=True
         )

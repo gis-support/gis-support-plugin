@@ -1,8 +1,10 @@
+import json
 from io import BytesIO
 
 from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import QgsTask, QgsMessageLog, Qgis
+from qgis.core import QgsTask, QgsMessageLog, Qgis, QgsGeometry, QgsCoordinateReferenceSystem, QgsProject, QgsCoordinateTransform
+from qgis.utils import iface
 
 from gissupport_plugin.tools.requests import NetworkHandler
 
@@ -51,3 +53,39 @@ class PRGAddressDownloadTask(QgsTask):
     def log_message(self, message: str, level: Qgis.MessageLevel):
         QgsMessageLog.logMessage(message, self.message_group_name, level)
 
+class PRGAddressDataBoxDownloadTask(QgsTask):
+    download_finished = pyqtSignal(bool)
+    downloaded_data = pyqtSignal(str)
+    downloaded_details = pyqtSignal(str)
+
+    def __init__(self, description: str, layer: str, geojson: QgsGeometry):
+        self.layer = layer
+        self.geojson = json.loads(geojson.asJson())
+        self.geojson["crs"] = {"type": "name", "properties": {"name": "EPSG:2180"}}
+        self.url = f"https://api-oze.gisbox.pl/layers/prg_punkty_adresowe?output_srid=2180&promote_to_multi=false"
+        super().__init__(description, QgsTask.CanCancel)
+
+    def run(self):
+        handler = NetworkHandler()
+        response = handler.post(self.url, data=self.geojson, databox=True)
+        if details := response.get("details"):
+            self.downloaded_details.emit(f"Przekroczono limit danych ({details.get('limit')}) z Data.Box. Próbowano pobrać {details.get('count')} obiektów.")
+            self.download_finished.emit(True)
+            return False
+
+        self.downloaded_data.emit(response.get("data"))
+        self.download_finished.emit(True)
+        return True
+
+def convert_multi_polygon_to_polygon(geometry: QgsGeometry):
+    # rubber bandy zwracają multipoligony, konieczne jest rozbicie geometrii przed wysłaniem do api oze
+    geometry.convertToSingleType()
+    crs_src = iface.mapCanvas().mapSettings().destinationCrs()
+    geometry = transform_geometry_to_2180(geometry, crs_src)
+    return geometry
+
+def transform_geometry_to_2180(geometry: QgsGeometry, crs_src: QgsCoordinateReferenceSystem):
+    crs_dest = QgsCoordinateReferenceSystem().fromEpsgId(2180)
+    transform = QgsCoordinateTransform(crs_src, crs_dest, QgsProject.instance())
+    geometry.transform(transform)
+    return geometry

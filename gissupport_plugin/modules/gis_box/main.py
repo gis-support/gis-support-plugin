@@ -23,7 +23,7 @@ class GISBox(BaseModule, Logger):
         self.dockwidgetAction = self.parent.add_dockwidget_action(
             dockwidget = self.dockwidget,
             icon_path=":/plugins/gissupport_plugin/gis_box/disconnected.png",
-            text = 'GIS.Box'
+            text = 'Usemaps'
             )
 
         layers_registry.on_schema.connect(self.readProject)
@@ -67,8 +67,8 @@ class GISBox(BaseModule, Logger):
 
     def toggle_gisbox_layers_readonly_mode(self):
         """
-        Przełącza tryb `read_only` warstw GIS.Box.
-        Wykorzystywane przy łączeniu/rozłączaniu z GIS.Box.
+        Przełącza tryb `read_only` warstw Usemaps.
+        Wykorzystywane przy łączeniu/rozłączaniu z Usemaps.
         """
 
         is_connected = GISBOX_CONNECTION.is_connected

@@ -28,7 +28,7 @@ about=Features:
 
 	* PRG - administrative boundaries - download the boundaries of communes, counties, and voivodships.
 
-	* Connect with GIS.Box - GIS.Box is a web-based GIS system that is used to store, edit, analyze, and visualize spatial data. It perfectly extends the benefits of QGIS to your organization, adding the ability to work "in the cloud".
+	* Connect with Usemaps - Usemaps is a web-based GIS system that is used to store, edit, analyze, and visualize spatial data. It perfectly extends the benefits of QGIS to your organization, adding the ability to work "in the cloud".
 
 description[pl]=Wtyczka GIS Support: zawiera narzędzia, które ułatwiają komunikację z usługami oferowanymi przez polskie instytucje (np. GUGiK).
 about[pl]=Lista narzędzi wtyczki:
@@ -44,7 +44,7 @@ about[pl]=Lista narzędzi wtyczki:
 
 	* PRG - granice administracyjne - pobierz granice gmin, powiatów i województw.
 
-	* Połącz z GIS.Box - GIS.Box to dostępny przez przeglądarkę System GIS. Doskonale rozszerza korzyści jakie daje Twojej organizacji QGIS, dodając możliwości pracy “w chmurze”.
+	* Połącz z Usemaps - Usemaps to dostępny przez przeglądarkę System GIS. Doskonale rozszerza korzyści jakie daje Twojej organizacji QGIS, dodając możliwości pracy “w chmurze”.
 
 tracker=https://github.com/gis-support/gis-support-plugin/issues
 repository=https://github.com/gis-support/gis-support-plugin

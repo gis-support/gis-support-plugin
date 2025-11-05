@@ -221,7 +221,7 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
 
     def refresh_layers(self):
         """
-        Odświeżanie warstw GIS.Box, które obecnie znajdują się w projekcie.
+        Odświeżanie warstw Usemaps, które obecnie znajdują się w projekcie.
         """
         if not GISBOX_CONNECTION.is_connected:
             return

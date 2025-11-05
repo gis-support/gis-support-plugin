@@ -24,7 +24,7 @@ def save_project_variables(custom_variables: Dict[Any, Any]):
 
 def get_layer_mappings() -> Dict[str, int]:
     """
-    Pobiera mapowania ID warstw GIS.Box z aktywnego projektu
+    Pobiera mapowania ID warstw Usemaps z aktywnego projektu
     """
     custom_variables = get_project_variables()
     stored_mappings = custom_variables.get(LAYER_MAPPINGS_KEY) or ''
@@ -33,7 +33,7 @@ def get_layer_mappings() -> Dict[str, int]:
 
 def save_layer_mappings(mappings = Dict[str, int]):
     """
-    Zapisuje mapowania ID warstw GIS.Box w aktywnym projekcie
+    Zapisuje mapowania ID warstw Usemaps w aktywnym projekcie
     """
     custom_variables = get_project_variables()
     custom_variables[LAYER_MAPPINGS_KEY] = json.dumps(mappings)
@@ -54,7 +54,7 @@ def save_layer_mapping(layer_qgis_id: str, layer_gisbox_id: int):
     return
 
 def get_layer_mapping(layer_qgis_id: str) -> int:
-    """ Zwraca ID konkretnej warstwy z GIS.Box, zapisane w zmiennych projektu """
+    """ Zwraca ID konkretnej warstwy z Usemaps, zapisane w zmiennych projektu """
 
     layer_mappings = get_layer_mappings()
     layer_gisbox_id = layer_mappings.get(layer_qgis_id, -1)
@@ -74,7 +74,7 @@ def remove_layer_mapping(layer_qgis_id: str):
     return
 
 def migrate_layer_gisbox_id_variable(layer: QgsVectorLayer):
-    """ Przenosi ID warstwy z GIS.Box ze zmiennych warstwy do zmiennych projektu """
+    """ Przenosi ID warstwy z Usemaps ze zmiennych warstwy do zmiennych projektu """
 
     layer_gisbox_id = layer.customProperty('gisbox/layer_id')
 

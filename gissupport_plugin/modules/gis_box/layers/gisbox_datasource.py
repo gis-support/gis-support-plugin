@@ -1,12 +1,14 @@
 import time
 
 from typing import List, Iterable, Any
+
 from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
                        QgsAttributeEditorContainer, QgsAttributeEditorField, QgsMapLayer, NULL, QgsFieldConstraints,
                        QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest)
 from qgis.utils import iface
 from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtCore import QObject, pyqtSignal, QDate, QDateTime, QTime
+from qgis.PyQt.QtWidgets import QInputDialog
 
 from . import DATA_SOURCE_REGISTRY, RELATION_VALUES_MAPPING_REGISTRY
 
@@ -431,12 +433,35 @@ class GisboxFeatureLayer(QObject, Logger):
             payload['update'] = to_update
 
         to_delete = self.deleteFeatures(layer, edit_buffer)
-        if to_delete:
-            payload['delete'] = to_delete
+        to_delete_list = to_delete.get('qgis_features_ids', [])
+        to_delete_count = len(to_delete_list)
 
-        if to_delete:
-            payload['delete']['features_ids'] = self.getFeaturesDbIds(
-                to_delete['qgis_features_ids'], layer)
+        if to_delete_count >= 10:
+            value, ok = QInputDialog.getInt(
+                iface.mainWindow(),
+                "Usuń zaznaczone obiekty",
+                f"Czy na pewno chcesz usunąć z Systemu {to_delete_count} obiektów? Usuniętych obiektów nie da się odzyskać. Jeśli tak, wpisz w poniższe okno liczbę obiektów, które chcesz usunąć ({to_delete_count}).",
+                0,
+                0,
+                to_delete_count,
+                1
+            )
+
+            if value == to_delete_count and ok:
+                if to_delete:
+                    payload['delete'] = to_delete
+
+                if to_delete:
+                    payload['delete']['features_ids'] = self.getFeaturesDbIds(
+                        to_delete['qgis_features_ids'], layer)
+
+        else:
+            if to_delete:
+                payload['delete'] = to_delete
+
+            if to_delete:
+                payload['delete']['features_ids'] = self.getFeaturesDbIds(
+                    to_delete['qgis_features_ids'], layer)
 
         GISBOX_CONNECTION.post(
             f"/api/dataio/data_sources/{self.datasource_name}/features/edit?layer_id={self.id}",

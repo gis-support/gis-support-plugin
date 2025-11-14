@@ -447,21 +447,14 @@ class GisboxFeatureLayer(QObject, Logger):
                 1
             )
 
-            if value == to_delete_count and ok:
-                if to_delete:
-                    payload['delete'] = to_delete
+            if not ok or value != to_delete_count:
+                return
 
-                if to_delete:
-                    payload['delete']['features_ids'] = self.getFeaturesDbIds(
-                        to_delete['qgis_features_ids'], layer)
+        if to_delete:
+            payload['delete'] = to_delete
 
-        else:
-            if to_delete:
-                payload['delete'] = to_delete
-
-            if to_delete:
-                payload['delete']['features_ids'] = self.getFeaturesDbIds(
-                    to_delete['qgis_features_ids'], layer)
+            payload['delete']['features_ids'] = self.getFeaturesDbIds(
+                to_delete['qgis_features_ids'], layer)
 
         GISBOX_CONNECTION.post(
             f"/api/dataio/data_sources/{self.datasource_name}/features/edit?layer_id={self.id}",

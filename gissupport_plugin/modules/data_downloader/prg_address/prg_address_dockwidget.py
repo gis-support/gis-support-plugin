@@ -21,7 +21,7 @@ class PRGAddressDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.gsSelectAreaWidget = GsSelectArea(select_layer_types=[QgsMapLayerProxyModel.PolygonLayer])
         self.widgetLayout.addWidget(self.gsSelectAreaWidget)
 
-        self.setWindowTitle("PRG - dane adresowe")
+        self.setWindowTitle("PRG - punkty adresowe")
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

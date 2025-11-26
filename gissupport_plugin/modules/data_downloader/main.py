@@ -41,7 +41,7 @@ class DataDownloaderModule(BaseModule, PRGDownloader, PRGAddressDownloader, BDOT
 
         self.prg_address_action = self.parent.add_action(
             icon_path = None,
-            text= "PRG - dane adresowe",
+            text= "PRG - punkty adresowe",
             callback=self.change_prg_address_dockwidget_visibility,
             parent=iface.mainWindow(),
             add_to_topmenu=False,

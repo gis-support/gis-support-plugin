@@ -60,20 +60,25 @@ class PRGAddressDataBoxDownloadTask(QgsTask):
 
     def __init__(self, description: str, layer: str, geojson: QgsGeometry):
         self.layer = layer
-        self.geojson = json.loads(geojson.asJson())
-        self.geojson["crs"] = {"type": "name", "properties": {"name": "EPSG:2180"}}
-        self.url = f"https://api-oze.gisbox.pl/layers/prg_punkty_adresowe?output_srid=2180&promote_to_multi=false"
+        #self.geojson = json.loads(geojson.asJson())
+        #self.geojson["crs"] = {"type": "name", "properties": {"name": "EPSG:2180"}}
+        self.bbox = geojson.boundingBox()
+        self.url = f"https://databox.gis.support/api/2.0/functions/GetFeaturesByBbox/prg_punkty_adresowe?xmax={self.bbox.xMaximum()}&ymax={self.bbox.yMaximum()}&xmin={self.bbox.xMinimum()}&ymin={self.bbox.yMinimum()}"
         super().__init__(description, QgsTask.CanCancel)
 
     def run(self):
         handler = NetworkHandler()
-        response = handler.post(self.url, data=self.geojson, databox=True)
+        response = handler.get(self.url)
         if details := response.get("details"):
             self.downloaded_details.emit(f"Przekroczono limit danych ({details.get('limit')}) z Data.Box. Próbowano pobrać {details.get('count')} obiektów.")
             self.download_finished.emit(True)
             return False
 
-        self.downloaded_data.emit(response.get("data"))
+        response_data = response.get("data")
+        features = json.loads(response_data)["features"]
+        geojson_dict = {"type": "FeatureCollection", "features": features}
+
+        self.downloaded_data.emit(json.dumps(geojson_dict))
         self.download_finished.emit(True)
         return True
 

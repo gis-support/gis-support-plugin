@@ -74,7 +74,10 @@ class PRGAddressDataBoxDownloadTask(QgsTask):
             self.download_finished.emit(True)
             return False
         elif error := response.get("error"):
-            self.downloaded_details.emit(f"Błąd pobierania danych z Data.Box.")
+            if msg := response.get("msg"):
+                self.downloaded_details.emit(msg)
+            else:
+                self.downloaded_details.emit(f"Błąd pobierania danych z Data.Box.")
             self.download_finished.emit(True)
             return False
 

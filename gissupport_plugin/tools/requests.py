@@ -32,6 +32,8 @@ class NetworkHandler(QObject):
                 retry_callback()
             elif reply.error() in (QNetworkReply.TimeoutError, QNetworkReply.OperationCanceledError, QNetworkReply.UnknownServerError):
                 self.result = {'error': reply.errorString(), 'msg': 'Przekroczono czas oczekiwania na odpowiedź serwera.'}
+            elif reply.error() == QNetworkReply.ContentAccessDenied:
+                self.result = {'error': reply.errorString(), 'msg': 'Przekroczono limit danych. Zmniejsz wskazany obszar.'}
             else:
                 if (status_code := reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)) == 400 and (
                         detail := json.loads(bytearray(reply.readAll())).get("detail")):

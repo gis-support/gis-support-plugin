@@ -106,7 +106,7 @@ class PRGAddressDownloader:
 
     def download_prg_address(self):
         """
-        Uruchamia pobieranie danych BDOT10k.
+        Uruchamia pobieranie danych.
         """
         if self.teryt_w == "" or self.teryt_p == "":
             iface.messageBar().pushMessage("Przed pobraniem należy wybrać województwo i powiat",
@@ -134,16 +134,16 @@ class PRGAddressDownloader:
 
     def update_prg_address_download_progress(self, value: int):
         """
-        Aktualizuje pasek postępu pobierania danych BDOT10k.
+        Aktualizuje pasek postępu pobierania danych.
         """
         self.task.setProgress(value)
 
     def show_prg_address_success_message(self):
         """
-        Wyświetla komunikat o pomyślnym pobraniu danych BDOT10k.
+        Wyświetla komunikat o pomyślnym pobraniu danych.
         """
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
-                    "Pomyślnie pobrano dane BDOT10k", level=Qgis.Info))
+                    "Pomyślnie pobrano dane PRG - punkty adresowe", level=Qgis.Info))
 
     def handle_prg_address_task_error(self, error_message):
         iface.messageBar().pushMessage("Wtyczka GIS Support", error_message, level=Qgis.Critical)

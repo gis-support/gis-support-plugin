@@ -18,7 +18,7 @@
     <item>
      <widget class="QLabel" name="descLabel">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Narzędzie pozwala pobrać warstwy wektorowe z &lt;a href=&quot;https://www.geoportal.gov.pl/pl/dane/baza-danych-obiektow-topograficznych-bdot10k/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Bazy danych obiektów topograficznych (BDOT10k)&lt;/span&gt;&lt;/a&gt;. Administratorem danych jest GUGiK. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Narzędzie pozwala pobrać punkty adresowe z &lt;a href=&quot;https://www.geoportal.gov.pl/pl/dane/panstwowy-rejestr-granic-prg/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Państwowego Rejestr Granic&lt;/span&gt;&lt;/a&gt;.&amp;nbsp;Administratorem danych jest GUGiK. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>

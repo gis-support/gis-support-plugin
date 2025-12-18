@@ -41,7 +41,7 @@ class Auth(BaseLogicClass):
 
         self.login_dialog.login_button.clicked.connect(self.login)
         self.login_dialog.forgot_pwd_button.clicked.connect(self.show_forgot_password_dialog)
-        self.register_dialog.register_button.clicked.connect(self.register)
+        self.register_dialog.reg_register_button.clicked.connect(self.register)
 
         self.verify_org_dialog.verify_button.clicked.connect(self.verify_org)
 

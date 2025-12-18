@@ -16,8 +16,8 @@ class UsemapsLite(BaseModule):
 
         self.dockwidgetAction = self.parent.add_dockwidget_action(
             dockwidget = self.dockwidget,
-            icon_path=":/plugins/gissupport_plugin/usemaps_lite/zielen_v1.jpg",
-            text = 'GIS.Box Lite'
+            icon_path=":/plugins/gissupport_plugin/usemaps_lite/usemaps_lite.svg",
+            text = 'Usemaps Lite'
             )
 
         self.dockwidget.layers.connect_layersremoved_signal(True)

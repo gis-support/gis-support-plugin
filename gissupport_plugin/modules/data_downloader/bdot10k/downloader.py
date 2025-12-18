@@ -27,13 +27,13 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget = None
         self.selected_geom = QgsGeometry()
         self.databox_layers = None
-        self.drawpolygon = None
-        self.drawrectangle = None
         self.current_layer = None
 
     def init_bdot10k_dockwidget(self):
-
         self.bdot10k_dockwidget = BDOT10kDockWidget()
+        # Zapobiega usunięciu obiektu przez Garbage Collector
+        self.bdot10k_dockwidget._controller = self 
+        
         iface.addDockWidget(Qt.RightDockWidgetArea, self.bdot10k_dockwidget)
         self.bdot10k_dockwidget.hide()
 
@@ -47,13 +47,11 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.downloadButton.setEnabled(False)
         self.bdot10k_dockwidget.filepathLine.textChanged.connect(lambda text: self.set_powiat_class_button_state(text, self.bdot10k_dockwidget.downloadButton))
 
-        self.select_features_rectangle_tool = self.bdot10k_dockwidget.selectAreaWidget.select_features_rectangle_tool
-        self.select_features_freehand_tool = self.bdot10k_dockwidget.selectAreaWidget.select_features_freehand_tool
-        self.select_features_tool = self.bdot10k_dockwidget.selectAreaWidget.select_features_tool
+        # Podłączenie sygnału z widgetu zaznaczania
+        self.bdot10k_dockwidget.selectAreaWidget.geometryCreated.connect(self.set_geometry_from_signal)
 
-        self.select_features_rectangle_tool.geometryEnded.connect(self.set_geometry_from_draw)
-        self.select_features_freehand_tool.geometryEnded.connect(self.set_geometry_from_draw)
-        self.select_features_tool.geometryEnded.connect(self.set_geometry_from_draw)
+        self.bdot10k_dockwidget.selectAreaWidget.methodChanged.connect(self.on_select_method_changed)
+        self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_changed)
 
         self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)
         self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
@@ -93,7 +91,6 @@ class BDOT10kDownloader:
             button.setEnabled(True)
         else:
             button.setEnabled(False)
-
 
         self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_changed)
 
@@ -168,10 +165,9 @@ class BDOT10kDownloader:
 
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
-
-        self.select_features_tool.deactivate()
-        self.select_features_freehand_tool.deactivate()
-        self.select_features_rectangle_tool.deactivate()
+        
+        if hasattr(self.bdot10k_dockwidget.selectAreaWidget, 'tool') and self.bdot10k_dockwidget.selectAreaWidget.tool:
+             self.bdot10k_dockwidget.selectAreaWidget.tool.deactivate()
 
     def update_bdok10k_download_progress(self, value: int):
         """
@@ -186,33 +182,37 @@ class BDOT10kDownloader:
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
                     "Pomyślnie pobrano dane BDOT10k", level=Qgis.Info))
 
-### pobieranie dla zasięgu
-
-    def set_download_button_state(self):
-        if self.current_layer:
-            self.current_layer.selectionChanged.disconnect(self.on_selection_change)
-        selected_layer = self.bdot10k_dockwidget.fromLayerComboBox.currentLayer()
-        if selected_layer:
-            self.current_layer = selected_layer
-            selected_layer.selectionChanged.connect(self.on_selection_change)
-            self.on_selection_change(selected_layer.selectedFeatureCount())
+    def set_geometry_from_signal(self, geom):
+        """Odbiera geometrię z sygnału widgetu GsSelectArea"""
+        if geom and not geom.isNull():
+            try:
+                crs_src = iface.mapCanvas().mapSettings().destinationCrs()
+                if crs_src != QgsCoordinateReferenceSystem.fromEpsgId(2180):
+                        self.selected_geom = transform_geometry_to_2180(QgsGeometry(geom), crs_src)
+                else:
+                        self.selected_geom = QgsGeometry(geom)
+                
+                self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
+            except Exception:
+                self.selected_geom = None
+                self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
         else:
-            self.current_layer = None
+            self.selected_geom = None
             self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
-    def set_geometry_from_draw(self, area: float, geom: QgsGeometry):
-        self.selected_geom = geom
-        if not self.selected_geom.isNull():
-            self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
-
     def on_select_method_changed(self):
-        self.select_features_rectangle_tool.reset_geometry()
-        self.select_features_freehand_tool.reset_geometry()
-        self.select_features_tool.reset_geometry()
         self.selected_geom = None
+        self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
     def on_layer_changed(self):
-        self.set_geometry_for_selection()
+        if self.current_layer:
+            try:
+                self.current_layer.selectionChanged.disconnect(self.on_layer_selection_changed_handler)
+            except: pass
+        new_layer = self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.currentLayer()
+        if new_layer:
+            self.current_layer = new_layer
+            self.current_layer.selectionChanged
 
     def set_geometry_for_selection(self):
         selected_layer = self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.currentLayer()
@@ -223,25 +223,40 @@ class BDOT10kDownloader:
             else:
                 selected_features = selected_layer.getFeatures()
 
-            geom = QgsGeometry.unaryUnion([f.geometry() for f in selected_features])
+            #Zabezpieczenie listy
+            feats_list = [f for f in selected_features]
+            if not feats_list:
+                self.selected_geom = None
+                self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
+                return
+
+            geom = QgsGeometry.unaryUnion([f.geometry() for f in feats_list])
             crs_src = selected_layer.crs()
             if crs_src != QgsCoordinateReferenceSystem.fromEpsgId(2180):
-                self.selected_geom  = transform_geometry_to_2180(geom, crs_src)
+                self.selected_geom = transform_geometry_to_2180(geom, crs_src)
             else:
                 self.selected_geom = geom
+            
+            #Włączenie przycisku jeśli geometria jest OK
+            if not self.selected_geom.isNull():
+                 self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
+            else:
+                 self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
 
     def download_bdot10k_from_databox(self):
         if self.bdot10k_dockwidget.selectAreaWidget.selectMethodCb.currentText() == 'Wskaż obiekty':
             self.set_geometry_for_selection()
         else:
-            if self.selected_geom.isMultipart():
+            if self.selected_geom and self.selected_geom.isMultipart():
                 self.selected_geom = convert_multi_polygon_to_polygon(self.selected_geom)
 
         layer_name = self.bdot10k_dockwidget.layerComboBox.currentText()
         layer_name = self.databox_layers.get(layer_name)
+        
+        #Używamy self.selected_geom, który został ustawiony wcześniej
         self.task = BDOT10kDataBoxDownloadTask("Pobieranie danych BDOT10k", layer_name, self.selected_geom)
-        self.task.downloaded_data.connect(self.add_features_to_map)
+        self.task.downloaded_data.connect(self.add_bdot10k_features_to_map)
         self.task.downloaded_details.connect(self.show_bdot10k_databox_limit_exceeded_message)
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
@@ -249,12 +264,12 @@ class BDOT10kDownloader:
     def show_bdot10k_databox_limit_exceeded_message(self, message: str):
         iface.messageBar().pushMessage(message, level=Qgis.Warning)
     
-    def add_features_to_map(self, geojson: str):
+    def add_bdot10k_features_to_map(self, geojson: str):
         layer_name = self.bdot10k_dockwidget.layerComboBox.currentText()
         existing_layer = QgsProject.instance().mapLayersByName(layer_name)
 
         geojson_layer = QgsVectorLayer(geojson, "temp", "ogr")
-        if geojson_layer.featureCount() <= 0 :
+        if not geojson_layer.isValid() or geojson_layer.featureCount() <= 0 :
             self.show_bdot10k_databox_error_message()
             return
 

@@ -61,13 +61,32 @@ class BDOT10kDataBoxDownloadTask(QgsTask):
     downloaded_details = pyqtSignal(str)
 
     def __init__(self, description: str, layer: str, geojson: QgsGeometry):
-        self.layer = layer
-        self.geojson = json.loads(geojson.asJson())
-        self.geojson["crs"] = {"type": "name", "properties": {"name": "EPSG:2180"}}
-        self.url = f"https://api-oze.gisbox.pl/layers/{self.layer}?output_srid=2180&promote_to_multi=false"
         super().__init__(description, QgsTask.CanCancel)
+        self.layer = layer
+        
+        #Zabezpieczenie przed pustą geometrią
+        try:
+            json_str = geojson.asJson()
+            if json_str == 'null' or json_str is None:
+                # Jeśli asJson zwraca 'null', geometry jest puste/błędne
+                self.geojson = None
+            else:
+                self.geojson = json.loads(json_str)
+        except Exception:
+            self.geojson = None
+
+        if self.geojson is None:
+            QgsMessageLog.logMessage("Przekazano nieprawidłową geometrię do zadania pobierania!", "GIS Support", Qgis.Warning)
+            return
+            
+        self.geojson["crs"] = {"type": "name", "properties": {"name": "EPSG:2180"}}
+        self.url = f"https://api-oze.gisbox.pl/layers/{self.layer}?output_srid=2180&promote_to_multi=false" 
 
     def run(self):
+        # Sprawdzamy czy init przeszedł poprawnie
+        if not hasattr(self, 'geojson') or self.geojson is None:
+            return False
+
         handler = NetworkHandler()
         response = handler.post(self.url, data=self.geojson, databox=True)
         if details := response.get("details"):

@@ -32,7 +32,7 @@ class DropFrame(QFrame):
             if file_path.lower().endswith('.gpkg'):
                 self.file_dropped.emit(file_path)
                 return
-        iface.messageBar().pushCritical("GIS.Box Lite", TRANSLATOR.translate_error("wrong file format"))
+        iface.messageBar().pushCritical("Usemaps Lite", TRANSLATOR.translate_error("wrong file format"))
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'import_layer.ui'))

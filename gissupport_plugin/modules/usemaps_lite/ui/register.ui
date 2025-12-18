@@ -7,19 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>566</width>
-    <height>300</height>
+    <height>330</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>566</width>
-    <height>300</height>
+    <height>330</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>566</width>
-    <height>300</height>
+    <height>330</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -27,24 +27,24 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="email_label">
-     <property name="text">
-      <string>Email</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="reg_email_line"/>
-   </item>
-   <item>
     <widget class="QLabel" name="orgname_label">
      <property name="text">
-      <string>Nazwa organizacji</string>
+      <string>Nazwa konta (np. nazwa Twojej firmy. Do konta przypisywane są dane i współpracownicy.)</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QLineEdit" name="reg_orgname_line"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="reg_email_label">
+     <property name="text">
+      <string>Twój e-mail (pierwszy współpracownik konta)</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="reg_email_line"/>
    </item>
    <item>
     <widget class="QLabel" name="password_label">
@@ -79,6 +79,43 @@
     <widget class="QgsPasswordLineEdit" name="reg_pwd_again_line"/>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_terms">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+    <item>
+      <widget class="QCheckBox" name="terms_checkbox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="terms_label">
+       <property name="text">
+        <string>Akceptuję regulamin</string>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -94,7 +131,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="register_button">
+      <widget class="QPushButton" name="reg_register_button">
        <property name="minimumSize">
         <size>
          <width>120</width>

@@ -44,8 +44,10 @@ class Auth(BaseLogicClass):
         self.register_dialog.register_button.clicked.connect(self.register)
 
         self.verify_org_dialog.verify_button.clicked.connect(self.verify_org)
+        self.verify_org_dialog.cancel_button.clicked.connect(self.register_dialog.show) #Anulowanie weryfikacji, przywraca okno rejestracji
 
         self.forgot_password_dialog.reset_button.clicked.connect(self.reset_password)
+        self.forgot_password_dialog.cancel_button.clicked.connect(self.login_dialog.show) #Anulowanie resetu hasla, przywraca okno loginu
 
         self.dockwidget.logout_button.clicked.connect(self.logout)
 
@@ -56,7 +58,7 @@ class Auth(BaseLogicClass):
         """
         Wykonuje request logowania do Usemaps Lite.
         """
-
+        
         self.username = self.login_dialog.log_email_line.text()
         self.pwd = self.login_dialog.log_pwd_line.text()
 
@@ -253,6 +255,7 @@ class Auth(BaseLogicClass):
         else:
             data = response.get("data")
             self.registered_user_uuid = data.get('uuid')
+            self.register_dialog.hide() #Ukrycie okna rejestracji
             self.verify_org_dialog.show()
     
     def verify_org(self) -> None:
@@ -318,6 +321,7 @@ class Auth(BaseLogicClass):
         
         typed_email = self.login_dialog.log_email_line.text()
         self.forgot_password_dialog.reset_email_line.setText(typed_email)
+        self.login_dialog.hide() #Ukrycie okna logowania, aby nie zasłaniało
         self.forgot_password_dialog.show()
     
     def reset_password(self):

@@ -1,3 +1,12 @@
+2.10
+Wyszukiwarka działek z listy pobiera teraz dane z warstwy wczytanej do QGIS, a nie z pliku CSV
+Włączenie panelu Mapster aktywuje narzędzie mapy
+Zmiana sposóbu zapisywania informacji o warstwach GIS.Box w projektach QGIS
+Poprawienie listy jednostek administracyjnych przy pobieraniu danych BDOT10k
+Poprawna obsługa separatora powierzchni działki
+Naprawa błędu podczas logowania/wylogowania z GIS.Box
+Poprawiony błąd przy błędnej odpowiedzi usługi ULDK
+
 2.9
 Możliwość podawania adresu GIS.Box bez schematu `https`
 Ujednolicenie narzędzia zaznaczania/wyboru w modułach `Automatyczna wektoryzacja`, `BDOT 10k` i `NM(P)T`

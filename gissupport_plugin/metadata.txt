@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=2.9
+version=2.10
 author=GIS Support
 email=info@gis-support.pl
 license=GPL-3.0-only
@@ -53,13 +53,13 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=Możliwość podawania adresu GIS.Box bez schematu `https`
-	Ujednolicenie narzędzia zaznaczania/wyboru w modułach `Automatyczna wektoryzacja`, `BDOT 10k` i `NM(P)T`
-	Aktualizacja adresów WMS/WFS
-	Poprawione wykrywanie domyślnego układu w module Baza WMS/WFS
-	Dodanie walidacji Capabilities przed popularnymi atakami
-	Ustawianie limitu czasu zapytań dla GIS.Box nie zmienia ustawień QGIS
-	Poprawki UX panelu GIS.Box
+changelog=Wyszukiwarka działek z listy pobiera teraz dane z warstwy wczytanej do QGIS, a nie z pliku CSV
+	Włączenie panelu Mapster aktywuje narzędzie mapy
+	Zmiana sposóbu zapisywania informacji o warstwach GIS.Box w projektach QGIS
+	Poprawienie listy jednostek administracyjnych przy pobieraniu danych BDOT10k
+	Poprawna obsługa separatora powierzchni działki
+	Naprawa błędu podczas logowania/wylogowania z GIS.Box
+	Poprawiony błąd przy błędnej odpowiedzi usługi ULDK
 
 # Tags are comma separated with spaces allowed
 tags=python

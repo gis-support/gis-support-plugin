@@ -11,7 +11,7 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("arkusz", QVariant.String),
     QgsField("nr_dzialki", QVariant.String),
     QgsField("teryt", QVariant.String),
-    QgsField("pow_m2", QVariant.String),
+    QgsField("pow_m2", QVariant.Double, prec=2),
 ]
 
 
@@ -22,6 +22,10 @@ class ResultCollector:
         def __init__(self, feature: QgsFeature, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.feature = feature
+
+    class ResponseDataException(Exception):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
 
     @classmethod
     def default_layer_factory(cls, name = "Wyniki wyszukiwania ULDK",
@@ -45,8 +49,11 @@ class ResultCollector:
             else:
                 return None
 
-        geom_wkt, province, county, municipality, precinct, plot_id, teryt = \
-            response_row.split("|")
+        try:
+            geom_wkt, province, county, municipality, precinct, plot_id, teryt = \
+                response_row.split("|")
+        except ValueError:
+            raise cls.ResponseDataException()
 
         sheet = get_sheet(teryt)
         

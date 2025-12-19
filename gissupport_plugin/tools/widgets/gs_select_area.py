@@ -7,7 +7,7 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QWidget, QSizePolicy
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QCursor, QPixmap, QColor
-from qgis.core import (Qgis, QgsWkbTypes, QgsGeometry, QgsProject, QgsDistanceArea,
+from qgis.core import (QgsWkbTypes, QgsGeometry, QgsProject, QgsDistanceArea,
                        QgsCoordinateTransformContext, QgsUnitTypes, QgsPointXY,
                        QgsMapLayerProxyModel, QgsMapLayer
                        )
@@ -24,8 +24,7 @@ class GsSelectAreaOption(Enum):
 
 class GsSelectArea(QWidget, FORM_CLASS):
     methodChanged = pyqtSignal()
-    # NOWY SYGNAŁ: Przekazuje gotową geometrię do downloadera
-    geometryCreated = pyqtSignal(object) 
+    geometryCreated = pyqtSignal(object)
 
     def __init__(self, parent=None,
                  select_options: list = [GsSelectAreaOption.RECTANGLE.value, GsSelectAreaOption.FREEHAND.value, GsSelectAreaOption.LAYER.value],
@@ -105,10 +104,6 @@ class GsSelectArea(QWidget, FORM_CLASS):
 
             if layer := self.selectLayerCb.currentLayer():
                 if layer.type() == QgsMapLayer.VectorLayer:
-                    try:
-                        self.selectLayerCb.currentLayer().selectionChanged.disconnect(self.on_selection_changed)
-                    except: pass
-                    self.selectLayerCb.currentLayer().selectionChanged.connect(self.on_selection_changed)
                     count = self.selectLayerCb.currentLayer().selectedFeatureCount()
                 else:
                     count = 0
@@ -146,12 +141,13 @@ class GsSelectArea(QWidget, FORM_CLASS):
         layer = self.selectLayerCb.currentLayer()
 
         if layer:
-            if layer.dataProvider().featureCount() == 0:
-                return
-            self.layer = layer
             try:
                 self.layer.selectionChanged.disconnect(self.on_selection_changed)
-            except: pass
+            except: 
+                pass
+
+            self.layer = layer
+
             self.layer.selectionChanged.connect(self.on_selection_changed)
             self.on_selection_changed(self.layer.selectedFeatureIds())
             self.selectLayerFeatsCb.setEnabled(True)
@@ -167,8 +163,7 @@ class GsSelectArea(QWidget, FORM_CLASS):
              self.selectLayerFeatsCb.setText(f"Tylko zaznaczone obiekty [{self.layer.selectedFeatureCount()}]")
 
     def closeWidget(self):
-        if self.tool:
-            self.tool.reset()
+        self.tool.reset()
 
 
 
@@ -322,7 +317,7 @@ class SelectFeaturesTool(QgsMapTool):
     def activate(self):
         layer = self.parent.selectLayerCb.currentLayer()
 
-        if layer is not None:            
+        if layer is not None:
             if self.parent.selectLayerFeatsCb.isChecked():
                 features = layer.getSelectedFeatures()
             else:

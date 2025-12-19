@@ -2,7 +2,7 @@ from typing import List, Union
 from os.path import expanduser
 
 from qgis._core import QgsCoordinateReferenceSystem
-from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsMapLayerProxyModel, QgsGeometry, QgsWkbTypes
+from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsMapLayerProxyModel, QgsGeometry, QgsWkbTypes, QgsMessageLog
 from qgis.gui import QgsMessageBarItem, QgsMapTool
 from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
@@ -166,8 +166,6 @@ class BDOT10kDownloader:
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
         
-        if hasattr(self.bdot10k_dockwidget.selectAreaWidget, 'tool') and self.bdot10k_dockwidget.selectAreaWidget.tool:
-             self.bdot10k_dockwidget.selectAreaWidget.tool.deactivate()
 
     def update_bdok10k_download_progress(self, value: int):
         """
@@ -186,14 +184,24 @@ class BDOT10kDownloader:
         """Odbiera geometrię z sygnału widgetu GsSelectArea"""
         if geom and not geom.isNull():
             try:
+                # domyslnie uklad mapy dla narzedzi rysowania
                 crs_src = iface.mapCanvas().mapSettings().destinationCrs()
+
+                widget = self.bdot10k_dockwidget.selectAreaWidget
+                if widget.selectMethodCb.currentText() == 'Wskaz obiekty':
+                    layer = widget.selectLayerCb.currentLayer()
+                    if layer and layer.isValid():
+                        # crs z warstwy, nie z mapy
+                        crs_src = layer.crs()
+
                 if crs_src != QgsCoordinateReferenceSystem.fromEpsgId(2180):
                         self.selected_geom = transform_geometry_to_2180(QgsGeometry(geom), crs_src)
                 else:
                         self.selected_geom = QgsGeometry(geom)
                 
                 self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
-            except Exception:
+            except (ValueError, TypeError, RuntimeError) as e:
+                QgsMessageLog.logMessage(f"Błąd przetwarzania geometrii: {e}", "Wtyczka GIS Support", Qgis.Warning)
                 self.selected_geom = None
                 self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
         else:
@@ -208,7 +216,9 @@ class BDOT10kDownloader:
         if self.current_layer:
             try:
                 self.current_layer.selectionChanged.disconnect(self.on_layer_selection_changed_handler)
-            except: pass
+            except: 
+                pass
+
         new_layer = self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.currentLayer()
         if new_layer:
             self.current_layer = new_layer

@@ -145,6 +145,7 @@
             <property name="font">
              <font>
               <pointsize>8</pointsize>
+              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -160,6 +161,88 @@
      </widget>
     </item>
     <item>
+     <widget class="QFrame" name="frame_save_settings">
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_save">
+       <property name="spacing">
+        <number>4</number>
+       </property>
+       <property name="leftMargin">
+        <number>9</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>9</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
+       <item>
+        <widget class="QRadioButton" name="radioTempLayer">
+         <property name="text">
+          <string>Zapisz w warstwie tymczasowej</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_existing">
+         <item>
+          <widget class="QRadioButton" name="radioExistingLayer">
+           <property name="text">
+            <string>Dodaj do istniejącej warstwy</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QgsMapLayerComboBox" name="comboLayers" native="true">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelLayerInfo">
+           <property name="maximumSize">
+            <size>
+             <width>15</width>
+             <height>15</height>
+            </size>
+           </property>
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>Atrybuty będą dopasowane do kolumn wg nazw, jeśli dana kolumna nie istnieje to informacja nie zostanie zapisana:
+- wojewodztwo lub woj - województwo
+- powiat - powiat
+- gmina - gmina
+- obreb - obręb ewidencyjny
+- arkusz - arkusz mapy
+- nr_dzialki - numer działki
+- teryt - TERYT
+- pow_m2 - powierzchnia</string>
+           </property>
+           <property name="text">
+            <string>i</string>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
      <widget class="QScrollArea" name="scrollArea">
       <property name="widgetResizable">
        <bool>true</bool>
@@ -170,7 +253,7 @@
          <x>0</x>
          <y>0</y>
          <width>568</width>
-         <height>525</height>
+         <height>482</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -216,6 +299,9 @@
              <spacer name="verticalSpacer_5">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Expanding</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -322,25 +408,16 @@
       </widget>
      </widget>
     </item>
-    <item>
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Fixed</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>17</width>
-        <height>15</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsMapLayerComboBox</class>
+   <extends>QWidget</extends>
+   <header>qgsmaplayercombobox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

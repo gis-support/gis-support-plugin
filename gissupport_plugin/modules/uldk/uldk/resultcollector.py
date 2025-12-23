@@ -1,7 +1,9 @@
 from PyQt5.QtCore import QVariant
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsFeature, QgsField,
-                       QgsFields, QgsGeometry, QgsProject, QgsVectorLayer)
+                       QgsFields, QgsGeometry, QgsProject, QgsVectorLayer, Qgis, QgsRectangle)
+from qgis.utils import iface
+from typing import Optional, Tuple, List
 
 PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("wojewodztwo", QVariant.String),
@@ -28,9 +30,13 @@ class ResultCollector:
             super().__init__(*args, **kwargs)
 
     @classmethod
-    def default_layer_factory(cls, name = "Wyniki wyszukiwania ULDK",
-            epsg = 2180, custom_properties = {"ULDK":"plots_layer"},
-            additional_fields = [], base_fields = PLOTS_LAYER_DEFAULT_FIELDS ):
+    def default_layer_factory(cls,
+            name: str = "Wyniki wyszukiwania ULDK",
+            epsg: int = 2180,
+            custom_properties: dict= {"ULDK":"plots_layer"},
+            additional_fields: List[QgsField] = [],
+            base_fields: List[QgsField] = PLOTS_LAYER_DEFAULT_FIELDS) -> QgsVectorLayer:
+        
         fields = base_fields + additional_fields
         layer = QgsVectorLayer("Polygon?crs=EPSG:{}".format(epsg), name, "memory")
         layer.startEditing()
@@ -41,7 +47,7 @@ class ResultCollector:
         return layer
 
     @classmethod
-    def uldk_response_to_qgs_feature(cls, response_row, additional_attributes=[]):
+    def uldk_response_to_qgs_feature(cls, response_row: str, additional_attributes: list = []) -> QgsFeature:
         def get_sheet(teryt):
             split = teryt.split(".")
             if len(split) == 4:
@@ -84,6 +90,82 @@ class ResultCollector:
                 raise cls.BadGeometryException(feature)
 
         return feature
+    
+    @classmethod
+    def _add_feature_with_session(cls, layer: QgsVectorLayer, feature_to_add: Optional[QgsFeature]) -> bool:
+        """Logika bezpiecznej sesji edycyjnej"""
+        if feature_to_add is None:
+            return False
+
+        if layer.isEditable():
+            if layer.isModified():
+                iface.messageBar().pushMessage(
+                    "Wtyczka GIS SUPPORT - ULDK",
+                    "Przed kontynuowaniem musisz zapisać zmiany w warstwie.",
+                    level=Qgis.Warning)
+                return False
+            was_editable = True
+        else:
+            layer.startEditing()
+            was_editable = False
+        
+        success = layer.addFeature(feature_to_add)
+
+        if success:
+            if not was_editable:
+                layer.commitChanges()
+            else:
+                layer.commitChanges(stopEditing=False)
+            return True
+        
+        return success
+    
+    @classmethod
+    def _map_attributes_by_name(cls, target_layer: QgsVectorLayer, source_feature: QgsFeature) -> Tuple[QgsFeature, List[str]]:
+        """Mapowanie atrybutów po nazwach dla istniejącej warstwy"""
+        new_feat = QgsFeature(target_layer.fields())
+
+        # Sprawdzenie i porównaie układów
+        geometry = source_feature.geometry()
+        source_crs = QgsCoordinateReferenceSystem.fromEpsgId(2180)
+        target_crs = target_layer.crs()
+
+        # Transformacja jeśli są różne
+        if source_crs != target_crs:
+            geometry.transform(QgsCoordinateTransform(source_crs, target_crs, QgsProject.instance()))
+
+        new_feat.setGeometry(geometry)
+
+        mapping = {
+            'wojewodztwo': 0, 'woj': 0,
+            'powiat': 1,
+            'gmina': 2,
+            'obreb': 3,
+            'arkusz': 4,
+            'nr_dzialki': 5,
+            'teryt': 6,
+            'pow_m2': 7
+        }
+        
+        found_indices = set()
+        source_attrs = source_feature.attributes()
+
+        for field in target_layer.fields():
+            name_lower = field.name().lower()
+            if name_lower in mapping:
+                source_idx = mapping[name_lower]
+                new_feat.setAttribute(field.name(), source_attrs[source_idx])
+                found_indices.add(source_idx)
+        
+        missing = []
+        for i in range(8):
+            if i not in found_indices:
+                for label, source_idx in mapping.items():
+                    if source_idx == i:
+                        missing.append(label)
+                        break
+
+        return new_feat, missing
 
 class ResultCollectorSingle(ResultCollector):
 
@@ -103,29 +185,56 @@ class ResultCollectorSingle(ResultCollector):
     def __delete_layer(self):
         self.layer = None
     
-    def update(self, uldk_response):
+    def update(self, uldk_response: str) -> Optional[QgsFeature]:
         feature = self.uldk_response_to_qgs_feature(uldk_response)
         return self.update_with_feature(feature)
     
-    def update_with_feature(self, feature):
-        if self.layer is None:
-            self.__create_layer()
-            QgsProject.instance().addMapLayer(self.layer)
+    def update_with_feature(self, feature: QgsFeature) -> Optional[QgsFeature]:
+        dock = self.parent.dockwidget
 
-        self.__add_feature(feature)
-        self.layer.updateExtents()
+        if dock.radioExistingLayer.isChecked():
+            target_layer = dock.comboLayers.currentLayer()
+            if not target_layer:
+                iface.messageBar().pushMessage(
+                    "Wtyczka GIS SUPPORT - ULDK",
+                    "Nie wybrano warstwy docelowej",
+                    level=Qgis.Critical)
+                return None
+            
+            mapped_feature, missing = self._map_attributes_by_name(target_layer, feature)
 
-        return feature
+            if missing:
+                msg = f"Nie udało się zmapować pól: \
+                    {', '.join(missing)}.  Popraw nazwy kolumn w tabeli. Nazwę poprawnych nazw znajdziesz w informacji."
+                iface.messageBar().pushMessage("Wtyczka GIS SUPPORT - ULDK", msg, level=Qgis.Info, duration=10)
 
-    def zoom_to_feature(self, feature):
+            if self._add_feature_with_session(target_layer, mapped_feature):
+                target_layer.updateExtents()
+                return mapped_feature
+            return None
+        else:
+            if self.layer is None:
+                self.__create_layer()
+                QgsProject.instance().addMapLayer(self.layer)
+
+            if self._add_feature_with_session(self.layer, feature):
+                self.layer.updateExtents()
+                return feature
+            return feature
+
+    def zoom_to_feature(self, feature: Optional[QgsFeature]) -> Optional[QgsRectangle]:
+        if feature is None:
+            return None
+        
         crs_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
         canvas_crs = self.canvas.mapSettings().destinationCrs()
         transformation = QgsCoordinateTransform(crs_2180, canvas_crs, QgsCoordinateTransformContext())
         target_bbox = transformation.transformBoundingBox(feature.geometry().boundingBox())
         self.canvas.setExtent(target_bbox)
+
         return target_bbox
 
-    def __add_feature(self, feature):
+    def __add_feature(self, feature: QgsFeature) -> Optional[QgsFeature]:
         
         self.layer.startEditing()
         self.layer.dataProvider().addFeature(feature)
@@ -144,7 +253,7 @@ class ResultCollectorMultiple(ResultCollector):
         self.layer.startEditing()
         for row in uldk_response_rows:
             feature = self.uldk_response_to_qgs_feature(row)
-            self.layer.dataProvider().addFeature(feature)
+            self.layer.addFeature(feature)
         self.layer.commitChanges()
         self.layer.updateExtents()
         QgsProject.instance().addMapLayer(self.layer)
@@ -152,7 +261,7 @@ class ResultCollectorMultiple(ResultCollector):
     def update_with_features(self, features):
         self.layer.startEditing()
         for feature in features:
-            self.layer.dataProvider().addFeature(feature)
+            self.layer.addFeature(feature)
         self.layer.commitChanges()
         self.layer.updateExtents()
         QgsProject.instance().addMapLayer(self.layer)

@@ -27,7 +27,6 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget = None
         self.selected_geom = QgsGeometry()
         self.databox_layers = None
-        self.current_layer = None
 
     def init_bdot10k_dockwidget(self):
         self.bdot10k_dockwidget = BDOT10kDockWidget()
@@ -50,7 +49,6 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.selectAreaWidget.geometryCreated.connect(self.set_geometry_from_signal)
 
         self.bdot10k_dockwidget.selectAreaWidget.methodChanged.connect(self.on_select_method_changed)
-        self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_changed)
 
         self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)
         self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
@@ -91,7 +89,6 @@ class BDOT10kDownloader:
         else:
             button.setEnabled(False)
 
-        self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_changed)
 
 ### pobieranie dla wybranego powiatu
     def browse_filepath_for_bdot10k(self) -> None:
@@ -180,7 +177,10 @@ class BDOT10kDownloader:
                     "Pomyślnie pobrano dane BDOT10k", level=Qgis.Info))
 
     def set_geometry_from_signal(self, geom: QgsGeometry) -> None:
-        """Odbiera geometrię z sygnału widgetu GsSelectArea"""
+        """
+        Odbiera geometrię z sygnału widgetu GsSelectArea.
+        Widget sam zarządza swoją geometrią, tutaj tylko odbiera gotową.
+        """
         if geom and not geom.isNull():
             try:
                 # domyslnie uklad mapy dla narzedzi rysowania
@@ -193,12 +193,17 @@ class BDOT10kDownloader:
                         # crs z warstwy, nie z mapy
                         crs_src = layer.crs()
 
-                if crs_src != QgsCoordinateReferenceSystem.fromEpsgId(2180):
-                        self.selected_geom = transform_geometry_to_2180(QgsGeometry(geom), crs_src)
+                if crs_src.authid() != "EPSG:2180":
+                    self.selected_geom = transform_geometry_to_2180(QgsGeometry(geom), crs_src)
                 else:
-                        self.selected_geom = QgsGeometry(geom)
+                    self.selected_geom = QgsGeometry(geom)
+
+                # Konwersja multipoligonu dla prostokąta/swobodnego
+                if not widget.is_layer_method_active() and self.selected_geom.isMultipart():
+                    self.selected_geom.convertToSingleType()
 
                 self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
+
             except (ValueError, TypeError, RuntimeError) as e:
                 QgsMessageLog.logMessage(f"Błąd przetwarzania geometrii: {e}", "Wtyczka GIS Support", Qgis.Warning)
                 self.selected_geom = None
@@ -208,71 +213,17 @@ class BDOT10kDownloader:
             self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
     def on_select_method_changed(self) -> None:
+        """Wywoływane przy zmianie metody wyboru obszaru"""
         self.selected_geom = None
         self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
-    def on_layer_changed(self) -> None:
-        if self.current_layer is not None:
-            try:
-                self.current_layer.selectionChanged.disconnect(self.on_layer_selection_changed_handler)
-            except (TypeError, RuntimeError, Exception) as e:
-                QgsMessageLog.logMessage(
-                    f"Nie udało się rozłączyć starej warstwy: {e}",
-                    "Wtyczka GIS Support",
-                    Qgis.Info
-                )
-
-        new_layer = self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.currentLayer()
-        if new_layer:
-            self.current_layer = new_layer
-            try:
-                self.current_layer.selectionChanged.connect(self.set_geometry_for_selection)
-                self.set_geometry_for_selection()
-            except Exception as e:
-                QgsMessageLog.logMessage(
-                    f"Błąd podłączania nowej warstwy: {e}",
-                    "Wtyczka GIS Support",
-                    Qgis.Warning
-                )
-
-    def set_geometry_for_selection(self) -> None:
-        selected_layer = self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.currentLayer()
-
-        if selected_layer:
-            if self.bdot10k_dockwidget.selectAreaWidget.selectLayerFeatsCb.isChecked():
-                selected_features = selected_layer.getSelectedFeatures()
-            else:
-                selected_features = selected_layer.getFeatures()
-
-            #Zabezpieczenie listy
-            feats_list = [f for f in selected_features]
-            if not feats_list:
-                self.selected_geom = None
-                self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
-                return
-
-            geom = QgsGeometry.unaryUnion([f.geometry() for f in feats_list])
-            crs_src = selected_layer.crs()
-            if crs_src != QgsCoordinateReferenceSystem.fromEpsgId(2180):
-                self.selected_geom = transform_geometry_to_2180(geom, crs_src)
-            else:
-                self.selected_geom = geom
-
-            #Włączenie przycisku jeśli geometria jest OK
-            if not self.selected_geom.isNull():
-                 self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
-            else:
-                 self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
-
-
     def download_bdot10k_from_databox(self) -> None:
-        widget = self.bdot10k_dockwidget.selectAreaWidget
-
-        if widget.is_layer_method_active():
-            self.set_geometry_for_selection()
-        else:
-            if self.selected_geom and self.selected_geom.isMultipart():
-                self.selected_geom = convert_multi_polygon_to_polygon(self.selected_geom)
+        """Pobiera dane BDOT10k z DataBox dla wybranego obszaru"""
+        if not self.selected_geom or self.selected_geom.isNull():
+            iface.messageBar().pushMessage("Wtyczka GIS Support",
+                                         "Nie wybrano obszaru do pobrania",
+                                         level=Qgis.Warning)
+            return
 
         layer_name = self.bdot10k_dockwidget.layerComboBox.currentText()
         layer_name = self.databox_layers.get(layer_name)

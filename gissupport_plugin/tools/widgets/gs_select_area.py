@@ -27,8 +27,8 @@ class GsSelectArea(QWidget, FORM_CLASS):
     geometryCreated = pyqtSignal(object)
 
     def __init__(self, parent=None,
-                 select_options: list = [GsSelectAreaOption.RECTANGLE.value, GsSelectAreaOption.FREEHAND.value, GsSelectAreaOption.LAYER.value],
-                 select_layer_types: list = [QgsMapLayerProxyModel.PointLayer, QgsMapLayerProxyModel.LineLayer, QgsMapLayerProxyModel.PolygonLayer]
+                 select_options: list = None,
+                 select_layer_types: list = None
                  ):
         super(GsSelectArea, self).__init__(parent)
         self.setupUi(self)
@@ -37,6 +37,12 @@ class GsSelectArea(QWidget, FORM_CLASS):
             QSizePolicy.Minimum,
             QSizePolicy.Minimum
         )
+
+        # Domyślne wartości jeśli nie przekazano
+        if select_options is None:
+            select_options = [GsSelectAreaOption.RECTANGLE.value, GsSelectAreaOption.FREEHAND.value, GsSelectAreaOption.LAYER.value]
+        if select_layer_types is None:
+            select_layer_types = [QgsMapLayerProxyModel.PointLayer, QgsMapLayerProxyModel.LineLayer, QgsMapLayerProxyModel.PolygonLayer]
 
         self.select_options = select_options
         self.select_layer_types = select_layer_types
@@ -65,6 +71,8 @@ class GsSelectArea(QWidget, FORM_CLASS):
         self.select_features_freehand_tool.geometryEnded.connect(self.emit_geometry)
         self.select_features_tool.geometryEnded.connect(self.emit_geometry)
 
+        self.selectLayerFeatsCb.toggled.connect(self.on_checkbox_toggled)
+
         self.selectAreaBtn.setCheckable(True)
         self.tool = self.select_features_rectangle_tool
         self.tool.setButton(self.selectAreaBtn)
@@ -72,6 +80,11 @@ class GsSelectArea(QWidget, FORM_CLASS):
         self.selectAreaBtn.clicked.connect(self.activate_tool)
 
         self.layer = None
+
+        # Inicjalizacja warstwy jeśli jest już wybrana w comboboxie
+        initial_layer = self.selectLayerCb.currentLayer()
+        if initial_layer:
+            self.on_layer_changed()
 
     def current_method(self) -> GsSelectAreaOption:
         return GsSelectAreaOption(self.selectMethodCb.currentText())
@@ -119,6 +132,9 @@ class GsSelectArea(QWidget, FORM_CLASS):
             if layer := self.selectLayerCb.currentLayer():
                 if layer.type() == QgsMapLayer.VectorLayer:
                     count = self.selectLayerCb.currentLayer().selectedFeatureCount()
+                    # Podłączenie warstwy jeśli nie byla jeszcze podłączona
+                    if self.layer != layer:
+                        self.on_layer_changed()
                 else:
                     count = 0
             else:
@@ -158,10 +174,10 @@ class GsSelectArea(QWidget, FORM_CLASS):
                 try:
                     self.layer.selectionChanged.disconnect(self.on_selection_changed)
                 except (TypeError, RuntimeError, Exception) as e:
-                        QgsMessageLog.logMessage(
-                            f"Nie udało się rozłączyć poprzedniej warstwy: {e}",
-                            "Wtyczka GIS Support",
-                            Qgis.Info
+                    QgsMessageLog.logMessage(
+                        f"Nie udało się rozłączyć poprzedniej warstwy: {e}",
+                        "Wtyczka GIS Support",
+                        Qgis.Info
                         )
 
             self.layer = layer
@@ -169,6 +185,9 @@ class GsSelectArea(QWidget, FORM_CLASS):
             self.layer.selectionChanged.connect(self.on_selection_changed)
             self.on_selection_changed(self.layer.selectedFeatureIds())
             self.selectLayerFeatsCb.setEnabled(True)
+
+            if self.is_layer_method_active():
+                self.select_features_tool.update_geometry()
         else:
             self.layer = None
             self.selectLayerFeatsCb.setEnabled(False)
@@ -177,7 +196,15 @@ class GsSelectArea(QWidget, FORM_CLASS):
 
     def on_selection_changed(self, selected_features: object) -> None:
         if self.layer:
-             self.selectLayerFeatsCb.setText(f"Tylko zaznaczone obiekty [{self.layer.selectedFeatureCount()}]")
+            self.selectLayerFeatsCb.setText(f"Tylko zaznaczone obiekty [{self.layer.selectedFeatureCount()}]")
+
+            if self.is_layer_method_active() and self.selectLayerFeatsCb.isChecked():
+                self.select_features_tool.update_geometry()
+
+    def on_checkbox_toggled(self, checked: bool) -> None:
+        """Aktualizujcia geometrii przy zmianie checkboxa"""
+        if self.is_layer_method_active():
+            self.select_features_tool.update_geometry()
 
     def closeWidget(self) -> None:
         self.tool.reset()
@@ -332,25 +359,53 @@ class SelectFeaturesTool(QgsMapTool):
         self.geometry = QgsGeometry()
 
     def activate(self) -> None:
+        super().activate()
+        self.update_geometry()
+
+    def update_geometry(self) -> None:
+        """Aktualizujcia geometrii na podstawie warstwy"""
         layer = self.parent.selectLayerCb.currentLayer()
 
-        if layer is not None:
+        if layer is not None and layer.isValid():
             if self.parent.selectLayerFeatsCb.isChecked():
-                features = layer.getSelectedFeatures()
+                features = list(layer.getSelectedFeatures())
+                if not features:
+                    self.geometry = QgsGeometry()
+                    self.area = 0
+                    self.geometryChanged.emit(self.area)
+                    self.geometryEnded.emit(self.area, self.geometry)
+                    return
             else:
-                features = layer.getFeatures()
+                features = list(layer.getFeatures())
 
-            geoms = [f.geometry() for f in features]
+            geoms = [f.geometry() for f in features if f.geometry() and not f.geometry().isNull()]
+
             if geoms:
-                 self.geometry = QgsGeometry.unaryUnion(geoms)
-                 area = QgsDistanceArea()
-                 area.setSourceCrs(QgsProject.instance().crs(), QgsCoordinateTransformContext())
-                 area.setEllipsoid('GRS80')
-                 rectangleArea = area.measureArea(self.geometry)
-                 self.area = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaHectares)
-                 self.geometryChanged.emit(self.area)
-                 self.geometryEnded.emit(self.area, self.geometry)
-        super().activate()
+                self.geometry = QgsGeometry.unaryUnion(geoms)
+
+                if self.geometry and not self.geometry.isNull():
+                    area = QgsDistanceArea()
+                    area.setSourceCrs(QgsProject.instance().crs(), QgsCoordinateTransformContext())
+                    area.setEllipsoid('GRS80')
+                    rectangleArea = area.measureArea(self.geometry)
+                    self.area = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaHectares)
+                    self.geometryChanged.emit(self.area)
+                    self.geometryEnded.emit(self.area, self.geometry)
+                else:
+                    self.geometry = QgsGeometry()
+                    self.area = 0
+                    self.geometryChanged.emit(self.area)
+                    self.geometryEnded.emit(self.area, self.geometry)
+            else:
+                self.geometry = QgsGeometry()
+                self.area = 0
+                self.geometryChanged.emit(self.area)
+                self.geometryEnded.emit(self.area, self.geometry)
+        else:
+            self.geometry = QgsGeometry()
+            self.area = 0
+            self.geometryChanged.emit(self.area)
+            self.geometryEnded.emit(self.area, self.geometry)
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
         if e.key() == Qt.Key_Escape:

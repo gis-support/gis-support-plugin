@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>437</width>
+    <width>557</width>
     <height>703</height>
    </rect>
   </property>
@@ -29,76 +29,46 @@
    <number>0</number>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="7" column="2">
-      <spacer name="verticalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="horizontalSpacing">
+      <number>8</number>
+     </property>
+     <item row="16" column="1" colspan="3">
+      <widget class="QPushButton" name="button_search_uldk">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-       <property name="sizeHint" stdset="0">
+       <property name="minimumSize">
         <size>
-         <width>20</width>
-         <height>5</height>
+         <width>0</width>
+         <height>25</height>
         </size>
        </property>
-      </spacer>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_county">
        <property name="maximumSize">
         <size>
          <width>16777215</width>
-         <height>15</height>
+         <height>25</height>
         </size>
        </property>
        <property name="text">
-        <string>Powiat:</string>
+        <string>Szukaj w ULDK</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="2">
-      <spacer name="verticalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Minimum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>5</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="6" column="2">
-      <widget class="QComboBox" name="combobox_municipality"/>
-     </item>
-     <item row="10" column="1">
-      <widget class="QLabel" name="label_info_precinct_unknown">
-       <property name="maximumSize">
-        <size>
-         <width>15</width>
-         <height>15</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string/>
-       </property>
-       <property name="text">
-        <string>i</string>
-       </property>
-       <property name="scaledContents">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="12" column="2">
+     <item row="12" column="3">
       <widget class="QLineEdit" name="lineedit_plot_id">
        <property name="enabled">
         <bool>true</bool>
@@ -117,29 +87,7 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="2">
-      <widget class="QComboBox" name="combobox_precinct"/>
-     </item>
-     <item row="0" column="2">
-      <widget class="QComboBox" name="combobox_province"/>
-     </item>
-     <item row="11" column="2">
-      <spacer name="verticalSpacer_4">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>10</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="0" column="0">
+     <item row="0" column="1">
       <widget class="QLabel" name="label_province">
        <property name="maximumSize">
         <size>
@@ -152,13 +100,16 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
+     <item row="8" column="3">
+      <widget class="QComboBox" name="combobox_precinct"/>
+     </item>
+     <item row="1" column="1">
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Minimum</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -169,38 +120,25 @@
       </spacer>
      </item>
      <item row="10" column="0">
-      <widget class="QCheckBox" name="checkbox_precinct_unknown">
+      <widget class="QLabel" name="label_info_precinct_unknown">
        <property name="maximumSize">
         <size>
-         <width>16777215</width>
+         <width>15</width>
          <height>15</height>
         </size>
        </property>
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
+       <property name="toolTip">
+        <string/>
        </property>
        <property name="text">
-        <string>Nie znam obrębu</string>
+        <string>i</string>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="12" column="0">
-      <widget class="QLabel" name="label_teryt">
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>15</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Numer działki:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="13" column="1">
+     <item row="13" column="0">
       <widget class="QLabel" name="label_info_full_id">
        <property name="maximumSize">
         <size>
@@ -219,28 +157,7 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="label_municipality">
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>15</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Gmina:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="13" column="0">
-      <widget class="QLabel" name="label_full_id">
-       <property name="text">
-        <string>Identyfikator działki
-(opcjonalny)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="12" column="1">
+     <item row="12" column="0">
       <widget class="QLabel" name="label_info_parcel_id">
        <property name="maximumSize">
         <size>
@@ -256,23 +173,89 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="0">
-      <widget class="QLabel" name="label_precinct">
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_county">
        <property name="maximumSize">
         <size>
-         <width>50</width>
+         <width>16777215</width>
          <height>15</height>
         </size>
        </property>
        <property name="text">
-        <string>Obręb:</string>
+        <string>Powiat:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="2">
+     <item row="6" column="3">
+      <widget class="QComboBox" name="combobox_municipality"/>
+     </item>
+     <item row="0" column="3">
+      <widget class="QComboBox" name="combobox_province"/>
+     </item>
+     <item row="7" column="1">
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Minimum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>5</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="11" column="1">
+      <spacer name="verticalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Minimum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="label_municipality">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>15</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Gmina:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="1">
+      <widget class="QLabel" name="label_full_id">
+       <property name="text">
+        <string>Identyfikator działki
+(opcjonalny)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3">
       <widget class="QComboBox" name="combobox_county"/>
      </item>
-     <item row="13" column="2">
+     <item row="17" column="3">
+      <widget class="QComboBox" name="combobox_sheet">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="3">
       <widget class="QLineEdit" name="lineedit_full_teryt">
        <property name="enabled">
         <bool>true</bool>
@@ -291,103 +274,35 @@
        </property>
       </widget>
      </item>
-     <item row="14" column="2">
-      <spacer name="verticalSpacer_5">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+     <item row="15" column="1" colspan="3">
+      <widget class="QProgressBar" name="progress_bar_precinct_unknown">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
+       <property name="minimumSize">
         <size>
-         <width>20</width>
-         <height>20</height>
+         <width>0</width>
+         <height>25</height>
         </size>
        </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QProgressBar" name="progress_bar_precinct_unknown">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>25</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>25</height>
-      </size>
-     </property>
-     <property name="value">
-      <number>0</number>
-     </property>
-     <property name="textVisible">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="button_search_uldk">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>25</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>25</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Szukaj w ULDK</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QGridLayout" name="gridLayout_5">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_sheet">
        <property name="maximumSize">
         <size>
-         <width>50</width>
-         <height>15</height>
+         <width>16777215</width>
+         <height>25</height>
         </size>
        </property>
-       <property name="text">
-        <string>Arkusz:</string>
+       <property name="value">
+        <number>0</number>
+       </property>
+       <property name="textVisible">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
-      <widget class="QComboBox" name="combobox_sheet">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
+     <item row="17" column="0">
       <widget class="QLabel" name="label_info_sheet">
        <property name="maximumSize">
         <size>
@@ -409,7 +324,110 @@
        </property>
       </widget>
      </item>
+     <item row="8" column="1">
+      <widget class="QLabel" name="label_precinct">
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>15</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Obręb:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="17" column="1">
+      <widget class="QLabel" name="label_sheet">
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>15</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Arkusz:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QCheckBox" name="checkbox_precinct_unknown">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>15</height>
+        </size>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="text">
+        <string>Nie znam obrębu</string>
+       </property>
+      </widget>
+     </item>
+     <item row="14" column="1">
+      <spacer name="verticalSpacer_5">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Minimum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="12" column="1">
+      <widget class="QLabel" name="label_teryt">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>15</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Numer działki:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <spacer name="verticalSpacer_6">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Minimum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>5</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
     </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

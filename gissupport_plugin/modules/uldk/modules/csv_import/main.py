@@ -40,10 +40,10 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
             "Kolumna zawierająca kody TERYT działek, \n"
             "przykład poprawnego kodu: 141201_1.0001.1867/2"))
 
-        self.frame_how_it_works.setToolTip((
+        self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_icon.setToolTip((
             "Narzędzie wyszukuje działki na podstawie listy:\n"
             "załaduj warstwę z projektu, wskaż kolumnę z TERYT i uruchom wyszukiwanie."))
-        self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
 
 class CSVImport:
 
@@ -55,7 +55,7 @@ class CSVImport:
         self.layer_factory = layer_factory
 
         self.file_path = None
-        
+
         self.__init_ui()
 
         uldk_search = ULDKSearchParcel("dzialka",
@@ -65,7 +65,7 @@ class CSVImport:
 
     def start_import(self):
         self.__cleanup_before_search()
-        
+
         teryts = {}
         self.additional_attributes = defaultdict(list)
 
@@ -92,7 +92,7 @@ class CSVImport:
 
         self.worker = ULDKSearchWorker(self.uldk_search, teryts)
         self.thread = QThread()
-        self.worker.moveToThread(self.thread) 
+        self.worker.moveToThread(self.thread)
         self.worker.found.connect(self.__handle_found)
         self.worker.found.connect(self.__progressed)
         self.worker.not_found.connect(self.__handle_not_found)
@@ -107,7 +107,7 @@ class CSVImport:
         self.thread.start()
 
         self.ui.label_status.setText(f"Trwa wyszukiwanie {self.csv_rows_count} obiektów...")
-        
+
     def __init_ui(self):
         self.ui.button_start.clicked.connect(self.start_import)
         self.ui.label_status.setText("")
@@ -236,8 +236,8 @@ class CSVImport:
     def __cleanup_after_search(self):
         self.__set_controls_enabled(True)
         self.ui.button_cancel.setText("Anuluj")
-        self.ui.button_cancel.setEnabled(False)   
-        self.ui.progress_bar.setValue(0)  
+        self.ui.button_cancel.setEnabled(False)
+        self.ui.progress_bar.setValue(0)
 
     def __cleanup_before_search(self):
         self.__set_controls_enabled(False)

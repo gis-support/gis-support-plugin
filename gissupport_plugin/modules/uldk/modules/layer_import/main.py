@@ -41,7 +41,7 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
         super().__init__(parent)
 
         self.setupUi(self)
-        
+
         target_layout.layout().addWidget(self)
 
         self.layer_select.setFilters(QgsMapLayerProxyModel.PointLayer | QgsMapLayerProxyModel.LineLayer | QgsMapLayerProxyModel.PolygonLayer)
@@ -53,10 +53,11 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
             "ale mogą one działać wolniej. Wyszukiwanie obiektów działa również\n"
             "po zamknięciu wtyczki."))
 
-        self.frame_how_it_works.setToolTip((
-            "Narzędzie wyszukuje działki\n"
-            "które mają wspólną geometrię z warstwą punktową wczytaną do QGIS."))   
+
         self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_icon.setToolTip((
+            "Narzędzie wyszukuje działki\n"
+            "które mają wspólną geometrię z warstwą punktową wczytaną do QGIS."))
 
 class LayerImport:
 
@@ -65,10 +66,10 @@ class LayerImport:
         self.canvas = iface.mapCanvas()
         self.ui = UI(target_layout)
         self.__init_ui()
-        
+
     def search(self):
         layer = self.source_layer
-        
+
         target_layer_name = self.ui.text_edit_target_layer_name.text()
 
         selected_only = bool(self.ui.checkbox_selected_only.checkState())
@@ -96,7 +97,7 @@ class LayerImport:
 
 
         self.ui.label_status.setText(f"Trwa wyszukiwanie {count} obiektów...")
-    
+
     def __init_ui(self):
         self.ui.button_start.clicked.connect(self.search)
         self.ui.button_cancel.clicked.connect(self.__stop)
@@ -126,7 +127,7 @@ class LayerImport:
             self.source_layer = None
             self.ui.text_edit_target_layer_name.setText("")
             self.ui.checkbox_selected_only.setText("Tylko zaznaczone obiekty [0]")
-    
+
     def __on_layer_features_selection_changed(self, selected_features):
         if not self.source_layer:
             selected_features = []
@@ -181,8 +182,8 @@ class LayerImport:
     def __cleanup_after_search(self):
         self.__set_controls_enabled(True)
         self.ui.button_cancel.setText("Anuluj")
-        self.ui.button_cancel.setEnabled(False)   
-        self.ui.progress_bar.setValue(0)  
+        self.ui.button_cancel.setEnabled(False)
+        self.ui.progress_bar.setValue(0)
 
     def __cleanup_before_search(self):
         self.__set_controls_enabled(False)

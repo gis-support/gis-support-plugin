@@ -9,7 +9,7 @@
 [general]
 name=Wtyczka GIS Support
 qgisMinimumVersion=3.0
-version=2.10
+version=2.11
 author=GIS Support
 email=info@gis-support.pl
 license=GPL-3.0-only
@@ -53,13 +53,8 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=Wyszukiwarka działek z listy pobiera teraz dane z warstwy wczytanej do QGIS, a nie z pliku CSV
-	Włączenie panelu Mapster aktywuje narzędzie mapy
-	Zmiana sposóbu zapisywania informacji o warstwach GIS.Box w projektach QGIS
-	Poprawienie listy jednostek administracyjnych przy pobieraniu danych BDOT10k
-	Poprawna obsługa separatora powierzchni działki
-	Naprawa błędu podczas logowania/wylogowania z GIS.Box
-	Poprawiony błąd przy błędnej odpowiedzi usługi ULDK
+changelog=Nowe narzędzie do pobierania punktów adresowych
+	Poprawiono błąd przy ponownym logowaniu do usługi GIS.Box
 
 # Tags are comma separated with spaces allowed
 tags=python

@@ -2,7 +2,7 @@ from typing import List, Union
 from os.path import expanduser
 
 from qgis._core import QgsCoordinateReferenceSystem
-from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsMapLayerProxyModel, QgsGeometry, QgsWkbTypes
+from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsMapLayerProxyModel, QgsGeometry, QgsWkbTypes, QgsMessageLog
 from qgis.gui import QgsMessageBarItem, QgsMapTool
 from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
@@ -27,19 +27,18 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget = None
         self.selected_geom = QgsGeometry()
         self.databox_layers = None
-        self.drawpolygon = None
-        self.drawrectangle = None
-        self.current_layer = None
 
     def init_bdot10k_dockwidget(self):
-
         self.bdot10k_dockwidget = BDOT10kDockWidget()
+        # Zapobiega usunięciu obiektu przez Garbage Collector
+        self.bdot10k_dockwidget._controller = self
+
         iface.addDockWidget(Qt.RightDockWidgetArea, self.bdot10k_dockwidget)
         self.bdot10k_dockwidget.hide()
 
         self.fill_woj_combobox()
         self.fill_pow_combobox()
-    
+
         self.bdot10k_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_bdot10k)
         self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
         self.bdot10k_dockwidget.powComboBox.currentTextChanged.connect(self.get_teryt_pow)
@@ -47,13 +46,9 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget.downloadButton.setEnabled(False)
         self.bdot10k_dockwidget.filepathLine.textChanged.connect(lambda text: self.set_powiat_class_button_state(text, self.bdot10k_dockwidget.downloadButton))
 
-        self.select_features_rectangle_tool = self.bdot10k_dockwidget.selectAreaWidget.select_features_rectangle_tool
-        self.select_features_freehand_tool = self.bdot10k_dockwidget.selectAreaWidget.select_features_freehand_tool
-        self.select_features_tool = self.bdot10k_dockwidget.selectAreaWidget.select_features_tool
+        self.bdot10k_dockwidget.selectAreaWidget.geometryCreated.connect(self.set_geometry_from_signal)
 
-        self.select_features_rectangle_tool.geometryEnded.connect(self.set_geometry_from_draw)
-        self.select_features_freehand_tool.geometryEnded.connect(self.set_geometry_from_draw)
-        self.select_features_tool.geometryEnded.connect(self.set_geometry_from_draw)
+        self.bdot10k_dockwidget.selectAreaWidget.methodChanged.connect(self.on_select_method_changed)
 
         self.bdot10k_dockwidget.boundsDownloadButton.clicked.connect(self.download_bdot10k_from_databox)
         self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
@@ -84,7 +79,7 @@ class BDOT10kDownloader:
 
 
 
-    def set_powiat_class_button_state(self, text: str, button: QPushButton):
+    def set_powiat_class_button_state(self, text: str, button: QPushButton) -> None:
         """
         Zmienia status przycisku w zależności czy podano ścieżkę do zapisu plików.
         Tylko dla zakładek `Dla powiatu` i `Dla klasy`.
@@ -95,10 +90,8 @@ class BDOT10kDownloader:
             button.setEnabled(False)
 
 
-        self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_changed)
-
 ### pobieranie dla wybranego powiatu
-    def browse_filepath_for_bdot10k(self):
+    def browse_filepath_for_bdot10k(self) -> None:
         """
         Uruchamia okno z wyborem miejsca zapisu plików BDOT10k i zapisuje ścieżkę.
         """
@@ -106,16 +99,16 @@ class BDOT10kDownloader:
                                                  'Wybierz miejsce zapisu plików BDOT10k')
         self.bdot10k_dockwidget.filepathLine.setText(bdot10k_filepath)
 
-    def change_bdot10k_dockwidget_visibility(self):
+    def change_bdot10k_dockwidget_visibility(self) -> None:
         """
         Zmienia widoczność widgetu BDOT10k przy wyborze z menu. Inicjuje widget przy pierwszym uruchomieniu.
         """
         if self.bdot10k_dockwidget is None:
             self.init_bdot10k_dockwidget()
-       
+
         self.bdot10k_dockwidget.setVisible(not self.bdot10k_dockwidget.isVisible())
 
-    def fill_woj_combobox(self):
+    def fill_woj_combobox(self) -> None:
         """
         Uzupełnia combobox z województwami. Wywoływane raz, przy starcie pluginu.
         """
@@ -125,7 +118,7 @@ class BDOT10kDownloader:
             self.bdot10k_dockwidget.wojComboBox.addItem(item)
         self.teryt_woj = wojewodztwa[0].split("|")[1].strip()
 
-    def fill_pow_combobox(self):
+    def fill_pow_combobox(self) -> None:
         """
         Uzupelnia combobox z powiatami, na podstawie wybranego województwa.
         Wywoływane po wyborze województwa.
@@ -138,14 +131,14 @@ class BDOT10kDownloader:
             self.bdot10k_dockwidget.powComboBox.addItem(powiat)
         self.teryt_pow = powiaty[0].split("|")[1].strip()
 
-    def get_teryt_pow(self):
+    def get_teryt_pow(self) -> None:
         """
         Zapisuje teryt wybranego powiatu z comboboxa.
         """
         current_pow = self.bdot10k_dockwidget.powComboBox.currentText()
         self.teryt_pow = current_pow.split("|")[1].strip() if current_pow else ""
 
-    def download_bdot10k(self):
+    def download_bdot10k(self) -> None:
         """
         Uruchamia pobieranie danych BDOT10k.
         """
@@ -169,92 +162,87 @@ class BDOT10kDownloader:
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
 
-        self.select_features_tool.deactivate()
-        self.select_features_freehand_tool.deactivate()
-        self.select_features_rectangle_tool.deactivate()
 
-    def update_bdok10k_download_progress(self, value: int):
+    def update_bdok10k_download_progress(self, value: int) -> None:
         """
         Aktualizuje pasek postępu pobierania danych BDOT10k.
         """
         self.task.setProgress(value)
 
-    def show_bdot10k_success_message(self):
+    def show_bdot10k_success_message(self) -> None:
         """
         Wyświetla komunikat o pomyślnym pobraniu danych BDOT10k.
         """
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
                     "Pomyślnie pobrano dane BDOT10k", level=Qgis.Info))
 
-### pobieranie dla zasięgu
+    def set_geometry_from_signal(self, geom: QgsGeometry) -> None:
+        """
+        Odbiera geometrię z sygnału widgetu GsSelectArea.
+        Widget sam zarządza swoją geometrią, tutaj tylko odbiera gotową.
+        """
+        if geom and not geom.isNull():
+            try:
+                # domyslnie uklad mapy dla narzedzi rysowania
+                crs_src = iface.mapCanvas().mapSettings().destinationCrs()
+                widget = self.bdot10k_dockwidget.selectAreaWidget
 
-    def set_download_button_state(self):
-        if self.current_layer:
-            self.current_layer.selectionChanged.disconnect(self.on_selection_change)
-        selected_layer = self.bdot10k_dockwidget.fromLayerComboBox.currentLayer()
-        if selected_layer:
-            self.current_layer = selected_layer
-            selected_layer.selectionChanged.connect(self.on_selection_change)
-            self.on_selection_change(selected_layer.selectedFeatureCount())
+                if widget.is_layer_method_active():
+                    layer = widget.selectLayerCb.currentLayer()
+                    if layer and layer.isValid():
+                        # crs z warstwy, nie z mapy
+                        crs_src = layer.crs()
+
+                if crs_src.authid() != "EPSG:2180":
+                    self.selected_geom = transform_geometry_to_2180(QgsGeometry(geom), crs_src)
+                else:
+                    self.selected_geom = QgsGeometry(geom)
+
+                # Konwersja multipoligonu dla prostokąta/swobodnego
+                if not widget.is_layer_method_active() and self.selected_geom.isMultipart():
+                    self.selected_geom.convertToSingleType()
+
+                self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
+
+            except (ValueError, TypeError, RuntimeError) as e:
+                QgsMessageLog.logMessage(f"Błąd przetwarzania geometrii: {e}", "Wtyczka GIS Support", Qgis.Warning)
+                self.selected_geom = None
+                self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
         else:
-            self.current_layer = None
+            self.selected_geom = None
             self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
-    def set_geometry_from_draw(self, area: float, geom: QgsGeometry):
-        self.selected_geom = geom
-        if not self.selected_geom.isNull():
-            self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
-
-    def on_select_method_changed(self):
-        self.select_features_rectangle_tool.reset_geometry()
-        self.select_features_freehand_tool.reset_geometry()
-        self.select_features_tool.reset_geometry()
+    def on_select_method_changed(self) -> None:
+        """Wywoływane przy zmianie metody wyboru obszaru"""
         self.selected_geom = None
+        self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
 
-    def on_layer_changed(self):
-        self.set_geometry_for_selection()
-
-    def set_geometry_for_selection(self):
-        selected_layer = self.bdot10k_dockwidget.selectAreaWidget.selectLayerCb.currentLayer()
-
-        if selected_layer:
-            if self.bdot10k_dockwidget.selectAreaWidget.selectLayerFeatsCb.isChecked():
-                selected_features = selected_layer.getSelectedFeatures()
-            else:
-                selected_features = selected_layer.getFeatures()
-
-            geom = QgsGeometry.unaryUnion([f.geometry() for f in selected_features])
-            crs_src = selected_layer.crs()
-            if crs_src != QgsCoordinateReferenceSystem.fromEpsgId(2180):
-                self.selected_geom  = transform_geometry_to_2180(geom, crs_src)
-            else:
-                self.selected_geom = geom
-
-
-    def download_bdot10k_from_databox(self):
-        if self.bdot10k_dockwidget.selectAreaWidget.selectMethodCb.currentText() == 'Wskaż obiekty':
-            self.set_geometry_for_selection()
-        else:
-            if self.selected_geom.isMultipart():
-                self.selected_geom = convert_multi_polygon_to_polygon(self.selected_geom)
+    def download_bdot10k_from_databox(self) -> None:
+        """Pobiera dane BDOT10k z DataBox dla wybranego obszaru"""
+        if not self.selected_geom or self.selected_geom.isNull():
+            iface.messageBar().pushMessage("Wtyczka GIS Support",
+                                         "Nie wybrano obszaru do pobrania",
+                                         level=Qgis.Warning)
+            return
 
         layer_name = self.bdot10k_dockwidget.layerComboBox.currentText()
         layer_name = self.databox_layers.get(layer_name)
+
         self.task = BDOT10kDataBoxDownloadTask("Pobieranie danych BDOT10k", layer_name, self.selected_geom)
-        self.task.downloaded_data.connect(self.add_features_to_map)
+        self.task.downloaded_data.connect(self.add_bdot10k_features_to_map)
         self.task.downloaded_details.connect(self.show_bdot10k_databox_limit_exceeded_message)
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
 
-    def show_bdot10k_databox_limit_exceeded_message(self, message: str):
+    def show_bdot10k_databox_limit_exceeded_message(self, message: str) -> None:
         iface.messageBar().pushMessage(message, level=Qgis.Warning)
-    
-    def add_features_to_map(self, geojson: str):
+
+    def add_bdot10k_features_to_map(self, geojson: str) -> None:
         layer_name = self.bdot10k_dockwidget.layerComboBox.currentText()
         existing_layer = QgsProject.instance().mapLayersByName(layer_name)
 
         geojson_layer = QgsVectorLayer(geojson, "temp", "ogr")
-        if geojson_layer.featureCount() <= 0 :
+        if not geojson_layer.isValid() or geojson_layer.featureCount() <= 0 :
             self.show_bdot10k_databox_error_message()
             return
 
@@ -287,7 +275,7 @@ class BDOT10kDownloader:
 
             self.show_bdot10k_success_message()
 
-    def show_bdot10k_databox_error_message(self):
+    def show_bdot10k_databox_error_message(self) -> None:
         """
         Wyświetla komunikat o błędzie pobierania danych BDOT10k z DataBox.
         """
@@ -297,7 +285,7 @@ class BDOT10kDownloader:
 
 ### POBIERANIE DLA KLASY
 
-    def fill_class_combobox(self):
+    def fill_class_combobox(self) -> None:
         """
         Uzupełnia combobox z klasami. Wywoływane raz, przy starcie pluginu.
         """
@@ -307,7 +295,7 @@ class BDOT10kDownloader:
             display_name = f'{item[0]}'
             self.bdot10k_dockwidget.classComboBox.addItem(display_name, item[1])
 
-    def browse_filepath_for_class_bdot10k(self):
+    def browse_filepath_for_class_bdot10k(self) -> None:
         """
         Uruchamia okno z wyborem miejsca zapisu plików BDOT10k i zapisuje ścieżkę.
         """
@@ -316,7 +304,7 @@ class BDOT10kDownloader:
                                                  expanduser("~"))
         self.bdot10k_dockwidget.classFilePathLine.setText(self.bdot10k_class_filepath)
 
-    def download_class_bdot10k(self):
+    def download_class_bdot10k(self) -> None:
         """
         Uruchamia pobieranie danych BDOT10k.
         """
@@ -333,12 +321,12 @@ class BDOT10kDownloader:
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
 
-    def get_class(self):
+    def get_class(self) -> None:
         """
         Zapisuje teryt wybranego powiatu z comboboxa.
         """
         current_class = self.bdot10k_dockwidget.classComboBox.currentData()
         self.bdot10k_class = str(current_class).upper()
 
-    def handle_task_error(self, error_message):
+    def handle_task_error(self, error_message: str) -> None:
         iface.messageBar().pushMessage("Wtyczka GIS Support", error_message, level=Qgis.Critical)

@@ -188,7 +188,7 @@ class PRGAddressDownloader:
 
 
         self.task = PRGAddressDataBoxDownloadTask("Pobieranie danych punktów adresowych PRG", self.layer_name, self.selected_geometry)
-        self.task.downloaded_data.connect(self.add_features_to_map)
+        self.task.downloaded_data.connect(self.add_prg_address_features_to_map)
         self.task.downloaded_details.connect(self.show_prg_address_databox_limit_exceeded_message)
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
@@ -200,7 +200,7 @@ class PRGAddressDownloader:
     def show_prg_address_databox_limit_exceeded_message(self, message: str):
         iface.messageBar().pushMessage(message, level=Qgis.Warning)
 
-    def add_features_to_map(self, geojson: str):
+    def add_prg_address_features_to_map(self, geojson: str):
         existing_layer = QgsProject.instance().mapLayersByName(self.layer_name)
 
         geojson_layer = QgsVectorLayer(geojson, "temp", "ogr")

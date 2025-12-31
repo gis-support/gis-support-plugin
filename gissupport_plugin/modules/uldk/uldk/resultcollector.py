@@ -3,7 +3,7 @@ from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsFeature, QgsField,
                        QgsFields, QgsGeometry, QgsProject, QgsVectorLayer, Qgis, QgsRectangle)
 from qgis.utils import iface
-from typing import Optional, Tuple, List
+from typing import Optional, List
 
 PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("wojewodztwo", QVariant.String),
@@ -105,53 +105,6 @@ class ResultCollector:
 
         return feature
 
-    @classmethod
-    def _add_feature_with_session(cls, layer: QgsVectorLayer, feature_to_add: Optional[QgsFeature]) -> bool:
-        """Logika bezpiecznej sesji edycyjnej"""
-        if feature_to_add is None:
-            return False
-
-        was_editable = layer.isEditable()
-
-        if was_editable and layer.isModified():
-            iface.messageBar().pushMessage(
-                "Wtyczka GIS SUPPORT - ULDK",
-                "Przed kontynuowaniem musisz zapisać zmiany w warstwie.",
-                level=Qgis.Warning)
-            return False
-
-        if not was_editable:
-            layer.startEditing()
-
-        success = layer.addFeature(feature_to_add)
-
-        if success:
-            return layer.commitChanges(stopEditing=not was_editable)
-
-        return success
-
-    @classmethod
-    def _map_attributes_by_name(cls, target_layer: QgsVectorLayer, source_feature: QgsFeature) -> QgsFeature:
-        """Mapowanie atrybutów po nazwach dla istniejącej warstwy"""
-        new_feat = QgsFeature(target_layer.fields())
-
-        # Sprawdzenie i porównaie układów
-        geometry = source_feature.geometry()
-        target_crs = target_layer.crs()
-
-        # Transformacja jeśli są różne
-        if cls.SOURCE_CRS != target_crs:
-            geometry.transform(QgsCoordinateTransform(cls.SOURCE_CRS, target_crs, QgsProject.instance()))
-
-        new_feat.setGeometry(geometry)
-
-        target_fields = target_layer.fields()
-        for target_name, source_name in cls.ATTRIBUTE_MAPPING.items():
-            field_idx = target_fields.lookupField(target_name)
-            if field_idx != -1:
-                new_feat.setAttribute(field_idx, source_feature[source_name])
-
-        return new_feat
 
 class ResultCollectorSingle(ResultCollector):
 
@@ -180,6 +133,7 @@ class ResultCollectorSingle(ResultCollector):
 
     def update_with_feature(self, feature: QgsFeature) -> Optional[QgsFeature]:
         dock = self.parent.dockwidget
+        feature_to_save = feature
 
         if dock.radioExistingLayer.isChecked():
             target_layer = dock.comboLayers.currentLayer()
@@ -191,12 +145,7 @@ class ResultCollectorSingle(ResultCollector):
                 return
 
             self.layer = target_layer
-
-            mapped_feature = self._map_attributes_by_name(target_layer, feature)
-            if self._add_feature_with_session(target_layer, mapped_feature):
-                target_layer.updateExtents()
-                return mapped_feature
-            return
+            feature_to_save = self.map_attributes_by_name(feature)
         else:
             # Tryb warstwy tymczasowej
             if self._memory_layer is None:
@@ -205,10 +154,11 @@ class ResultCollectorSingle(ResultCollector):
 
             self.layer = self._memory_layer
 
-            if self._add_feature_with_session(self._memory_layer, feature):
-                self._memory_layer.updateExtents()
-                return feature
-            return feature
+        if self.add_feature_with_session(feature_to_save):
+            self.layer.updateExtents()
+            return feature_to_save
+
+        return
 
     def zoom_to_feature(self, feature: Optional[QgsFeature]) -> Optional[QgsRectangle]:
         if feature is None:
@@ -221,6 +171,58 @@ class ResultCollectorSingle(ResultCollector):
 
         return target_bbox
 
+    def add_feature_with_session(self, feature_to_add: Optional[QgsFeature]) -> bool:
+        """Logika bezpiecznej sesji edycyjnej"""
+        if feature_to_add is None:
+            return False
+
+        if not self.layer:
+            iface.messageBar().pushMessage(
+                "Wtyczka GIS SUPPORT - ULDK",
+                "Brak warstwy docelowej do zapisu.",
+                level=Qgis.Warning)
+            return False
+
+        was_editable = self.layer.isEditable()
+
+        if was_editable and self.layer.isModified():
+            iface.messageBar().pushMessage(
+                "Wtyczka GIS SUPPORT - ULDK",
+                "Przed kontynuowaniem musisz zapisać zmiany w warstwie.",
+                level=Qgis.Warning)
+            return False
+
+        if not was_editable:
+            self.layer.startEditing()
+
+        success = self.layer.addFeature(feature_to_add)
+
+        if success:
+            return self.layer.commitChanges(stopEditing=not was_editable)
+
+        return False
+
+    def map_attributes_by_name(self, source_feature: QgsFeature) -> QgsFeature:
+        """Mapowanie atrybutów po nazwach dla istniejącej warstwy"""
+        new_feat = QgsFeature(self.layer.fields())
+
+        # Sprawdzenie i porównaie układów
+        geometry = source_feature.geometry()
+        target_crs = self.layer.crs()
+
+        # Transformacja jeśli są różne
+        if self.SOURCE_CRS != target_crs:
+            geometry.transform(QgsCoordinateTransform(self.SOURCE_CRS, target_crs, QgsProject.instance()))
+
+        new_feat.setGeometry(geometry)
+
+        target_fields = self.layer.fields()
+        for target_name, source_name in self.ATTRIBUTE_MAPPING.items():
+            field_idx = target_fields.lookupField(target_name)
+            if field_idx != -1:
+                new_feat.setAttribute(field_idx, source_feature[source_name])
+
+        return new_feat
 
 class ResultCollectorMultiple(ResultCollector):
 

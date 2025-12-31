@@ -39,7 +39,7 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
         super().__init__(parent)
 
         self.setupUi(self)
-        
+
         target_layout.layout().addWidget(self)
 
         self.layer_select.setFilters(QgsMapLayerProxyModel.PolygonLayer)
@@ -50,16 +50,16 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
             "będziesz mógł korzystać z pozostałych funkcjonalności wtyczki,\n"
             "ale mogą one działać wolniej. Sprawdzanie obiektów działa również\n"
             "po zamknięciu wtyczki."))
-        
+
         self.label_info_percent.setPixmap(QPixmap(self.icon_info_path))
         self.label_info_percent.setToolTip((
             "Narzędzie porównuje pole powierzchni działek.\n"
             "Parametr dokładności określa dopuszczalny % różnicy\n"
-            "np. parametr 1% ignoruje różnicę powierzchni mniejszą niż 1%"))   
+            "np. parametr 1% ignoruje różnicę powierzchni mniejszą niż 1%"))
 
-        self.frame_how_it_works.setToolTip((
-            "Narzędzie sprawdza dopasowanie geometrii warstwy źródłowej do obiektów w ULDK."))   
         self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_icon.setToolTip((
+            "Narzędzie sprawdza dopasowanie geometrii warstwy źródłowej do obiektów w ULDK."))
 
 
 class CheckLayer:
@@ -127,13 +127,13 @@ class CheckLayer:
         uldk_search = ULDKSearchLogger(uldk_search)
 
         source_crs = self.source_layer.sourceCrs()
-        transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext()) 
+        transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext())
 
         features = self.source_layer.getSelectedFeatures() if bool(self.ui.checkbox_selected_only.checkState()) else self.source_layer.getFeatures()
         for feature in features:
             output_feature = QgsFeature(feature)
 
-            query_point = output_feature.geometry().pointOnSurface() 
+            query_point = output_feature.geometry().pointOnSurface()
             if source_crs != CRS_2180:
                 query_point.transform(transformation)
 

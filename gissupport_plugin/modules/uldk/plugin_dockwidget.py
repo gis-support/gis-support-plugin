@@ -26,6 +26,7 @@ import os
 
 from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal
+from qgis.core import QgsMapLayerProxyModel
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'plugin_dockwidget_base.ui'))
@@ -35,14 +36,14 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     closingPlugin = pyqtSignal()
 
     def __init__(self, parent=None):
-        """Constructor."""
         super(wyszukiwarkaDzialekDockWidget, self).__init__(parent)
-        # Set up the user interface from Designer.
-        # After setupUI you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        
+        self.comboLayers.setFilters(QgsMapLayerProxyModel.PolygonLayer)
+        self.radioExistingLayer.toggled.connect(self.comboLayers.setEnabled)
+        
+        self.radioTempLayer.setChecked(True)
+        self.comboLayers.setEnabled(False)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

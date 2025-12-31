@@ -76,6 +76,7 @@ class Main(BaseModule):
             "Wybierz narzędzie i kliknij na mapę.\n"
             "Narzędzie wyszuka działkę, w której zawierają się współrzędne kliknięcia."))
 
+        self.dockwidget.labelLayerInfo.setPixmap(QPixmap(icon_info_path))
         #Zarejestrowanie we wtyczce
 
         iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)

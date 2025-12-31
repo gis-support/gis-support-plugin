@@ -4,6 +4,7 @@ from qgis.core import QgsProject, QgsMapLayer
 from PyQt5 import QtWidgets
 
 from gissupport_plugin.modules.base import BaseModule
+from gissupport_plugin.modules.gis_box.layers.gisbox_datasource import GisboxDataSource
 from gissupport_plugin.modules.gis_box.modules.auto_digitization.gui.widget import AutoDigitizationWidget
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
@@ -102,7 +103,10 @@ class GISBox(BaseModule, Logger):
                     layer_qgis_id = layer.id()
                     layer_id = get_layer_mapping(layer_qgis_id)
                     layer_class = layers_registry.layers[layer_id]
-                    layer_class.setLayer(layer, from_project=True)
+                    if not isinstance(layer_class, GisboxDataSource):
+                        layer_class.setLayer(layer)
+                    else:
+                        layer_class.setLayer(layer, from_project=True)
                 
 
     def mount_autodigitization_widget(self):

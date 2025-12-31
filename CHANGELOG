@@ -1,3 +1,7 @@
+2.11
+Nowe narzędzie do pobierania punktów adresowych
+Poprawiono błąd przy ponownym logowaniu do usługi GIS.Box
+
 2.10
 Wyszukiwarka działek z listy pobiera teraz dane z warstwy wczytanej do QGIS, a nie z pliku CSV
 Włączenie panelu Mapster aktywuje narzędzie mapy

@@ -105,6 +105,27 @@ class ResultCollector:
 
         return feature
 
+    def map_attributes_by_name(self, source_feature: QgsFeature) -> QgsFeature:
+        """Mapowanie atrybutów po nazwach dla istniejącej warstwy"""
+        new_feat = QgsFeature(self.layer.fields())
+
+        # Sprawdzenie i porównaie układów
+        geometry = source_feature.geometry()
+        target_crs = self.layer.crs()
+
+        # Transformacja jeśli są różne
+        if self.SOURCE_CRS != target_crs:
+            geometry.transform(QgsCoordinateTransform(self.SOURCE_CRS, target_crs, QgsProject.instance()))
+
+        new_feat.setGeometry(geometry)
+
+        target_fields = self.layer.fields()
+        for target_name, source_name in self.ATTRIBUTE_MAPPING.items():
+            field_idx = target_fields.lookupField(target_name)
+            if field_idx != -1:
+                new_feat.setAttribute(field_idx, source_feature[source_name])
+
+        return new_feat
 
 class ResultCollectorSingle(ResultCollector):
 
@@ -202,48 +223,61 @@ class ResultCollectorSingle(ResultCollector):
 
         return False
 
-    def map_attributes_by_name(self, source_feature: QgsFeature) -> QgsFeature:
-        """Mapowanie atrybutów po nazwach dla istniejącej warstwy"""
-        new_feat = QgsFeature(self.layer.fields())
-
-        # Sprawdzenie i porównaie układów
-        geometry = source_feature.geometry()
-        target_crs = self.layer.crs()
-
-        # Transformacja jeśli są różne
-        if self.SOURCE_CRS != target_crs:
-            geometry.transform(QgsCoordinateTransform(self.SOURCE_CRS, target_crs, QgsProject.instance()))
-
-        new_feat.setGeometry(geometry)
-
-        target_fields = self.layer.fields()
-        for target_name, source_name in self.ATTRIBUTE_MAPPING.items():
-            field_idx = target_fields.lookupField(target_name)
-            if field_idx != -1:
-                new_feat.setAttribute(field_idx, source_feature[source_name])
-
-        return new_feat
 
 class ResultCollectorMultiple(ResultCollector):
 
     def __init__(self, parent, target_layer):
+        self.parent = parent
         self.canvas = parent.canvas
         self.layer = target_layer
+        self._is_new_layer = True
 
+        # Sprawdzamy czy warstwa już istnieje w projekcie
+        if target_layer in QgsProject.instance().mapLayers().values():
+            self._is_new_layer = False
 
-    def update(self, uldk_response_rows):
-        self.layer.startEditing()
+    def update(self, uldk_response_rows: List[str]) -> None:
+        features = []
         for row in uldk_response_rows:
-            feature = self.uldk_response_to_qgs_feature(row)
-            self.layer.addFeature(feature)
-        self.layer.commitChanges()
-        self.layer.updateExtents()
-        QgsProject.instance().addMapLayer(self.layer)
+            try:
+                features.append(self.uldk_response_to_qgs_feature(row))
+            except (self.ResponseDataException, self.BadGeometryException):
+                continue
 
-    def update_with_features(self, features):
-        self.layer.startEditing()
+        return self.update_with_features(features)
+
+    def update_with_features(self, features: List[QgsFeature]) -> None:
+        dock = self.parent.dockwidget
+        use_existing = dock.radioExistingLayer.isChecked() and dock.comboLayers.currentLayer()
+
+        # Sprawdzenie czy warstwa jest w trybie edycji
+        was_editable = self.layer.isEditable()
+
+        if was_editable and self.layer.isModified():
+            iface.messageBar().pushMessage(
+                "Wtyczka GIS SUPPORT - ULDK",
+                "Przed kontynuowaniem musisz zapisać zmiany w warstwie.",
+                level=Qgis.Warning)
+            return
+
+        if not was_editable:
+            self.layer.startEditing()
+
         for feature in features:
-            self.layer.addFeature(feature)
-        self.layer.commitChanges()
-        self.layer.updateExtents()
-        QgsProject.instance().addMapLayer(self.layer)
+                if use_existing:
+                    feature = self.map_attributes_by_name(feature)
+                self.layer.addFeature(feature)
+
+        # Zakończenie edycji
+        if self.layer.commitChanges(stopEditing=not was_editable):
+            self.layer.updateExtents()
+
+            if self._is_new_layer and self.layer not in QgsProject.instance().mapLayers().values():
+                QgsProject.instance().addMapLayer(self.layer)
+        else:
+            if not was_editable:
+                self.layer.rollBack()
+            iface.messageBar().pushMessage(
+                "Wtyczka GIS SUPPORT - ULDK",
+                "Błąd podczas zapisywania obiektów do warstwy.",
+                level=Qgis.Critical)

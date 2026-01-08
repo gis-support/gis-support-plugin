@@ -63,7 +63,7 @@ class CSVImport:
 
         self.uldk_search = ULDKSearchLogger(uldk_search)
 
-    def start_import(self):
+    def start_import(self) -> None:
         self.__cleanup_before_search()
 
         teryts = {}
@@ -79,12 +79,16 @@ class CSVImport:
                 for field in additional_fields:
                     self.additional_attributes[i].append(row[field])
 
-        layer_name = self.ui.text_edit_layer_name.text()
-        layer = self.layer_factory(
-            name = layer_name,
-            custom_properties = {"ULDK": layer_name},
-            additional_fields=[QgsField(field, QVariant.String) for field in additional_fields]
-        )
+        dock = self.parent.dockwidget
+        if dock.radioExistingLayer.isChecked() and dock.comboLayers.currentLayer():
+            layer = dock.comboLayers.currentLayer()
+        else:
+            layer_name = self.ui.text_edit_layer_name.text()
+            layer = self.layer_factory(
+                name = layer_name,
+                custom_properties = {"ULDK": layer_name},
+                additional_fields=[QgsField(field, QVariant.String) for field in additional_fields]
+            )
 
         self.result_collector = self.result_collector_factory(self.parent, layer)
         self.features_found = []
@@ -108,7 +112,7 @@ class CSVImport:
 
         self.ui.label_status.setText(f"Trwa wyszukiwanie {self.csv_rows_count} obiektów...")
 
-    def __init_ui(self):
+    def __init_ui(self) -> None:
         self.ui.button_start.clicked.connect(self.start_import)
         self.ui.label_status.setText("")
         self.ui.label_found_count.setText("")
@@ -117,15 +121,19 @@ class CSVImport:
         self.ui.layer_select.setFilters(QgsMapLayerProxyModel.VectorLayer)
 
         self.ui.layer_select.layerChanged.connect(self.ui.combobox_teryt_column.setLayer)
-        self.ui.layer_select.layerChanged.connect(
-            lambda layer: self.ui.text_edit_layer_name.setText(layer.name() if layer else "")
-        )
+        self.ui.layer_select.layerChanged.connect(self._toggle_target_input)
         self.ui.layer_select.layerChanged.connect(
             lambda layer: self.ui.button_start.setEnabled(bool(layer))
         )
 
         self.ui.button_save_not_found.clicked.connect(self._export_table_errors_to_csv)
         self.__init_table()
+
+        dock = self.parent.dockwidget
+        dock.radioExistingLayer.toggled.connect(self._toggle_target_input)
+        dock.comboLayers.layerChanged.connect(self._toggle_target_input)
+
+        self._toggle_target_input()
 
 
     def __init_table(self):
@@ -138,6 +146,26 @@ class CSVImport:
         header.setSectionResizeMode(1, QHeaderView.Stretch)
         teryt_column_size = table.width()/3
         header.resizeSection(0, 200)
+
+    def _toggle_target_input(self) -> None:
+        dock = self.parent.dockwidget
+        is_existing = dock.radioExistingLayer.isChecked()
+
+        if is_existing:
+            self.ui.text_edit_layer_name.setEnabled(False)
+            target_layer = dock.comboLayers.currentLayer()
+
+            if target_layer:
+                self.ui.text_edit_layer_name.setText(target_layer.name())
+            else:
+                self.ui.text_edit_layer_name.setText("Wybierz warstwę docelową...")
+        else:
+            self.ui.text_edit_layer_name.setEnabled(True)
+            source_layer = self.ui.layer_select.currentLayer()
+            if source_layer:
+                self.ui.text_edit_layer_name.setText(f"{source_layer.name()} - Działki ULDK")
+            else:
+                self.ui.text_edit_layer_name.setText("")
 
     def __handle_found(self, uldk_response_dict):
         for id_, uldk_response_rows in uldk_response_dict.items():
@@ -251,8 +279,10 @@ class CSVImport:
         self.found_count = 0
         self.not_found_count = 0
 
-    def __set_controls_enabled(self, enabled):
-        self.ui.text_edit_layer_name.setEnabled(enabled)
+    def __set_controls_enabled(self, enabled: bool) -> None:
+        dock = self.parent.dockwidget
+        is_existing = dock.radioExistingLayer.isChecked()
+        self.ui.text_edit_layer_name.setEnabled(enabled and not is_existing)
         self.ui.button_start.setEnabled(enabled)
         self.ui.layer_select.setEnabled(enabled)
         self.ui.combobox_teryt_column.setEnabled(enabled)

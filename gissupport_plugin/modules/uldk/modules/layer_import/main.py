@@ -1,10 +1,11 @@
 import os
+from typing import Optional
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QPixmap
 from qgis.core import (QgsCoordinateReferenceSystem, QgsMapLayerProxyModel,
-                       QgsProject)
+                       QgsProject, QgsVectorLayer)
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 
@@ -67,7 +68,7 @@ class LayerImport:
         self.ui = UI(target_layout)
         self.__init_ui()
 
-    def search(self):
+    def search(self) -> None:
         layer = self.source_layer
 
         target_layer_name = self.ui.text_edit_target_layer_name.text()
@@ -83,7 +84,15 @@ class LayerImport:
 
         self.__cleanup_before_search()
 
-        self.worker = LayerImportWorker(layer, selected_only, target_layer_name, fields_to_copy)
+        dock = self.parent.dockwidget
+        if dock.radioExistingLayer.isChecked() and dock.comboLayers.currentLayer():
+            layer_found = dock.comboLayers.currentLayer()
+            use_existing_layer = True
+        else:
+            layer_found = None
+            use_existing_layer = False
+
+        self.worker = LayerImportWorker(layer, selected_only, target_layer_name, fields_to_copy, layer_found, use_existing_layer)
         self.thread = QThread()
         self.worker.moveToThread(self.thread)
         self.worker.progressed.connect(self.__progressed)
@@ -98,16 +107,42 @@ class LayerImport:
 
         self.ui.label_status.setText(f"Trwa wyszukiwanie {count} obiektów...")
 
-    def __init_ui(self):
+    def __init_ui(self) -> None:
         self.ui.button_start.clicked.connect(self.search)
         self.ui.button_cancel.clicked.connect(self.__stop)
         self.__on_layer_changed(self.ui.layer_select.currentLayer())
         self.ui.layer_select.layerChanged.connect(self.__on_layer_changed)
+
+        dock = self.parent.dockwidget
+        dock.radioExistingLayer.toggled.connect(self.__toggle_target_input)
+        dock.comboLayers.layerChanged.connect(self.__toggle_target_input)
+
+        self.__toggle_target_input()
+
         self.ui.label_status.setText("")
         self.ui.label_found_count.setText("")
         self.ui.label_not_found_count.setText("")
 
-    def __on_layer_changed(self, layer):
+    def __toggle_target_input(self) -> None:
+        dock = self.parent.dockwidget
+        is_existing = dock.radioExistingLayer.isChecked()
+
+        if is_existing:
+            self.ui.text_edit_target_layer_name.setEnabled(False)
+
+            selected_layer = dock.comboLayers.currentLayer()
+            if selected_layer:
+                self.ui.text_edit_target_layer_name.setText(selected_layer.name())
+            else:
+                self.ui.text_edit_target_layer_name.setText("Wybierz warstwę docelową...")
+        else:
+            self.ui.text_edit_target_layer_name.setEnabled(True)
+
+            if self.source_layer:
+                suggested_name = f"{self.source_layer.name()} - Działki ULDK"
+                self.ui.text_edit_target_layer_name.setText(suggested_name)
+
+    def __on_layer_changed(self, layer: Optional[QgsVectorLayer]) -> None:
         self.ui.combobox_fields_select.clear()
         self.ui.button_start.setEnabled(False)
         if layer:
@@ -117,10 +152,10 @@ class LayerImport:
             layer.selectionChanged.connect(self.__on_layer_features_selection_changed)
             layer.updatedFields.connect(self.__fill_combobox_fields_select)
             self.ui.button_start.setEnabled(True)
-            current_layer_name = layer.sourceName()
-            suggested_target_layer_name = f"{current_layer_name} - Działki ULDK"
             fields = layer.dataProvider().fields()
-            self.ui.text_edit_target_layer_name.setText(suggested_target_layer_name)
+            if not self.parent.dockwidget.radioExistingLayer.isChecked():
+                suggested_target_layer_name = f"{layer.name()} - Działki ULDK"
+                self.ui.text_edit_target_layer_name.setText(suggested_target_layer_name)
             self.ui.combobox_fields_select.addItems(map(lambda x: x.name(), fields))
             self.ui.button_start.setEnabled(True)
         else:
@@ -197,8 +232,10 @@ class LayerImport:
         self.omitted_count = 0
         self.saved_count = 0
 
-    def __set_controls_enabled(self, enabled):
-        self.ui.text_edit_target_layer_name.setEnabled(enabled)
+    def __set_controls_enabled(self, enabled: bool) -> None:
+        dock = self.parent.dockwidget
+        is_existing = dock.radioExistingLayer.isChecked()
+        self.ui.text_edit_target_layer_name.setEnabled(enabled and not is_existing)
         self.ui.button_start.setEnabled(enabled)
         self.ui.layer_select.setEnabled(enabled)
 

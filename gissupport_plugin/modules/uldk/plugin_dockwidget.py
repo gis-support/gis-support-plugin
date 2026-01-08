@@ -38,12 +38,26 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def __init__(self, parent=None):
         super(wyszukiwarkaDzialekDockWidget, self).__init__(parent)
         self.setupUi(self)
-        
+
         self.comboLayers.setFilters(QgsMapLayerProxyModel.PolygonLayer)
         self.radioExistingLayer.toggled.connect(self.comboLayers.setEnabled)
-        
+
         self.radioTempLayer.setChecked(True)
         self.comboLayers.setEnabled(False)
+
+        self.tabs.currentChanged.connect(self._update_layer_selection_ui)
+        self._update_layer_selection_ui(self.tabs.currentIndex())
+
+    def _update_layer_selection_ui(self, index: int) -> None:
+        tab_text = self.tabs.tabText(index)
+        restricted_tabs = ["Sprawdź"]
+        if tab_text in restricted_tabs:
+            self.radioTempLayer.setChecked(True)
+            self.radioExistingLayer.setEnabled(False)
+            self.comboLayers.setEnabled(False)
+        else:
+            self.radioExistingLayer.setEnabled(True)
+            self.comboLayers.setEnabled(self.radioExistingLayer.isChecked())
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

@@ -26,6 +26,7 @@ import os
 
 from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal
+from qgis.core import QgsMapLayerProxyModel
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'plugin_dockwidget_base.ui'))
@@ -35,14 +36,28 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     closingPlugin = pyqtSignal()
 
     def __init__(self, parent=None):
-        """Constructor."""
         super(wyszukiwarkaDzialekDockWidget, self).__init__(parent)
-        # Set up the user interface from Designer.
-        # After setupUI you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+
+        self.comboLayers.setFilters(QgsMapLayerProxyModel.PolygonLayer)
+        self.radioExistingLayer.toggled.connect(self.comboLayers.setEnabled)
+
+        self.radioTempLayer.setChecked(True)
+        self.comboLayers.setEnabled(False)
+
+        self.tabs.currentChanged.connect(self._update_layer_selection_ui)
+        self._update_layer_selection_ui(self.tabs.currentIndex())
+
+    def _update_layer_selection_ui(self, index: int) -> None:
+        tab_text = self.tabs.tabText(index)
+        restricted_tabs = ["Sprawdź"]
+        if tab_text in restricted_tabs:
+            self.radioTempLayer.setChecked(True)
+            self.radioExistingLayer.setEnabled(False)
+            self.comboLayers.setEnabled(False)
+        else:
+            self.radioExistingLayer.setEnabled(True)
+            self.comboLayers.setEnabled(self.radioExistingLayer.isChecked())
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

@@ -1,8 +1,8 @@
 import os
 
-from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from PyQt5.QtGui import QKeySequence, QPixmap
+from qgis.PyQt import QtGui, QtWidgets, uic
+from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal
+from qgis.PyQt.QtGui import QKeySequence, QPixmap
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsMapLayerProxyModel,
                        QgsProject)
@@ -45,7 +45,7 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
         
         target_layout.layout().addWidget(self)
 
-        self.layer_select.setFilters(QgsMapLayerProxyModel.PointLayer)
+        self.layer_select.setFilters(QgsMapLayerProxyModel.Filter.PointLayer)
 
         self.label_info_start.setPixmap(QPixmap(self.icon_info_path))
         self.label_info_start.setToolTip((

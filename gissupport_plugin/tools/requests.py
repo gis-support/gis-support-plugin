@@ -2,8 +2,8 @@ import json
 from typing import Union
 
 from qgis.core import QgsNetworkAccessManager
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
-from PyQt5.QtCore import QCoreApplication, QUrl
+from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
+from qgis.PyQt.QtCore import QCoreApplication, QUrl
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 
 from urllib.parse import urlencode
@@ -23,19 +23,19 @@ class NetworkHandler(QObject):
         if reply_only:
             self.result = reply
             return
-        if reply.error() == QNetworkReply.NoError:
+        if reply.error() == QNetworkReply.NetworkError.NoError:
             data = reply.readAll().data().decode()
             self.result = {'data': data}
         else:
             if retry_callback:
                 self.error_occurred = True
                 retry_callback()
-            elif reply.error() in (QNetworkReply.TimeoutError, QNetworkReply.OperationCanceledError, QNetworkReply.UnknownServerError):
+            elif reply.error() in (QNetworkReply.NetworkError.TimeoutError, QNetworkReply.NetworkError.OperationCanceledError, QNetworkReply.NetworkError.UnknownServerError):
                 self.result = {'error': reply.errorString(), 'msg': 'Przekroczono czas oczekiwania na odpowiedź serwera.'}
-            elif reply.error() == QNetworkReply.ContentAccessDenied:
+            elif reply.error() == QNetworkReply.NetworkError.ContentAccessDenied:
                 self.result = {'error': reply.errorString(), 'msg': 'Przekroczono limit danych. Zmniejsz wskazany obszar.'}
             else:
-                if (status_code := reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)) == 400 and (
+                if (status_code := reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)) == 400 and (
                         detail := json.loads(bytearray(reply.readAll())).get("detail")):
                     self.result = {'error': reply.errorString(), 'details': detail}
                 else:
@@ -78,7 +78,7 @@ class NetworkHandler(QObject):
                 request.setRawHeader(b'X-User-Agent', b'qgis_gs')
                 request.setRawHeader(b'X-Access-Token', GISBOX_CONNECTION.token.encode())
             if databox:
-                request.setHeader(QNetworkRequest.ContentTypeHeader, "application/json")
+                request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
             reply = self.network_manager.post(request, body)
             reply.downloadProgress.connect( lambda recv, total: self.downloadProgress.emit(self.set_progress(recv, total)))
             reply.finished.connect(lambda: self.handle_response(reply, retry_callback, reply_only))

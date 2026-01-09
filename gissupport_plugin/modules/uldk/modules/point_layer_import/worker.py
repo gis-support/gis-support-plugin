@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
+from qgis.PyQt.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsField, QgsGeometry,
                        QgsPoint, QgsVectorLayer, QgsFeature)

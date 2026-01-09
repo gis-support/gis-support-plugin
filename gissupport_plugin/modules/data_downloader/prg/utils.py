@@ -3,7 +3,7 @@ import requests
 
 from qgis.core import QgsGeometry, QgsFeature, QgsTask, QgsCoordinateReferenceSystem, QgsVectorLayer, QgsProject, \
     QgsMessageLog, Qgis
-from PyQt5.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 
 from gissupport_plugin.tools.requests import NetworkHandler
 
@@ -45,7 +45,7 @@ class PRGDownloadTask(QgsTask):
         self.search_type = self.search_types_by_options[entity_option]["param"]
         self.result_parameter_name = self.search_types_by_options[entity_option]["name"]
         self.entity_teryt = entity_teryt
-        super().__init__(description, QgsTask.CanCancel)
+        super().__init__(description, QgsTask.Flag.CanCancel)
 
     def run(self):
         parameters = self._get_parameters()
@@ -58,7 +58,7 @@ class PRGDownloadTask(QgsTask):
 
         dp = self.layer.dataProvider()
         if status != "0":
-            self.log_message(f"{self.url} - odpowiedź: {response_content}", level=Qgis.Critical)
+            self.log_message(f"{self.url} - odpowiedź: {response_content}", level=Qgis.MessageLevel.Critical)
             self.cancel()
 
         features = self.response_as_features(response_content)
@@ -68,7 +68,7 @@ class PRGDownloadTask(QgsTask):
         for feature in features:
             self.layer.dataProvider().addFeature(feature)
 
-        self.log_message(f"{self.url} - pobrano", level=Qgis.Info)
+        self.log_message(f"{self.url} - pobrano", level=Qgis.MessageLevel.Info)
 
         return True
 

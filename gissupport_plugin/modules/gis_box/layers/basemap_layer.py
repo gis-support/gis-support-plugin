@@ -129,13 +129,13 @@ class BaseMapLayer(BaseLayer):
                     url = self.url
                 layer = QgsRasterLayer(url, self.name, 'wms')
             except (MissingSchema, ConnectionError) as e:
-                self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem.", level=Qgis.Critical)
+                self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem.", level=Qgis.MessageLevel.Critical)
                 return
             except CapabilitiesConnectionException as e:
-                self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem (kod: {e.code}). Upewnij się, że połączenie sieciowe i usługa działają poprawnie", level=Qgis.Critical)
+                self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem (kod: {e.code}). Upewnij się, że połączenie sieciowe i usługa działają poprawnie", level=Qgis.MessageLevel.Critical)
                 return
             except KeyError as e:
-                self.message(f"Błąd warstwy {self.name}: nazwa {self.service_layers_names} nie występuje w Capabilities.", level=Qgis.Critical)
+                self.message(f"Błąd warstwy {self.name}: nazwa {self.service_layers_names} nie występuje w Capabilities.", level=Qgis.MessageLevel.Critical)
                 return
 
         self.setLayer(layer)

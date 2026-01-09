@@ -1,9 +1,9 @@
 import os
 from itertools import chain
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject
-from PyQt5.QtGui import QKeySequence, QPixmap
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal, QObject
+from qgis.PyQt.QtGui import QKeySequence, QPixmap
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 
@@ -64,7 +64,7 @@ class TerytSearch(QObject):
         self.uldk_search = ULDKSearchLogger(self.uldk_search)
 
     def search(self, teryt):
-        if self.ui.checkbox_precinct_unknown.checkState():
+        if self.ui.checkbox_precinct_unknown.isChecked():
             self.__search_without_precinct()
         else:
             teryt = self.ui.lineedit_full_teryt.text()
@@ -88,7 +88,7 @@ class TerytSearch(QObject):
         self.uldk_search_worker.moveToThread(self.thread)
         
         
-        if self.ui.checkbox_precinct_unknown.checkState():
+        if self.ui.checkbox_precinct_unknown.isChecked():
             self.ui.progress_bar_precinct_unknown.setValue(0)
             self.uldk_search_worker.finished.connect(self.__handle_finished_precinct_unknown)
             self.uldk_search_worker.found.connect(self.__handle_found_precinct_unknown)
@@ -155,31 +155,40 @@ class TerytSearch(QObject):
         # dlatego lista wstępnie wypełniona jest jednym pustym napisem, aby było możliwe jej rozwinięcie.
         # Po rozwinięciu listy następuje samoistne najechanie na element listy i wywoływana jest ta metoda
         if not self.provinces_downloaded:
+            self.provinces_downloaded = True
             provinces = self.get_administratives("wojewodztwo")
+
+            self.ui.combobox_province.blockSignals(True)
             self.ui.combobox_province.clear()
             self.ui.combobox_province.addItems([""] + provinces)
-            self.provinces_downloaded = True
+            self.ui.combobox_province.blockSignals(False)
     
     def fill_combobox_county(self, province_teryt):
         counties = self.get_administratives("powiat", province_teryt) if province_teryt else []
+        self.ui.combobox_county.blockSignals(True)
         self.ui.combobox_county.clear()
         self.ui.combobox_county.addItems([""] + counties)
+        self.ui.combobox_county.blockSignals(False)
 
     def fill_combobox_municipality(self, county_teryt):
         municipalities = self.get_administratives("gmina", county_teryt) if county_teryt else []
+        self.ui.combobox_municipality.blockSignals(True)
         self.ui.combobox_municipality.clear()
         self.ui.combobox_municipality.addItems([""] + municipalities)
+        self.ui.combobox_municipality.blockSignals(False)
 
     def fill_combobox_precinct(self, municipality_teryt):
         precincts = self.get_administratives("obreb", municipality_teryt) if municipality_teryt else []
+        self.ui.combobox_precinct.blockSignals(True)
         self.ui.combobox_precinct.clear()
         self.ui.combobox_precinct.addItems([""] + precincts)
+        self.ui.combobox_precinct.blockSignals(False)
 
     def fill_lineedit_full_teryt(self):
         current_plot_id = self.ui.lineedit_plot_id.text()
         current_municipality = self.ui.combobox_municipality.currentText()
         current_precinct = self.ui.combobox_precinct.currentText()
-        if self.ui.checkbox_precinct_unknown.checkState() and current_municipality:
+        if self.ui.checkbox_precinct_unknown.isChecked() and current_municipality:
             current_municipality = current_municipality.split(" | ")[1]
             current_precinct_dummy = f"{current_municipality}.?"
             self.ui.lineedit_full_teryt.setText(f"{current_precinct_dummy}.{current_plot_id}")
@@ -228,7 +237,7 @@ class TerytSearch(QObject):
             )
         )
         self.ui.lineedit_full_teryt.textEdited.connect(lambda: self._handle_input_changed(False))
-        self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key_Return))
+        self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key.Key_Return))
         self.ui.button_search_uldk.clicked.connect(self.search)
         self.ui.checkbox_precinct_unknown.stateChanged.connect(self.__on_checkbox_precinct_unknown_switched)
         self.ui.combobox_province.addItems([""])
@@ -239,7 +248,7 @@ class TerytSearch(QObject):
     def __handle_finished(self):
         self.ui.button_search_uldk.setEnabled(True)
         self.ui.button_search_uldk.setText("Szukaj")
-        self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key_Return))
+        self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key.Key_Return))
 
     def __handle_finished_precinct_unknown(self):
         self.result_collector_precinct_unknown.update_with_features(self.plots_found)

@@ -4,8 +4,8 @@ import json
 from qgis.PyQt.QtCore import pyqtSignal, Qt
 from qgis.core import QgsTask, QgsMessageLog, Qgis, QgsWkbTypes, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsProject, QgsGeometry
 from gissupport_plugin.tools.requests import NetworkHandler
-from PyQt5.QtNetwork import QNetworkRequest
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtGui import QColor
 from qgis.gui import QgsMapTool, QgsRubberBand
 from qgis.utils import iface
 
@@ -22,7 +22,7 @@ class BDOT10kDownloadTask(QgsTask):
         self.teryt_pow = teryt_pow
         self.filepath = filepath
         self.url = f"https://opendata.geoportal.gov.pl/bdot10k/schemat2021/{self.teryt_woj}/{self.teryt_pow}_GML.zip"
-        super().__init__(description, QgsTask.CanCancel)
+        super().__init__(description, QgsTask.Flag.CanCancel)
 
     def run(self) -> bool:
         handler = NetworkHandler()
@@ -32,7 +32,7 @@ class BDOT10kDownloadTask(QgsTask):
             self.task_failed.emit("Błąd pobierania danych. Sprawdź swoje połączenie z Internetem oraz czy usługa Geoportal.gov.pl działa.")
             return False
 
-        total_size = int(response.header(QNetworkRequest.ContentLengthHeader)) or 0
+        total_size = int(response.header(QNetworkRequest.KnownHeaders.ContentLengthHeader)) or 0
         data = BytesIO(response.readAll().data())
         bytes_received = 0
         full_filepath = f"{self.filepath}/{self.teryt_pow}_GML.zip"
@@ -44,7 +44,7 @@ class BDOT10kDownloadTask(QgsTask):
                     progress = (bytes_received / total_size) * 100
                     self.progress_updated.emit(progress)
 
-        self.log_message(f"{full_filepath} - pobrano", level=Qgis.Info)
+        self.log_message(f"{full_filepath} - pobrano", level=Qgis.MessageLevel.Info)
         self.download_finished.emit(True)
 
         return True
@@ -61,7 +61,7 @@ class BDOT10kDataBoxDownloadTask(QgsTask):
     downloaded_details = pyqtSignal(str)
 
     def __init__(self, description: str, layer: str, geojson: QgsGeometry):
-        super().__init__(description, QgsTask.CanCancel)
+        super().__init__(description, QgsTask.Flag.CanCancel)
         self.layer = layer
 
         #Zabezpieczenie przed pustą geometrią
@@ -76,7 +76,7 @@ class BDOT10kDataBoxDownloadTask(QgsTask):
             self.geojson = None
 
         if self.geojson is None:
-            QgsMessageLog.logMessage("Przekazano nieprawidłową geometrię do zadania pobierania!", "GIS Support", Qgis.Warning)
+            QgsMessageLog.logMessage("Przekazano nieprawidłową geometrię do zadania pobierania!", "GIS Support", Qgis.MessageLevel.Warning)
             return
 
         self.geojson["crs"] = {"type": "name", "properties": {"name": "EPSG:2180"}}
@@ -107,13 +107,13 @@ class BDOT10kClassDownloadTask(QgsTask):
         self.bdot_class = bdot_class
         self.filepath = filepath
         self.url = f"https://s3.gis.support/public/bdot10k/{self.bdot_class}.gpkg"
-        super().__init__(description, QgsTask.CanCancel)
+        super().__init__(description, QgsTask.Flag.CanCancel)
 
     def run(self) -> bool:
         handler = NetworkHandler()
         handler.downloadProgress.connect( lambda value: self.setProgress(value) )
         response = handler.get(self.url, reply_only=True)
-        total_size = int(response.header(QNetworkRequest.ContentLengthHeader)) or 0
+        total_size = int(response.header(QNetworkRequest.KnownHeaders.ContentLengthHeader)) or 0
         bytes_received = 0
         full_filepath = f"{self.filepath}/{self.bdot_class}.gpkg"
         with open(full_filepath, 'wb') as file:
@@ -124,7 +124,7 @@ class BDOT10kClassDownloadTask(QgsTask):
                     progress = (bytes_received / total_size) * 100
                     self.progress_updated.emit(progress)
 
-        self.log_message(f"{full_filepath} - pobrano", level=Qgis.Info)
+        self.log_message(f"{full_filepath} - pobrano", level=Qgis.MessageLevel.Info)
         self.download_finished.emit(True)
 
         return True
@@ -173,23 +173,23 @@ class DrawPolygon(QgsMapTool):
         QgsMapTool.__init__(self, canvas)
         self.canvas = canvas
         self.parent = parent
-        self.rb = QgsRubberBand(self.canvas, QgsWkbTypes.PolygonGeometry)
+        self.rb = QgsRubberBand(self.canvas, QgsWkbTypes.GeometryType.PolygonGeometry)
         self.rb.setColor(QColor(255, 0, 0, 100))
         self.rb.setFillColor(QColor(255, 0, 0, 33))
         self.rb.setWidth = 10
         self.drawing = False
 
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Escape:
+        if e.key() == Qt.Key.Key_Escape:
             self.reset()
 
     def canvasPressEvent(self, e):
-        if e.button() == Qt.LeftButton:
+        if e.button() == Qt.MouseButton.LeftButton:
             if self.drawing is False:
-                self.rb.reset(QgsWkbTypes.PolygonGeometry)
+                self.rb.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
                 self.drawing = True
             self.rb.addPoint(self.toMapCoordinates(e.pos()))
-        elif e.button() == Qt.RightButton and self.drawing:
+        elif e.button() == Qt.MouseButton.RightButton and self.drawing:
             if self.rb.numberOfVertices() > 2:
                 self.rb.removeLastPoint(0)
                 self.drawing = False
@@ -207,10 +207,10 @@ class DrawPolygon(QgsMapTool):
 
     def reset(self):
         self.drawing = False
-        self.rb.reset(QgsWkbTypes.PolygonGeometry)
+        self.rb.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
 
     def deactivate(self):
-        self.rb.reset(QgsWkbTypes.PolygonGeometry)
+        self.rb.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
         self.drawing = False
         QgsMapTool.deactivate(self)
         self.canvas.unsetMapTool(self)

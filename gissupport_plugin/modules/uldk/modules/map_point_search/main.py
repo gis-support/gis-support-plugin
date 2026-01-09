@@ -1,5 +1,5 @@
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from PyQt5.QtGui import QCursor
+from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal
+from qgis.PyQt.QtGui import QCursor
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsFeature, QgsPoint)
 from qgis.gui import QgsMapToolEmitPoint
@@ -72,12 +72,12 @@ class MapPointSearch(QgsMapToolEmitPoint):
 
     def __handle_finished(self):
         self.search_in_progress = False
-        self.setCursor(Qt.CrossCursor)
+        self.setCursor(Qt.CursorShape.CrossCursor)
         # self.search_finished.emit()
 
     def __on_search_started(self):
         self.search_in_progress = True
-        self.setCursor(Qt.WaitCursor)
+        self.setCursor(Qt.CursorShape.WaitCursor)
         # self.search_started.emit()
 
     def __thread_cleanup(self, thread, worker):

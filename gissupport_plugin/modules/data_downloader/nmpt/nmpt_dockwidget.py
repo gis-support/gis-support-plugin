@@ -1,7 +1,7 @@
 import os
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis._core import QgsMapLayerProxyModel
 
 from gissupport_plugin.tools.widgets.gs_select_area import GsSelectArea
@@ -18,7 +18,7 @@ class NMPTdockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         super(NMPTdockWidget, self).__init__(parent)
         self.setupUi(self)
 
-        self.selectAreaWidget = GsSelectArea(select_layer_types=[QgsMapLayerProxyModel.PolygonLayer])
+        self.selectAreaWidget = GsSelectArea(select_layer_types=[QgsMapLayerProxyModel.Filter.PolygonLayer])
         self.widgetLayout.addWidget(self.selectAreaWidget)
 
         self.setWindowTitle("NM(P)T - Numeryczny Model (Pokrycia) Terenu")

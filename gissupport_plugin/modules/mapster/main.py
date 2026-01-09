@@ -4,7 +4,7 @@ from qgis.utils import iface
 from gissupport_plugin.modules.base import BaseModule
 from qgis.PyQt.QtGui import QDesktopServices
 from qgis.PyQt.QtCore import QUrl, Qt
-from PyQt5.QtGui import QIcon
+from qgis.PyQt.QtGui import QIcon
 from gissupport_plugin.modules.mapster.mapster_dockwidget import MapsterDockwidget
 
 
@@ -32,7 +32,7 @@ class MapsterModule( BaseModule ):
         self.dockwidget.visibilityChanged.connect(self.unset_point_tool)
         iface.mapCanvas().mapToolSet.connect(self.on_map_tool_changed)
 
-        iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dockwidget)
         self.dockwidget.hide()
 
     def setMapsterTool( self, checked: bool ):

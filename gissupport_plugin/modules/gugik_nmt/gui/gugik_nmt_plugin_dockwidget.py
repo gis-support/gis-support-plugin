@@ -62,7 +62,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         super(GugikNmtDockWidget, self).__init__(parent)
         self.setupUi(self)
 
-        self.cbLayers.setFilters(QgsMapLayerProxyModel.PointLayer)
+        self.cbLayers.setFilters(QgsMapLayerProxyModel.Filter.PointLayer)
         self.menageSignals()
         self.registerTools()
         self.setButtonIcons()
@@ -138,7 +138,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         x, y = point.y(), point.x()
         response = self.createRequest(f'?request=GetHbyXY&x={x}&y={y}')
         if 'error' in response:
-            self.on_message.emit(response['error'], Qgis.Critical, 5)
+            self.on_message.emit(response['error'], Qgis.MessageLevel.Critical, 5)
             return
         else:
             return response['data']
@@ -155,7 +155,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         if len(feats_meta) <= 200:
             response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(feats_meta))
             if 'error' in response:
-                self.on_message.emit(response['error'], Qgis.Critical, 5)
+                self.on_message.emit(response['error'], Qgis.MessageLevel.Critical, 5)
                 return
             else:
                 return response['data']
@@ -166,7 +166,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             for chunk in chunks:
                 response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(chunk))
                 if 'error' in response:
-                    self.on_message.emit(response['error'], Qgis.Critical, 5)
+                    self.on_message.emit(response['error'], Qgis.MessageLevel.Critical, 5)
                     return
                 else:
                     responses.append(response['data'])
@@ -206,7 +206,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         exp = QgsExpression('num_geometries($geometry) > 1')
         multipart_features = [f for f in layer.getFeatures(QgsFeatureRequest(exp))]
         if multipart_features:
-            self.on_message.emit("Rozszerzenie nie jest możliwe, ponieważ warstwa zawiera obiekty o wieloczęściowych geometriach", Qgis.Warning, 5)
+            self.on_message.emit("Rozszerzenie nie jest możliwe, ponieważ warstwa zawiera obiekty o wieloczęściowych geometriach", Qgis.MessageLevel.Warning, 5)
         if self.cbxUpdateField.isChecked():
             field_id = layer.dataProvider().fields().indexFromName(self.cbFields.currentText())
         elif 'nmt_wys' not in layer.fields().names():
@@ -239,7 +239,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                 height = int(float(height))
             to_change[feats_meta.get(coords)] = {field_id:height}
         layer.dataProvider().changeAttributeValues(to_change)
-        self.on_message.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}', Qgis.Success, 4)
+        self.on_message.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}', Qgis.MessageLevel.Success, 4)
         del self.task2
 
     def createTempLayer(self):
@@ -248,7 +248,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         dla których zostały pobrane wysokości
         """
         if not self.savedFeats:
-            self.on_message.emit('Brak punktów do zapisu', Qgis.Warning, 5)
+            self.on_message.emit('Brak punktów do zapisu', Qgis.MessageLevel.Warning, 5)
             return
         text, ok = QInputDialog.getText(self, 'Stwórz warstwę tymczasową', 'Nazwa warstwy:')
         if not ok:
@@ -276,7 +276,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                 pass
         self.tempLayer.dataProvider().addFeatures(features)
         self.tempLayer.updateExtents(True)
-        self.on_message.emit(f'Utworzono warstwę tymczasową: {self.tempLayer.name()}', Qgis.Success, 4)
+        self.on_message.emit(f'Utworzono warstwę tymczasową: {self.tempLayer.name()}', Qgis.MessageLevel.Success, 4)
         self.identifyTool.reset()
         del self.task
 
@@ -303,12 +303,12 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                         dist, val, round(float(x)), round(float(y))
                     ])
             writer.writerows(to_write)
-        self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.Success, 4)   
+        self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.MessageLevel.Success, 4)   
 
     def generatePlot(self):
         """ Wyświetlenie profilu podłużnego """
         if not matplotlib_library:
-            self.on_message.emit("Nie wykryto biblioteki matplotlib. W celu prawidłowego działania wyświetalnia profilu proszę ją doinstalować.", Qgis.Warning, 5)
+            self.on_message.emit("Nie wykryto biblioteki matplotlib. W celu prawidłowego działania wyświetalnia profilu proszę ją doinstalować.", Qgis.MessageLevel.Warning, 5)
             return
         rows = self.twData.rowCount()
         if rows < 1:

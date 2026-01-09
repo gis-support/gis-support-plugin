@@ -34,15 +34,15 @@ class GsSelectArea(QWidget, FORM_CLASS):
         self.setupUi(self)
 
         self.setSizePolicy(
-            QSizePolicy.Minimum,
-            QSizePolicy.Minimum
+            QSizePolicy.Policy.Minimum,
+            QSizePolicy.Policy.Minimum
         )
 
         # Domyślne wartości jeśli nie przekazano
         if select_options is None:
             select_options = [GsSelectAreaOption.RECTANGLE.value, GsSelectAreaOption.FREEHAND.value, GsSelectAreaOption.LAYER.value]
         if select_layer_types is None:
-            select_layer_types = [QgsMapLayerProxyModel.PointLayer, QgsMapLayerProxyModel.LineLayer, QgsMapLayerProxyModel.PolygonLayer]
+            select_layer_types = [QgsMapLayerProxyModel.Filter.PointLayer, QgsMapLayerProxyModel.Filter.LineLayer, QgsMapLayerProxyModel.Filter.PolygonLayer]
 
         self.select_options = select_options
         self.select_layer_types = select_layer_types
@@ -130,7 +130,7 @@ class GsSelectArea(QWidget, FORM_CLASS):
             self.tool.activate()
 
             if layer := self.selectLayerCb.currentLayer():
-                if layer.type() == QgsMapLayer.VectorLayer:
+                if layer.type() == QgsMapLayer.LayerType.VectorLayer:
                     count = self.selectLayerCb.currentLayer().selectedFeatureCount()
                     # Podłączenie warstwy jeśli nie byla jeszcze podłączona
                     if self.layer != layer:
@@ -177,7 +177,7 @@ class GsSelectArea(QWidget, FORM_CLASS):
                     QgsMessageLog.logMessage(
                         f"Nie udało się rozłączyć poprzedniej warstwy: {e}",
                         "Wtyczka GIS Support",
-                        Qgis.Info
+                        Qgis.MessageLevel.Info
                         )
 
             self.layer = layer
@@ -222,7 +222,7 @@ class SelectRectangleTool(QgsMapTool):
 
         # Konfiguracja narzędzia
         set_cursor(self)
-        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.PolygonGeometry)
+        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.PolygonGeometry)
         self.tempGeom.setColor(QColor(255, 0, 0, 100))
         self.tempGeom.setFillColor(QColor(255, 0, 0, 33))
         self.tempGeom.setWidth = 10
@@ -232,15 +232,15 @@ class SelectRectangleTool(QgsMapTool):
         self.geometry = QgsGeometry()
 
     def canvasPressEvent(self, e: QgsMapMouseEvent) -> None:
-        if e.button() == Qt.LeftButton or e.button() == Qt.RightButton:
+        if e.button() == Qt.MouseButton.LeftButton or e.button() == Qt.MouseButton.RightButton:
             self.startPoint = e.mapPoint()
 
     def canvasMoveEvent(self, e: QgsMapMouseEvent) -> None:
-        if (e.buttons() == Qt.LeftButton or e.buttons() == Qt.RightButton) and self.startPoint:
+        if (e.buttons() == Qt.MouseButton.LeftButton or e.buttons() == Qt.MouseButton.RightButton) and self.startPoint:
             newPoint = e.mapPoint()
             pointA = QgsPointXY(self.startPoint.x(), newPoint.y())
             pointB = QgsPointXY(newPoint.x(), self.startPoint.y())
-            self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+            self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
             self.tempGeom.addPoint(self.startPoint)
             self.tempGeom.addPoint(pointA)
             self.tempGeom.addPoint(newPoint)
@@ -251,22 +251,22 @@ class SelectRectangleTool(QgsMapTool):
             area.setEllipsoid('GRS80')
             self.geometry = self.tempGeom.asGeometry()
             rectangleArea = area.measureArea(self.geometry)
-            self.area = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaHectares)
+            self.area = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaUnit.AreaHectares)
             self.geometryChanged.emit(self.area)
 
     def canvasReleaseEvent(self, e: QgsMapMouseEvent) -> None:
         self.geometryEnded.emit(self.area, self.geometry)
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        if e.key() == Qt.Key_Escape:
+        if e.key() == Qt.Key.Key_Escape:
             self.reset()
 
     def reset(self) -> None:
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
         self.startPoint = None
 
     def reset_geometry(self) -> None:
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
         self.startPoint = None
 
     def deactivate(self) -> None:
@@ -286,7 +286,7 @@ class SelectFreehandTool(QgsMapTool):
 
         # Konfiguracja narzędzia
         set_cursor(self)
-        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.PolygonGeometry)
+        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.PolygonGeometry)
         self.tempGeom.setColor(QColor(255, 0, 0, 100))
         self.tempGeom.setFillColor(QColor(255, 0, 0, 33))
         self.tempGeom.setWidth = 10
@@ -296,14 +296,14 @@ class SelectFreehandTool(QgsMapTool):
         self.geometry = QgsGeometry()
 
     def canvasPressEvent(self, e: QgsMapMouseEvent) -> None:
-        if e.button() == Qt.LeftButton:
+        if e.button() == Qt.MouseButton.LeftButton:
             if self.drawing is False:
-                self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+                self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
                 self.drawing = True
             self.tempGeom.addPoint(e.mapPoint())
             self.update_geometry()
 
-        elif e.button() == Qt.RightButton and self.drawing:
+        elif e.button() == Qt.MouseButton.RightButton and self.drawing:
             if self.tempGeom.numberOfVertices() > 2:
                 self.tempGeom.removeLastPoint(0)
                 self.drawing = False
@@ -324,18 +324,18 @@ class SelectFreehandTool(QgsMapTool):
             area.setEllipsoid('GRS80')
             self.geometry = self.tempGeom.asGeometry()
             rectangleArea = area.measureArea(self.geometry)
-            self.area = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaHectares)
+            self.area = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaUnit.AreaHectares)
             self.geometryChanged.emit(self.area)
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        if e.key() == Qt.Key_Escape:
+        if e.key() == Qt.Key.Key_Escape:
             self.reset()
 
     def reset(self) -> None:
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
 
     def reset_geometry(self) -> None:
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
 
     def deactivate(self) -> None:
         self.parent.selectAreaBtn.setChecked(False)
@@ -353,7 +353,7 @@ class SelectFeaturesTool(QgsMapTool):
         self.parent = parent
 
         # Konfiguracja narzędzia
-        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.PolygonGeometry)
+        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.PolygonGeometry)
 
         self.area = 0
         self.geometry = QgsGeometry()
@@ -388,7 +388,7 @@ class SelectFeaturesTool(QgsMapTool):
                     area.setSourceCrs(QgsProject.instance().crs(), QgsCoordinateTransformContext())
                     area.setEllipsoid('GRS80')
                     rectangleArea = area.measureArea(self.geometry)
-                    self.area = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaHectares)
+                    self.area = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaUnit.AreaHectares)
                     self.geometryChanged.emit(self.area)
                     self.geometryEnded.emit(self.area, self.geometry)
                 else:
@@ -408,7 +408,7 @@ class SelectFeaturesTool(QgsMapTool):
             self.geometryEnded.emit(self.area, self.geometry)
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        if e.key() == Qt.Key_Escape:
+        if e.key() == Qt.Key.Key_Escape:
             self.reset()
 
     def reset(self) -> None:
@@ -417,7 +417,7 @@ class SelectFeaturesTool(QgsMapTool):
     def reset_geometry(self) -> None:
         self.area = 0
         self.geometry = QgsGeometry()
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
 
     def deactivate(self) -> None:
         self.parent.selectAreaBtn.setChecked(False)

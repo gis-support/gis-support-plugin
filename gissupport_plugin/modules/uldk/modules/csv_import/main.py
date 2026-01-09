@@ -2,10 +2,10 @@ import csv
 import os
 from collections import defaultdict
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QThread, QVariant
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import QThread, QVariant
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 from qgis.core import QgsField, QgsMapLayerProxyModel
@@ -114,7 +114,7 @@ class CSVImport:
         self.ui.label_found_count.setText("")
         self.ui.label_not_found_count.setText("")
         self.ui.button_cancel.clicked.connect(self.__stop)
-        self.ui.layer_select.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.ui.layer_select.setFilters(QgsMapLayerProxyModel.Filter.VectorLayer)
 
         self.ui.layer_select.layerChanged.connect(self.ui.combobox_teryt_column.setLayer)
         self.ui.layer_select.layerChanged.connect(
@@ -130,12 +130,12 @@ class CSVImport:
 
     def __init_table(self):
         table = self.ui.table_errors
-        table.setEditTriggers(QTableWidget.NoEditTriggers)
+        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         table.setColumnCount(2)
         table.setHorizontalHeaderLabels(("TERYT", "Treść błędu"))
         header = table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.Interactive)
-        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         teryt_column_size = table.width()/3
         header.resizeSection(0, 200)
 

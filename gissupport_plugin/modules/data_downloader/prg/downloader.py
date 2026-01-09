@@ -27,7 +27,7 @@ class PRGDownloader:
         self.prg_dockwidget.entity_name_combobox.setVisible(False)
         self.prg_dockwidget.name_label.setVisible(False)
 
-        iface.addDockWidget(Qt.RightDockWidgetArea, self.prg_dockwidget)
+        iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.prg_dockwidget)
         self.prg_dockwidget.hide()
 
     def change_prg_dockwidget_visibility(self):

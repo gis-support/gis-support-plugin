@@ -1,7 +1,7 @@
 import os
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import pyqtSignal
 
 from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
@@ -19,7 +19,7 @@ class WMTSDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         super(WMTSDockWidget, self).__init__(parent)
         self.setupUi(self)
 
-        iface.addDockWidget(Qt.RightDockWidgetArea, self)
+        iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
         self.hide()
 
     def closeEvent(self, event):

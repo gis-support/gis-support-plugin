@@ -19,7 +19,7 @@ class PRGAddressDownloadTask(QgsTask):
         self.teryt_p = teryt_p
         self.filepath = filepath
         self.url = f"https://integracja.gugik.gov.pl/PRG/pobierz.php?teryt={self.teryt_p}&adresy_pow"
-        super().__init__(description, QgsTask.CanCancel)
+        super().__init__(description, QgsTask.Flag.CanCancel)
 
     def run(self):
         handler = NetworkHandler()
@@ -30,7 +30,7 @@ class PRGAddressDownloadTask(QgsTask):
                 "Błąd pobierania danych. Sprawdź swoje połączenie z Internetem oraz czy usługa Geoportal.gov.pl działa.")
             return False
 
-        total_size = int(response.header(QNetworkRequest.ContentLengthHeader)) or 0
+        total_size = int(response.header(QNetworkRequest.KnownHeaders.ContentLengthHeader)) or 0
         data = BytesIO(response.readAll().data())
         bytes_received = 0
         full_filepath = f"{self.filepath}/{self.teryt_p}_GML.zip"
@@ -42,7 +42,7 @@ class PRGAddressDownloadTask(QgsTask):
                     progress = (bytes_received / total_size) * 100
                     self.progress_updated.emit(progress)
 
-        self.log_message(f"{full_filepath} - pobrano", level=Qgis.Info)
+        self.log_message(f"{full_filepath} - pobrano", level=Qgis.MessageLevel.Info)
         self.download_finished.emit(True)
 
         return True
@@ -64,7 +64,7 @@ class PRGAddressDataBoxDownloadTask(QgsTask):
         self.geojson["crs"] = {"type": "name", "properties": {"name": "EPSG:2180"}}
         self.bbox = geojson.boundingBox()
         self.url = f"https://databox.gis.support/api/2.0/functions/GetFeaturesByGeoJSON/prg_punkty_adresowe"
-        super().__init__(description, QgsTask.CanCancel)
+        super().__init__(description, QgsTask.Flag.CanCancel)
 
     def run(self):
         handler = NetworkHandler()

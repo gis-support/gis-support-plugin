@@ -1,7 +1,7 @@
 
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import *
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import *
 from qgis.core import *
 from qgis.utils import iface
 
@@ -78,7 +78,7 @@ class Main(BaseModule):
 
         #Zarejestrowanie we wtyczce
 
-        iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dockwidget)
 
         self.uldk_toolbar_action = self.parent.add_dockwidget_action(
             dockwidget=self.dockwidget,

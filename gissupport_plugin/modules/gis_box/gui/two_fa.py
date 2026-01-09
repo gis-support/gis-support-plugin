@@ -2,8 +2,8 @@
 import json
 import os
 
-from PyQt5.QtCore import pyqtSignal, QSettings, QUrl
-from PyQt5.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtCore import pyqtSignal, QSettings, QUrl
+from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog
 from qgis.core import QgsNetworkAccessManager
@@ -58,8 +58,8 @@ class TwoFADialog(QDialog, FORM_CLASS):
 
         manager = QgsNetworkAccessManager()
         request = QNetworkRequest(QUrl(host + endpoint))
-        request.setHeader(QNetworkRequest.ContentTypeHeader, 'application/json')
-        request.setHeader(QNetworkRequest.UserAgentHeader, 'qgis')
+        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, 'application/json')
+        request.setHeader(QNetworkRequest.KnownHeaders.UserAgentHeader, 'qgis')
 
         data = json.dumps(payload).encode('utf-8')
 
@@ -68,6 +68,6 @@ class TwoFADialog(QDialog, FORM_CLASS):
         iface.messageBar().pushMessage(
             'Weryfikacja dwuetapowa',
             'Wysłano kod weryfikacyjny ponownie.',
-            level=Qgis.Info
+            level=Qgis.MessageLevel.Info
         )
 

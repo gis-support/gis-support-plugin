@@ -29,8 +29,8 @@ class ServicesTableModel(QAbstractTableModel):
             del self.items[i]
         self.endRemoveRows()
     
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:    
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:    
             if section == 0:
                 return 'ID'
             elif section == 1:
@@ -48,7 +48,7 @@ class ServicesTableModel(QAbstractTableModel):
         if not index.isValid():
             return
         item = self.items[index.row()]
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             if index.column() == 0:
                 return item['id']
             elif index.column() == 1:
@@ -61,18 +61,19 @@ class ServicesTableModel(QAbstractTableModel):
                 return item['url']
             elif index.column() == 5:
                 return item['description']
-        elif role == Qt.UserRole:
+        elif role == Qt.ItemDataRole.UserRole:
             return item
         return     
 
 class ServicesProxyModel(QSortFilterProxyModel):
 
     def filterAcceptsRow(self, source_row, source_parent):
-        pattern = self.filterRegExp().pattern()
-        if self.filterRegExp().isEmpty():
+        pattern = self.filterRegularExpression().pattern()
+
+        if not pattern:
             return True
         index = self.sourceModel().index(source_row, 0, source_parent)
-        value = self.sourceModel().data(index, role=Qt.UserRole)
+        value = self.sourceModel().data(index, role=Qt.ItemDataRole.UserRole)
         for key in ['source', 'type', 'name', 'description']:
             if value[key].casefold().__contains__(pattern.casefold()):
                 return True

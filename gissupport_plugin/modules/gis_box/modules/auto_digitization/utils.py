@@ -2,7 +2,7 @@ import json
 import os
 from json import JSONDecodeError
 
-from PyQt5.QtCore import pyqtSignal, QVariant
+from qgis.PyQt.QtCore import pyqtSignal, QVariant
 from qgis.core import (QgsPointXY, QgsGeometry, QgsFeature, QgsProject, QgsJsonUtils,
                        QgsCoordinateReferenceSystem, QgsVectorLayer, QgsField, QgsTask)
 
@@ -18,7 +18,7 @@ class AutoDigitizationTask(QgsTask):
     task_failed = pyqtSignal(str)
 
     def __init__(self, description: str, digitization_option: list, data: dict, layer_id: str, clip: str):
-        super().__init__(description, QgsTask.CanCancel)
+        super().__init__(description, QgsTask.Flag.CanCancel)
         self.digitization_option = digitization_option
         self.data = data
         self.layer_id = layer_id

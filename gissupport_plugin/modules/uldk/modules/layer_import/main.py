@@ -1,8 +1,8 @@
 import os
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QThread
-from PyQt5.QtGui import QPixmap
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import QThread
+from qgis.PyQt.QtGui import QPixmap
 from qgis.core import (QgsCoordinateReferenceSystem, QgsMapLayerProxyModel,
                        QgsProject)
 from qgis.gui import QgsMessageBarItem
@@ -44,7 +44,7 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
         
         target_layout.layout().addWidget(self)
 
-        self.layer_select.setFilters(QgsMapLayerProxyModel.PointLayer | QgsMapLayerProxyModel.LineLayer | QgsMapLayerProxyModel.PolygonLayer)
+        self.layer_select.setFilters(QgsMapLayerProxyModel.Filter.PointLayer | QgsMapLayerProxyModel.Filter.LineLayer | QgsMapLayerProxyModel.Filter.PolygonLayer)
 
         self.label_info_start.setPixmap(QPixmap(self.icon_info_path))
         self.label_info_start.setToolTip((
@@ -71,7 +71,7 @@ class LayerImport:
         
         target_layer_name = self.ui.text_edit_target_layer_name.text()
 
-        selected_only = bool(self.ui.checkbox_selected_only.checkState())
+        selected_only = bool(self.ui.checkbox_selected_only.isChecked())
         selected_field_names = self.ui.combobox_fields_select.checkedItems()
         fields_to_copy = [ field for field in layer.dataProvider().fields()
                             if field.name() in selected_field_names ]

@@ -33,7 +33,7 @@ class BDOT10kDownloader:
         # Zapobiega usunięciu obiektu przez Garbage Collector
         self.bdot10k_dockwidget._controller = self
 
-        iface.addDockWidget(Qt.RightDockWidgetArea, self.bdot10k_dockwidget)
+        iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.bdot10k_dockwidget)
         self.bdot10k_dockwidget.hide()
 
         self.fill_woj_combobox()
@@ -63,7 +63,7 @@ class BDOT10kDownloader:
             check_geoportal_connection()
         except GeoportalResponseException as e:
             self.bdot10k_dockwidget.powiat.setEnabled(False)
-            iface.messageBar().pushMessage("Wtyczka GIS Support", f"Błąd połączenia z Geoportalem: {e}", level=Qgis.Critical)
+            iface.messageBar().pushMessage("Wtyczka GIS Support", f"Błąd połączenia z Geoportalem: {e}", level=Qgis.MessageLevel.Critical)
 
         try:
             self.databox_layers = get_databox_layers()
@@ -71,7 +71,7 @@ class BDOT10kDownloader:
             self.bdot10k_dockwidget.bounds.setEnabled(False)
             self.bdot10k_dockwidget.classTab.setEnabled(False)
             iface.messageBar().pushMessage("Wtyczka GIS Support", f"Błąd połączenia z Databox: {e}",
-                                           level=Qgis.Critical)
+                                           level=Qgis.MessageLevel.Critical)
             return
 
         self.fill_class_combobox()
@@ -144,13 +144,13 @@ class BDOT10kDownloader:
         """
         if self.teryt_woj == "" or self.teryt_pow == "":
             iface.messageBar().pushMessage("Przed pobraniem należy wybrać województwo i powiat",
-                                           level=Qgis.Warning)
+                                           level=Qgis.MessageLevel.Warning)
             return
 
         bdot10k_filepath = self.bdot10k_dockwidget.filepathLine.text()
         if not bdot10k_filepath or bdot10k_filepath == "":
             iface.messageBar().pushMessage("Przed pobraniem należy wybrać ścieżkę zapisu danych",
-                                           level=Qgis.Warning)
+                                           level=Qgis.MessageLevel.Warning)
             return
 
         self.task = BDOT10kDownloadTask("Pobieranie danych BDOT10k", self.teryt_woj,
@@ -174,7 +174,7 @@ class BDOT10kDownloader:
         Wyświetla komunikat o pomyślnym pobraniu danych BDOT10k.
         """
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
-                    "Pomyślnie pobrano dane BDOT10k", level=Qgis.Info))
+                    "Pomyślnie pobrano dane BDOT10k", level=Qgis.MessageLevel.Info))
 
     def set_geometry_from_signal(self, geom: QgsGeometry) -> None:
         """
@@ -205,7 +205,7 @@ class BDOT10kDownloader:
                 self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(True)
 
             except (ValueError, TypeError, RuntimeError) as e:
-                QgsMessageLog.logMessage(f"Błąd przetwarzania geometrii: {e}", "Wtyczka GIS Support", Qgis.Warning)
+                QgsMessageLog.logMessage(f"Błąd przetwarzania geometrii: {e}", "Wtyczka GIS Support", Qgis.MessageLevel.Warning)
                 self.selected_geom = None
                 self.bdot10k_dockwidget.boundsDownloadButton.setEnabled(False)
         else:
@@ -222,7 +222,7 @@ class BDOT10kDownloader:
         if not self.selected_geom or self.selected_geom.isNull():
             iface.messageBar().pushMessage("Wtyczka GIS Support",
                                          "Nie wybrano obszaru do pobrania",
-                                         level=Qgis.Warning)
+                                         level=Qgis.MessageLevel.Warning)
             return
 
         layer_name = self.bdot10k_dockwidget.layerComboBox.currentText()
@@ -235,7 +235,7 @@ class BDOT10kDownloader:
         manager.addTask(self.task)
 
     def show_bdot10k_databox_limit_exceeded_message(self, message: str) -> None:
-        iface.messageBar().pushMessage(message, level=Qgis.Warning)
+        iface.messageBar().pushMessage(message, level=Qgis.MessageLevel.Warning)
 
     def add_bdot10k_features_to_map(self, geojson: str) -> None:
         layer_name = self.bdot10k_dockwidget.layerComboBox.currentText()
@@ -281,7 +281,7 @@ class BDOT10kDownloader:
         """
         iface.messageBar().pushMessage("Wtyczka GIS Support",
                     """Na wybranym obszarze nie znajdują się obiekty wybranej warstwy
-                    lub liczba obiektów na wybranym obszarze jest większa niż 100 000""", level=Qgis.Warning)
+                    lub liczba obiektów na wybranym obszarze jest większa niż 100 000""", level=Qgis.MessageLevel.Warning)
 
 ### POBIERANIE DLA KLASY
 
@@ -310,7 +310,7 @@ class BDOT10kDownloader:
         """
         if self.bdot10k_class == "":
             iface.messageBar().pushMessage("Przed pobraniem należy wybrać klasę BDOT10k",
-                                           level=Qgis.Warning)
+                                           level=Qgis.MessageLevel.Warning)
             return
 
         self.task = BDOT10kClassDownloadTask("Pobieranie danych BDOT10k dla wybranej klasy",
@@ -329,4 +329,4 @@ class BDOT10kDownloader:
         self.bdot10k_class = str(current_class).upper()
 
     def handle_task_error(self, error_message: str) -> None:
-        iface.messageBar().pushMessage("Wtyczka GIS Support", error_message, level=Qgis.Critical)
+        iface.messageBar().pushMessage("Wtyczka GIS Support", error_message, level=Qgis.MessageLevel.Critical)

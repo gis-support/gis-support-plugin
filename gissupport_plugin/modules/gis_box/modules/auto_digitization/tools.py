@@ -21,7 +21,7 @@ class SelectRectangleTool(QgsMapTool):
 
         # Konfiguracja narzędzia
         set_cursor(self)
-        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.PolygonGeometry)
+        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.PolygonGeometry)
         self.tempGeom.setColor(QColor(255, 0, 0, 100))
         self.tempGeom.setFillColor(QColor(255, 0, 0, 33))
         self.tempGeom.setWidth = 10
@@ -31,15 +31,15 @@ class SelectRectangleTool(QgsMapTool):
         self.geometry = QgsGeometry()
 
     def canvasPressEvent(self, e):
-        if e.button() == Qt.LeftButton or e.button() == Qt.RightButton:
+        if e.button() == Qt.MouseButton.LeftButton or e.button() == Qt.MouseButton.RightButton:
             self.startPoint = e.mapPoint()
 
     def canvasMoveEvent(self, e):
-        if e.buttons() == Qt.LeftButton or e.buttons() == Qt.RightButton:
+        if e.buttons() == Qt.MouseButton.LeftButton or e.buttons() == Qt.MouseButton.RightButton:
             newPoint = e.mapPoint()
             pointA = QgsPointXY(self.startPoint.x(), newPoint.y())
             pointB = QgsPointXY(newPoint.x(), self.startPoint.y())
-            self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+            self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
             self.tempGeom.addPoint(self.startPoint)
             self.tempGeom.addPoint(pointA)
             self.tempGeom.addPoint(newPoint)
@@ -50,7 +50,7 @@ class SelectRectangleTool(QgsMapTool):
             area.setEllipsoid('GRS80')
 
             rectangleArea = area.measureArea(self.tempGeom.asGeometry())
-            rectangleAreaHectares = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaHectares)
+            rectangleAreaHectares = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaUnit.AreaHectares)
             self.area = rectangleAreaHectares
             self.geometry = self.tempGeom.asGeometry()
             self.geometryChanged.emit(self.area)
@@ -59,16 +59,16 @@ class SelectRectangleTool(QgsMapTool):
         self.geometryEnded.emit(self.area, self.geometry)
 
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Escape:
+        if e.key() == Qt.Key.Key_Escape:
             self.reset()
 
     def reset(self):
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
         self.startPoint = None
         iface.mapCanvas().unsetMapTool(self)
 
     def reset_geometry(self):
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
         self.startPoint = None
 
     def deactivate(self):
@@ -86,7 +86,7 @@ class SelectFreehandTool(QgsMapTool):
 
         # Konfiguracja narzędzia
         set_cursor(self)
-        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.PolygonGeometry)
+        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.PolygonGeometry)
         self.tempGeom.setColor(QColor(255, 0, 0, 100))
         self.tempGeom.setFillColor(QColor(255, 0, 0, 33))
         self.tempGeom.setWidth = 10
@@ -95,7 +95,7 @@ class SelectFreehandTool(QgsMapTool):
         self.geometry = QgsGeometry()
 
     def canvasPressEvent(self, e):
-        if e.button() == Qt.LeftButton or e.button() == Qt.RightButton:
+        if e.button() == Qt.MouseButton.LeftButton or e.button() == Qt.MouseButton.RightButton:
             self.tempGeom.addPoint(e.mapPoint())
 
             area = QgsDistanceArea()
@@ -103,13 +103,13 @@ class SelectFreehandTool(QgsMapTool):
             area.setEllipsoid('GRS80')
 
             rectangleArea = area.measureArea(self.tempGeom.asGeometry())
-            rectangleAreaHectares = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaHectares)
+            rectangleAreaHectares = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaUnit.AreaHectares)
             self.area = rectangleAreaHectares
             self.geometry = self.tempGeom.asGeometry()
             self.geometryChanged.emit(self.area)
 
     def canvasMoveEvent(self, e):
-        if e.buttons() == Qt.LeftButton or e.buttons() == Qt.RightButton:
+        if e.buttons() == Qt.MouseButton.LeftButton or e.buttons() == Qt.MouseButton.RightButton:
             self.tempGeom.addPoint(e.mapPoint())
 
             area = QgsDistanceArea()
@@ -117,7 +117,7 @@ class SelectFreehandTool(QgsMapTool):
             area.setEllipsoid('GRS80')
 
             rectangleArea = area.measureArea(self.tempGeom.asGeometry())
-            rectangleAreaHectares = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaHectares)
+            rectangleAreaHectares = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaUnit.AreaHectares)
             self.area = rectangleAreaHectares
             self.geometry = self.tempGeom.asGeometry()
             self.geometryChanged.emit(self.area)
@@ -126,17 +126,17 @@ class SelectFreehandTool(QgsMapTool):
         self.geometryEnded.emit(self.area, self.geometry)
 
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Escape:
+        if e.key() == Qt.Key.Key_Escape:
             self.reset()
 
     def reset(self):
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
         self.parent.selectedToolLabel.setText("")
         self.parent.selectedToolLabel.setHidden(True)
         iface.mapCanvas().unsetMapTool(self)
 
     def reset_geometry(self):
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
 
     def deactivate(self):
         self.reset()
@@ -154,19 +154,19 @@ class SelectFeaturesTool(QgsMapToolIdentifyFeature):
         # Konfiguracja narzędzia
         set_cursor(self)
 
-        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.PolygonGeometry)
+        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.PolygonGeometry)
         self.tempGeom.setColor(QColor(255, 0, 0, 100))
         self.tempGeom.setFillColor(QColor(255, 0, 0, 33))
         self.tempGeom.setWidth = 10
 
-        self.tempGeom2 = QgsRubberBand(canvas, QgsWkbTypes.PolygonGeometry)
+        self.tempGeom2 = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.PolygonGeometry)
 
         self.area = 0
         self.geometry = QgsGeometry()
         self.objects = {}
 
     def canvasPressEvent(self, e):
-        if e.buttons() == Qt.LeftButton or e.buttons() == Qt.RightButton:
+        if e.buttons() == Qt.MouseButton.LeftButton or e.buttons() == Qt.MouseButton.RightButton:
             point = e.mapPoint()
             identify = self.identify(QgsGeometry().fromPointXY(point), self.TopDownAll, self.VectorLayer)
 
@@ -196,14 +196,14 @@ class SelectFeaturesTool(QgsMapToolIdentifyFeature):
                     area.setEllipsoid('GRS80')
 
                     rectangleArea = area.measureArea(self.tempGeom2.asGeometry())
-                    rectangleAreaHectares = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaHectares)
+                    rectangleAreaHectares = area.convertAreaMeasurement(rectangleArea, QgsUnitTypes.AreaUnit.AreaHectares)
                     self.area = rectangleAreaHectares
                     self.geometry = self.tempGeom2.asGeometry()
                     self.geometryChanged.emit(self.area)
                     self.geometryEnded.emit(self.area, self.geometry)
 
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Escape:
+        if e.key() == Qt.Key.Key_Escape:
             self.reset()
 
     def reset(self):
@@ -211,8 +211,8 @@ class SelectFeaturesTool(QgsMapToolIdentifyFeature):
         iface.mapCanvas().unsetMapTool(self)
 
     def reset_geometry(self):
-        self.tempGeom.reset(QgsWkbTypes.PolygonGeometry)
-        self.tempGeom2.reset(QgsWkbTypes.PolygonGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
+        self.tempGeom2.reset(QgsWkbTypes.GeometryType.PolygonGeometry)
         self.objects = {}
 
     def deactivate(self):

@@ -41,7 +41,7 @@ class GugikNmt(BaseModule):
         
         self.dockwidget = GugikNmtDockWidget()
 
-        iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dockwidget)
         self.gugik_nmt_action = self.parent.add_dockwidget_action(
             dockwidget=self.dockwidget,
             icon_path=':/plugins/gissupport_plugin/gugik_nmt/nmt.svg',

@@ -2,7 +2,7 @@
 import json
 import os
 
-from PyQt5.QtGui import QCursor
+from qgis.PyQt.QtGui import QCursor
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import pyqtSignal
@@ -32,7 +32,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
         self.areaWidget.setHidden(True)
         self.btnExecute.setEnabled(False)
 
-        self.selectAreaWidget = GsSelectArea(select_layer_types=[QgsMapLayerProxyModel.PolygonLayer])
+        self.selectAreaWidget = GsSelectArea(select_layer_types=[QgsMapLayerProxyModel.Filter.PolygonLayer])
 
         self.registerTools()
         self.menageSignals()
@@ -130,7 +130,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
     def execute(self):
         iface.messageBar().pushMessage(
-            "Automatyczna wektoryzacja", "Rozpoczęto automatyczną wektoryzację dla zadanego obszaru.", level=Qgis.Info)
+            "Automatyczna wektoryzacja", "Rozpoczęto automatyczną wektoryzację dla zadanego obszaru.", level=Qgis.MessageLevel.Info)
 
         options = self.options["data"]
         current_text = self.digitizationOptions.currentText()
@@ -181,11 +181,11 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
 
     def task_downloaded_data(self):
         iface.messageBar().pushMessage(
-            "Automatyczna wektoryzacja", "Trwa zapisywanie danych do warstwy tymczasowej.", level=Qgis.Info)
+            "Automatyczna wektoryzacja", "Trwa zapisywanie danych do warstwy tymczasowej.", level=Qgis.MessageLevel.Info)
 
     def task_completed(self):
         iface.messageBar().pushMessage(
-                "Automatyczna wektoryzacja", "Pomyślnie zapisano dane do warstwy tymczasowej.", level=Qgis.Success)
+                "Automatyczna wektoryzacja", "Pomyślnie zapisano dane do warstwy tymczasowej.", level=Qgis.MessageLevel.Success)
         self.task = None
         self.select_features_rectangle_tool.reset_geometry()
         self.select_features_freehand_tool.reset_geometry()
@@ -198,7 +198,7 @@ class AutoDigitizationWidget(QDockWidget, FORM_CLASS):
             message_description = "Zapisanie danych do warstwy tymczasowej nie powiodło się."
         iface.messageBar().pushMessage(
             "Automatyczna wektoryzacja", message_description,
-            level=Qgis.Critical)
+            level=Qgis.MessageLevel.Critical)
         self.task = None
         self.select_features_rectangle_tool.reset_geometry()
         self.select_features_freehand_tool.reset_geometry()

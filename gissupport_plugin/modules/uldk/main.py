@@ -16,9 +16,10 @@ from gissupport_plugin.modules.uldk.resources import resources
 from gissupport_plugin.modules.uldk.uldk.resultcollector import (ResultCollectorMultiple,
                                 ResultCollectorSingle)
 
+from gissupport_plugin.modules.uldk.modules.from_csv_file.main import FromCSVFile
 
 class Main(BaseModule):
-    module_name = "Wyszukiwarka działek ewidencyjnych"    
+    module_name = "Wyszukiwarka działek ewidencyjnych"
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -31,12 +32,13 @@ class Main(BaseModule):
 
         self.teryt_search_result_collector = ResultCollectorSingle(self)
         self.map_point_search_result_collector = self.teryt_search_result_collector
-        
+
         self.project = QgsProject.instance()
         self.wms_layer = None
         self.module_csv_import = None
         self.module_teryt_search = None
         self.module_layer_import = None
+        self.module_from_csv_file = None
         self.module_wms_kieg_initialized = False
         self.module_map_point_search = MapPointSearch(self, self.teryt_search_result_collector)
 
@@ -50,13 +52,19 @@ class Main(BaseModule):
 
         result_collector_factory = lambda parent, target_layer: ResultCollectorMultiple(self, target_layer)
         self.module_csv_import = CSVImport(self,
-            self.dockwidget.tab_import_csv_layout, 
+            self.dockwidget.tab_import_csv_layout,
             result_collector_factory,
             ResultCollectorMultiple.default_layer_factory)
 
         self.module_layer_import = LayerImport(
             self,
             self.dockwidget.tab_import_layer_layout)
+
+        result_collector_factory = lambda parent, target_layer: ResultCollectorMultiple(self, target_layer)
+        self.module_from_csv_file = FromCSVFile(self,
+            self.dockwidget.tab_from_csv_file_layout,
+            result_collector_factory,
+            ResultCollectorMultiple.default_layer_factory)
 
         self.check_layer_result_collector = ResultCollectorSingle(self)
         self.module_layer_check = CheckLayer(self,
@@ -69,7 +77,7 @@ class Main(BaseModule):
 
         self.wms_lpis_layer = None
         self.module_wms_lpis_initialized = True
-        
+
         icon_info_path = ':/plugins/plugin/info.png'
         self.dockwidget.label_info_map_point_search.setPixmap(QPixmap(icon_info_path))
         self.dockwidget.label_info_map_point_search.setToolTip((
@@ -108,7 +116,7 @@ class Main(BaseModule):
         iface.removeDockWidget(self.dockwidget)
 
     def add_wms_kieg(self):
-        
+
         if self.wms_kieg_layer is None:
             url = ("contextualWMSLegend=0&"
                     "crs=EPSG:2180&"
@@ -128,7 +136,7 @@ class Main(BaseModule):
             self.canvas.refresh()
 
     def add_wms_lpis(self):
-        
+
         if self.wms_lpis_layer is None:
             url = (
                 'contextualWMSLegend=0&'

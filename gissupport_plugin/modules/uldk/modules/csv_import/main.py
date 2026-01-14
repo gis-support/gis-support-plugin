@@ -52,9 +52,6 @@ class CSVImport:
         self.parent = parent
         self.ui = UI(parent.dockwidget, target_layout)
 
-        self.result_collector_factory = ResultCollectorMultiple
-        self.layer_factory = ResultCollectorMultiple.default_layer_factory
-
         self.file_path = None
 
         self.__init_ui()
@@ -85,13 +82,13 @@ class CSVImport:
             layer = dock.comboLayers.currentLayer()
         else:
             layer_name = self.ui.text_edit_layer_name.text()
-            layer = self.layer_factory(
+            layer = ResultCollectorMultiple.default_layer_factory(
                 name = layer_name,
                 custom_properties = {"ULDK": layer_name},
                 additional_fields=[QgsField(field, QVariant.String) for field in additional_fields]
             )
 
-        self.result_collector = self.result_collector_factory(self.parent, layer)
+        self.result_collector = ResultCollectorMultiple(self.parent, layer)
         self.features_found = []
         self.csv_rows_count = len(teryts)
 

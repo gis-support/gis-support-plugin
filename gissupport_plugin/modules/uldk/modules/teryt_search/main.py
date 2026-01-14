@@ -50,8 +50,6 @@ class TerytSearch(QObject):
         self.ui = UI(target_layout)
 
         self.result_collector = result_collector
-        self.result_collector_factory = ResultCollectorMultiple
-        self.layer_factory = ResultCollectorMultiple.default_layer_factory
 
         self.provinces_downloaded = False
 
@@ -125,10 +123,10 @@ class TerytSearch(QObject):
             layer = dock.comboLayers.currentLayer()
         else:
             layer_name = f"{municipality_name} - Działki '{plot_id}'"
-            layer = self.layer_factory(
+            layer = ResultCollectorMultiple.default_layer_factory(
                 name = layer_name, custom_properties = {"ULDK": layer_name})
 
-        self.result_collector_precinct_unknown = self.result_collector_factory(self.parent, layer)
+        self.result_collector_precinct_unknown = ResultCollectorMultiple(self.parent, layer)
         self.ui.button_search_uldk.hide()
         self.ui.progress_bar_precinct_unknown.show()
         self.__search(plots_teryts)

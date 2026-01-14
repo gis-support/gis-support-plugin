@@ -53,9 +53,6 @@ class FromCSVFile:
         self.parent = parent
         self.ui = UI(parent.dockwidget, target_layout)
 
-        self.result_collector_factory = ResultCollectorMultiple
-        self.layer_factory = ResultCollectorMultiple.default_layer_factory
-
         self.file_path = None
         self.csv_data = []
         self.csv_headers = []
@@ -88,12 +85,12 @@ class FromCSVFile:
             layer = dock.comboLayers.currentLayer()
         else:
             layer_name = self.ui.text_edit_layer_name.text() or "Działki z CSV"
-            layer = self.layer_factory(
+            layer = ResultCollectorMultiple.default_layer_factory(
                 name=layer_name,
                 custom_properties={"ULDK": "from_csv_file"},
             )
 
-        self.result_collector = self.result_collector_factory(self.parent, layer)
+        self.result_collector = ResultCollectorMultiple(self.parent, layer)
         self.csv_rows_count = len(teryts)
 
         self.worker = ULDKSearchWorker(self.uldk_search, teryts)

@@ -61,7 +61,7 @@ class ResultCollector:
         return layer
 
     @classmethod
-    def uldk_response_to_qgs_feature(cls, response_row: str, additional_attributes: list = []) -> QgsFeature:
+    def uldk_response_to_qgs_feature(cls, response_row: str, additional_attributes: list = [], additional_fields_defs: list = []) -> QgsFeature:
         def get_sheet(teryt):
             split = teryt.split(".")
             if len(split) == 4:
@@ -85,6 +85,11 @@ class ResultCollector:
         fields = QgsFields()
         for field in PLOTS_LAYER_DEFAULT_FIELDS:
             fields.append(field)
+
+        if additional_fields_defs:
+            for field in additional_fields_defs:
+                fields.append(field)
+
         feature.setFields(fields)
 
         geometry = QgsGeometry.fromWkt(geom_wkt)
@@ -230,11 +235,11 @@ class ResultCollectorMultiple(ResultCollector):
         self.parent = parent
         self.canvas = parent.canvas
         self.layer = target_layer
-        self._is_new_layer = True
+        self._layer_added_to_project = False
 
         # Sprawdzamy czy warstwa już istnieje w projekcie
-        if target_layer in QgsProject.instance().mapLayers().values():
-            self._is_new_layer = False
+        if target_layer.id() in QgsProject.instance().mapLayers():
+            self.layer_added_to_project = True
 
     def update(self, uldk_response_rows: List[str]) -> None:
         features = []
@@ -247,6 +252,9 @@ class ResultCollectorMultiple(ResultCollector):
         return self.update_with_features(features)
 
     def update_with_features(self, features: List[QgsFeature]) -> None:
+        if not features:
+            return
+
         dock = self.parent.dockwidget
         use_existing = dock.radioExistingLayer.isChecked() and dock.comboLayers.currentLayer()
 
@@ -264,16 +272,24 @@ class ResultCollectorMultiple(ResultCollector):
             self.layer.startEditing()
 
         for feature in features:
-                if use_existing:
-                    feature = self.map_attributes_by_name(feature)
-                self.layer.addFeature(feature)
+            if use_existing:
+                feature_to_add = self.map_attributes_by_name(feature)
+            else:
+                feature_to_add = QgsFeature(feature)
+                target_crs = self.layer.crs()
+                if self.SOURCE_CRS != target_crs:
+                    geometry = feature_to_add.geometry()
+                    geometry.transform(QgsCoordinateTransform(self.SOURCE_CRS, target_crs, QgsProject.instance()))
+                    feature_to_add.setGeometry(geometry)
 
-        # Zakończenie edycji
+            self.layer.addFeature(feature_to_add)
+
+        # Zakończenie edycji i zapis (sukcesywne dopisywanie)
         if self.layer.commitChanges(stopEditing=not was_editable):
             self.layer.updateExtents()
-
-            if self._is_new_layer and self.layer not in QgsProject.instance().mapLayers().values():
+            if not self._layer_added_to_project:
                 QgsProject.instance().addMapLayer(self.layer)
+                self._layer_added_to_project = True
         else:
             if not was_editable:
                 self.layer.rollBack()

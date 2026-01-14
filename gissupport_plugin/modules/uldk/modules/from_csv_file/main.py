@@ -10,6 +10,7 @@ from qgis.utils import iface
 from qgis.core import QgsFeature
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
+from gissupport_plugin.modules.uldk.uldk.resultcollector import ResultCollectorMultiple
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main.ui"
@@ -48,12 +49,12 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
 
 class FromCSVFile:
 
-    def __init__(self, parent, target_layout, result_collector_factory, layer_factory):
+    def __init__(self, parent, target_layout):
         self.parent = parent
         self.ui = UI(parent.dockwidget, target_layout)
 
-        self.result_collector_factory = result_collector_factory
-        self.layer_factory = layer_factory
+        self.result_collector_factory = ResultCollectorMultiple
+        self.layer_factory = ResultCollectorMultiple.default_layer_factory
 
         self.file_path = None
         self.csv_data = []

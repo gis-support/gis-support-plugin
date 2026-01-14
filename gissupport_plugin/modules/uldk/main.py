@@ -1,5 +1,3 @@
-
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
 from qgis.core import *
@@ -11,12 +9,10 @@ from gissupport_plugin.modules.uldk.modules.csv_import.main import CSVImport
 from gissupport_plugin.modules.uldk.modules.map_point_search.main import MapPointSearch
 from gissupport_plugin.modules.uldk.modules.layer_import.main import LayerImport
 from gissupport_plugin.modules.uldk.modules.teryt_search.main import TerytSearch
+from gissupport_plugin.modules.uldk.modules.from_csv_file.main import FromCSVFile
 from gissupport_plugin.modules.uldk.plugin_dockwidget import wyszukiwarkaDzialekDockWidget
 from gissupport_plugin.modules.uldk.resources import resources
-from gissupport_plugin.modules.uldk.uldk.resultcollector import (ResultCollectorMultiple,
-                                ResultCollectorSingle)
-
-from gissupport_plugin.modules.uldk.modules.from_csv_file.main import FromCSVFile
+from gissupport_plugin.modules.uldk.uldk.resultcollector import ResultCollectorSingle
 
 class Main(BaseModule):
     module_name = "Wyszukiwarka działek ewidencyjnych"
@@ -42,29 +38,26 @@ class Main(BaseModule):
         self.module_wms_kieg_initialized = False
         self.module_map_point_search = MapPointSearch(self, self.teryt_search_result_collector)
 
-        result_collector_factory = lambda parent, target_layer: ResultCollectorMultiple(self, target_layer)
-        self.module_teryt_search = TerytSearch(self,
+        self.module_teryt_search = TerytSearch(
+            self,
             self.dockwidget.tab_teryt_search_layout,
             self.teryt_search_result_collector,
-            result_collector_factory,
-            ResultCollectorMultiple.default_layer_factory)
+            )
         self.module_teryt_search.lpis_bbox_found.connect(self.add_wms_lpis)
 
-        result_collector_factory = lambda parent, target_layer: ResultCollectorMultiple(self, target_layer)
-        self.module_csv_import = CSVImport(self,
+        self.module_csv_import = CSVImport(
+            self,
             self.dockwidget.tab_import_csv_layout,
-            result_collector_factory,
-            ResultCollectorMultiple.default_layer_factory)
+            )
 
         self.module_layer_import = LayerImport(
             self,
             self.dockwidget.tab_import_layer_layout)
 
-        result_collector_factory = lambda parent, target_layer: ResultCollectorMultiple(self, target_layer)
-        self.module_from_csv_file = FromCSVFile(self,
+        self.module_from_csv_file = FromCSVFile(
+            self,
             self.dockwidget.tab_from_csv_file_layout,
-            result_collector_factory,
-            ResultCollectorMultiple.default_layer_factory)
+            )
 
         self.check_layer_result_collector = ResultCollectorSingle(self)
         self.module_layer_check = CheckLayer(self,

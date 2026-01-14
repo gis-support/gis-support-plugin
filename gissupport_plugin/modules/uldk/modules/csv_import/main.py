@@ -11,6 +11,7 @@ from qgis.utils import iface
 from qgis.core import QgsField, QgsMapLayerProxyModel, QgsVectorLayer
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
+from gissupport_plugin.modules.uldk.uldk.resultcollector import ResultCollectorMultiple
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
@@ -47,12 +48,12 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
 
 class CSVImport:
 
-    def __init__(self, parent, target_layout, result_collector_factory, layer_factory):
+    def __init__(self, parent, target_layout):
         self.parent = parent
         self.ui = UI(parent.dockwidget, target_layout)
 
-        self.result_collector_factory = result_collector_factory
-        self.layer_factory = layer_factory
+        self.result_collector_factory = ResultCollectorMultiple
+        self.layer_factory = ResultCollectorMultiple.default_layer_factory
 
         self.file_path = None
 
@@ -154,10 +155,12 @@ class CSVImport:
         if not layer:
             return
 
+        fields = layer.fields()
         keywords = ['teryt', 'id_teryt', 'kod_teryt']
-        for field in layer.fields():
-            if field.name().lower() in keywords:
-                self.ui.combobox_teryt_column.setField(field.name())
+        for key in keywords:
+            idx = fields.lookupField(key)
+            if idx != -1:
+                self.ui.combobox_teryt_column.setField(fields.at(idx).name())
                 break
 
     def _toggle_target_input(self) -> None:

@@ -246,8 +246,7 @@ class TerytSearch(QObject):
         self.ui.button_search_uldk.setText("Szukaj")
         self.ui.button_search_uldk.setShortcut(QKeySequence(Qt.Key_Return))
 
-    def __handle_finished_precinct_unknown(self):
-        self.result_collector_precinct_unknown.update_with_features(self.plots_found)
+    def __handle_finished_precinct_unknown(self) -> None:
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
             f"Wyszukiwanie działek: zapisano znalezione działki do warstwy <b>{self.result_collector_precinct_unknown.layer.sourceName()}</b>"))
         self.ui.button_search_uldk.show()
@@ -292,14 +291,18 @@ class TerytSearch(QObject):
     def __handle_not_found(self, teryt, exception):
         iface.messageBar().pushCritical("Wtyczka GIS Support", f"Nie znaleziono działki w usłudze ULDK - odpowiedź z GUGIK: '{str(exception)}'")
 
-    def __handle_found_precinct_unknown(self, uldk_response_rows):
+    def __handle_found_precinct_unknown(self, uldk_response_rows) -> None:
+        current_features = []
         # Iteracja po zagnieżdżonych listach
         for row in chain.from_iterable(uldk_response_rows.values()):
             try:
                 feature = self.result_collector_precinct_unknown.uldk_response_to_qgs_feature(row)
+                current_features.append(feature)
             except self.result_collector_precinct_unknown.BadGeometryException as e:
-                return
-            self.plots_found.append(feature)
+                continue
+
+        if current_features:
+            self.result_collector_precinct_unknown.update_with_features(current_features)
 
     def __handle_progress_precinct_unknown(self):
         self.precincts_progressed += 1

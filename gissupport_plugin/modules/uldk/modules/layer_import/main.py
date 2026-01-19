@@ -176,14 +176,13 @@ class LayerImport:
     def __progressed(self, layer_found, layer_not_found, found, omitted_count, saved, feature_processed):
         if saved:
             self.saved_count += 1
+            if layer_found.dataProvider().featureCount():
+                self.__reload_and_add_layer(layer_found)
+
         if found and feature_processed:
             self.found_count += 1
         elif not found:
             self.not_found_count += 1
-        if feature_processed:
-            if layer_found.dataProvider().featureCount():
-                self.__reload_and_add_layer(layer_found)
-
             if layer_not_found.dataProvider().featureCount():
                 self.__reload_and_add_layer(layer_not_found)
 

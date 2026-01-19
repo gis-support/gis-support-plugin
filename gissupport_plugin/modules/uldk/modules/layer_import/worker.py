@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsField, QgsGeometry,
-                       QgsPoint, QgsVectorLayer, QgsFeature, QgsWkbTypes,
+                       QgsPointXY, QgsVectorLayer, QgsFeature, QgsWkbTypes,
                        QgsProject, QgsDistanceArea, QgsFields)
 
 from ...uldk.api import ULDKSearchPoint, ULDKSearchLogger, ULDKPoint
@@ -114,91 +114,173 @@ class LayerImportWorker(QObject):
                                                f"{layer_name} (nieznalezione)", "memory")
         self.layer_not_found.setCustomProperty("ULDK", f"{layer_name} point_import_not_found")
 
+        self.count_not_found_as_progressed = False
+
     @pyqtSlot()
     def search(self) -> None:
-        fields = PLOTS_LAYER_DEFAULT_FIELDS + self.additional_output_fields
+        self._prepare_layers_for_search()
 
-        if self._layer_found_is_new:
-            self.layer_found.startEditing()
-            self.layer_found.dataProvider().addAttributes(fields)
-            self.layer_found.commitChanges()
-        else:
-            target_fields = self.layer_found.fields()
-            missing_fields = []
-            for field in self.additional_output_fields:
-                if target_fields.lookupField(field.name()) == -1:
-                    missing_fields.append(field)
+        source_geom_type = self.source_layer.wkbType()
+        geom_type = QgsWkbTypes.flatType(source_geom_type)
 
-            if missing_fields:
-                # Dodawnie tylko tych pól, których brakuje
-                self.layer_found.dataProvider().addAttributes(missing_fields)
-                self.layer_found.updateFields()
+        self.count_not_found_as_progressed = (geom_type in (QgsWkbTypes.Point, QgsWkbTypes.MultiPoint))
 
-        self.layer_not_found.startEditing()
-        self.layer_not_found.dataProvider().addAttributes([
-            QgsField("tresc_bledu", QVariant.String),
-        ])
-        self.layer_not_found.commitChanges()
-
-        self.uldk_search = ULDKSearchPoint(
+        self.uldk_search = ULDKSearchLogger(ULDKSearchPoint(
             "dzialka",
-            ("geom_wkt", "wojewodztwo", "powiat", "gmina", "obreb","numer","teryt"))
-
-        self.uldk_search = ULDKSearchLogger(self.uldk_search)
+            ("geom_wkt", "wojewodztwo", "powiat", "gmina", "obreb","numer","teryt")))
 
         feature_iterator = self.source_layer.getSelectedFeatures() if self.selected_only else self.source_layer.getFeatures()
-        source_geom_type = self.source_layer.wkbType()
         source_crs = self.source_layer.sourceCrs()
         self.geometries = []
-        self.not_found_geometries = []
-        self.parcels_geometry = QgsGeometry.fromMultiPolygonXY([])
 
         self.transformation = None
         if source_crs != CRS_2180:
             self.transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext())
 
-        geom_type = QgsWkbTypes.flatType(source_geom_type)
-        if geom_type == QgsWkbTypes.Point or geom_type == QgsWkbTypes.MultiPoint:
-            self.count_not_found_as_progressed = True
+        for f in feature_iterator:
+            if QThread.currentThread().isInterruptionRequested():
+                break
 
-            for index, f in enumerate(feature_iterator):
-                point = f.geometry().asPoint()
+            geom = f.geometry()
+            if self.transformation:
+                geom.transform(self.transformation)
 
-                if self.transformation:
-                    point = self.transformation.transform(point)
+            geom_type = QgsWkbTypes.flatType(geom.wkbType())
 
-                f.setGeometry(QgsGeometry.fromPointXY(point))
-                self._process_feature(f, True)
-        else:
-            self.count_not_found_as_progressed = False
-
-            if self.additional_output_fields:
-                self.fields_to_add = QgsFields()
-                for field in self.additional_output_fields:
-                    self.fields_to_add.append(field)
-
-            for f in feature_iterator:
-                additional_attributes = []
-
-                if self.additional_output_fields:
-                    additional_attributes = [f.attribute(field.name()) for field in self.additional_output_fields]
-
-                points = self._feature_to_points(f, source_geom_type, additional_attributes)
-                continue_search = True
-
-                while points != []:
-                    saved_features = []
-                    for point_number, point in enumerate(points, start=1):
-                        last_point = True if point_number == len(points) else False
-                        saved_features.append(self._process_feature(point, last_feature=last_point))
-                    if any(saved_features):
-                        points = self._feature_to_points(f, source_geom_type, additional_attributes)
-                    else:
-                        points = []
-                self.__commit()
+            if geom_type in (QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon):
+                self._process_polygon_with_fishnet(f, geom)
                 self.progressed.emit(self.layer_found, self.layer_not_found, True, 0, False, True)
 
+            elif geom_type in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
+                self._process_line_with_densification(f, geom)
+                self.progressed.emit(self.layer_found, self.layer_not_found, True, 0, False, True)
+
+            elif geom_type in (QgsWkbTypes.Point, QgsWkbTypes.MultiPoint):
+                points = geom.asGeometryCollection() if geom.isMultipart() else [geom]
+                additional_attributes = [f.attribute(field.name()) for field in self.additional_output_fields]
+                for p_geom in points:
+                    self._fetch_single_parcel(p_geom.asPoint(), additional_attributes)
+
+                self.progressed.emit(self.layer_found, self.layer_not_found, True, 1, False, True)
+
         self.finished.emit(self.layer_found, self.layer_not_found)
+
+    def _process_polygon_with_fishnet(self, source_feature: QgsFeature, search_geometry: QgsGeometry):
+        step = 1.0
+        bbox = search_geometry.boundingBox()
+        additional_attributes = [source_feature.attribute(field.name()) for field in self.additional_output_fields]
+
+        curr_x = bbox.xMinimum()
+        while curr_x <= bbox.xMaximum():
+            curr_y = bbox.yMinimum()
+            while curr_y <= bbox.yMaximum():
+                if QThread.currentThread().isInterruptionRequested():
+                    return
+
+                point = QgsPointXY(curr_x, curr_y)
+
+                if search_geometry.contains(point):
+                    found_parcel_geom = self._fetch_single_parcel(point, additional_attributes)
+
+                    if found_parcel_geom:
+                        search_geometry = search_geometry.difference(found_parcel_geom.buffer(0.1, 3))
+
+                curr_y += step
+            curr_x += step
+
+        if not search_geometry.isEmpty() and search_geometry.area() > 0.5:
+            parts = search_geometry.asGeometryCollection() if search_geometry.isMultipart() else [search_geometry]
+
+            for part_geom in parts:
+                if QThread.currentThread().isInterruptionRequested() or part_geom.area() < 0.5:
+                    continue
+
+                test_point = part_geom.pointOnSurface().asPoint()
+                self._fetch_single_parcel(test_point, additional_attributes)
+
+    def _fetch_single_parcel(self, point_xy: QgsPointXY, additional_attributes: list) -> Optional[QgsGeometry]:
+        """Odpytywanie API i dodawanie działki do warstwy."""
+        try:
+            uldk_point = ULDKPoint(point_xy.x(), point_xy.y(), 2180)
+            response_row = self.uldk_search.search(uldk_point)
+
+            found_feature = uldk_response_to_qgs_feature(
+                response_row,
+                additional_attributes=additional_attributes,
+                additional_fields_def=self.additional_output_fields
+            )
+
+            geom_wkt = found_feature.geometry().asWkt()
+            if geom_wkt not in self.geometries:
+                if self.use_existing_layer:
+                    found_feature = self._map_feature_to_existing_layer(found_feature)
+
+                self.layer_found.dataProvider().addFeatures([found_feature])
+                self.geometries.append(geom_wkt)
+
+                self.progressed.emit(self.layer_found, self.layer_not_found, True, 0, True, False)
+                return found_feature.geometry()
+
+        except Exception as e:
+            geometry = QgsGeometry.fromPointXY(point_xy)
+            geometry_wkt = geometry.asWkt()
+
+            if not hasattr(self, 'not_found_geometries'):
+                self.not_found_geometries = []
+
+            if geometry_wkt not in self.not_found_geometries:
+                not_found_feature = self.__make_not_found_feature(geometry, e)
+                self.layer_not_found.dataProvider().addFeatures([not_found_feature])
+                self.not_found_geometries.append(geometry_wkt)
+
+                self.progressed.emit(self.layer_found, self.layer_not_found, False, 0, False, False)
+
+        return
+
+    def _prepare_layers_for_search(self):
+        """Metoda przygotowująca warstwy i pola"""
+        fields = PLOTS_LAYER_DEFAULT_FIELDS + self.additional_output_fields
+        if self._layer_found_is_new:
+            self.layer_found.startEditing()
+            self.layer_found.dataProvider().addAttributes(fields)
+            self.layer_found.updateFields()
+            self.layer_found.commitChanges()
+
+        self.layer_not_found.startEditing()
+        if self.layer_not_found.fields().indexFromName("tresc_bledu") == -1:
+            self.layer_not_found.dataProvider().addAttributes([QgsField("tresc_bledu", QVariant.String)])
+            self.layer_not_found.updateFields()
+        self.layer_not_found.commitChanges()
+
+    def _process_line_with_densification(self, source_feature: QgsFeature, line_geometry: QgsGeometry):
+        additional_attributes = [source_feature.attribute(field.name()) for field in self.additional_output_fields]
+
+        current_line = line_geometry.densifyByDistance(1.0)
+
+        max_attempts = 500
+        attempts = 0
+
+        while not current_line.isEmpty() and current_line.length() > 0.1 and attempts < max_attempts:
+            if QThread.currentThread().isInterruptionRequested():
+                return
+            attempts += 1
+
+            test_point_geom = current_line.interpolate(0)
+            test_point = test_point_geom.asPoint()
+
+            found_parcel_geom = self._fetch_single_parcel(test_point, additional_attributes)
+
+            if found_parcel_geom:
+                parcel_buffered = found_parcel_geom.buffer(0.1, 3)
+                current_line = current_line.difference(parcel_buffered)
+            else:
+                skip_buffer = test_point_geom.buffer(2.0, 3)
+                current_line = current_line.difference(skip_buffer)
+
+            if not current_line.isGeosValid():
+                current_line = current_line.makeValid()
+
+        self.progressed.emit(self.layer_found, self.layer_not_found, True, 1, False, True)
 
     def __make_not_found_feature(self, geometry, e):
         error_message = str(e)

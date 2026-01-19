@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>465</width>
-    <height>828</height>
+    <height>779</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -24,7 +24,7 @@
     <item>
      <widget class="QLabel" name="info_label">
       <property name="text">
-       <string>Usemaps Lite to narzędzie pozwalające na współpracę w QGIS. Dowiedz się więcej na &lt;a href=&quot;https://usemaps.com/kb/definicje/usemaps-lite/&quot;&gt;stronie Usemaps Lite&lt;/a&gt;</string>
+       <string>Usemaps Lite to narzędzie pozwalające na współpracę w QGIS. Dowiedz się więcej na &lt;a href=&quot;https://usemaps.com/usemaps-lite/&quot;&gt;stronie Usemaps Lite&lt;/a&gt;</string>
       </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>

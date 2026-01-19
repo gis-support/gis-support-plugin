@@ -32,7 +32,7 @@ TRANSLATIONS = {
         "limit exceeded": {"pl": "Wykorzystano dostępny limit na dane w Usemaps Lite. Aby kontynuować, usuń część danych lub skontaktuj się z zespołem GIS Support", "en": "The available data limit in Usemaps Lite has been reached. To continue, please delete some data or contact the GIS Support team"}
     },
     "ui": {
-        "info_label": {"pl": 'Usemaps Lite to narzędzie pozwalające na współpracę w QGIS. Dowiedz się więcej na <a href="https://usemaps.com/kb/definicje/usemaps-lite/">stronie Usemaps Lite</a>.', "en": 'Usemaps Lite is the free version of the Usemaps platform for collaborative mapping. It enables easy teamwork in QGIS. Learn more on <a href="https://usemaps.com/kb/definicje/usemaps-lite/">the Usemaps Lite website</a>.'},
+        "info_label": {"pl": '<span style="font-size:11pt;">Usemaps Lite to narzędzie pozwalające na współpracę w QGIS. Dowiedz się więcej na <a href="https://usemaps.com/usemaps-lite/">stronie Usemaps Lite</a>.', "en": '<span style="font-size:11pt;">Usemaps Lite is the free version of the Usemaps platform for collaborative mapping. It enables easy teamwork in QGIS. Learn more on <a href="https://usemaps.com/usemaps-lite/">the Usemaps Lite website</a>.'},
         "login_button": {"pl": "Zaloguj się", "en": "Login"},
         "register_button": {"pl": "Utwórz nowe konto", "en": "Create new account"},
         "user":  {"pl": "Użytkownik", "en": "User"},
@@ -130,18 +130,18 @@ class Translator:
     def _get_locale(self) -> str:
         settings = QSettings()
         locale = settings.value("locale/userLocale", "en")[:2]
-        
+
         if locale != 'pl':
             return 'en'
-        
+
         return locale
 
     def translate(self, group: str, key: str) -> str:
-        
+
         translation = self.translations[group][key][self.lang]
-        
+
         return translation
-        
+
     def translate_error(self, error_key: str, params: Dict[str, Any] = None) -> str:
 
         translated_text = self.translate("error", error_key)
@@ -149,13 +149,13 @@ class Translator:
             translated_text = translated_text.format(**params)
 
         return translated_text
-    
+
     def translate_ui(self, ui_key: str) -> str:
-        
+
         return self.translate("ui", ui_key)
-    
+
     def translate_info(self, info_key) -> str:
-        
+
         return self.translate("info", info_key)
 
 TRANSLATOR = Translator()

@@ -64,7 +64,7 @@ TRANSLATIONS = {
         "import layer title": {"pl": "Prześlij warstwę do Usemaps Lite", "en": "Upload layer to Usemaps Lite"},
         "select_file_button": {"pl": "Wybierz plik", "en": "Select file"},
         "select_file_label": {"pl": "lub przeciągnij tutaj (GeoPackage)", "en": "or drop it here (GeoPackage)"},
-        "layer_label": {"pl": "Wybierz warstwę", "en": "Select layer"},
+        "layer_label": {"pl": "Wybierz warstwę: ", "en": "Select layer: "},
         "add": {"pl": "Dodaj", "en": "Add"},
         "login title": {"pl": "Logowanie", "en": "Login"},
         "email_label": {"pl": "Email", "en": "Email"},
@@ -130,18 +130,18 @@ class Translator:
     def _get_locale(self) -> str:
         settings = QSettings()
         locale = settings.value("locale/userLocale", "en")[:2]
-        
+
         if locale != 'pl':
             return 'en'
-        
+
         return locale
 
     def translate(self, group: str, key: str) -> str:
-        
+
         translation = self.translations[group][key][self.lang]
-        
+
         return translation
-        
+
     def translate_error(self, error_key: str, params: Dict[str, Any] = None) -> str:
 
         translated_text = self.translate("error", error_key)
@@ -149,13 +149,13 @@ class Translator:
             translated_text = translated_text.format(**params)
 
         return translated_text
-    
+
     def translate_ui(self, ui_key: str) -> str:
-        
+
         return self.translate("ui", ui_key)
-    
+
     def translate_info(self, info_key) -> str:
-        
+
         return self.translate("info", info_key)
 
 TRANSLATOR = Translator()

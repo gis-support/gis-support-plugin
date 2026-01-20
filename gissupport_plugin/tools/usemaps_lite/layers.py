@@ -1,6 +1,6 @@
 import json
 from typing import Dict, List, Any
-import os 
+import os
 
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5 import QtWidgets
@@ -57,9 +57,7 @@ class Layers(BaseLogicClass, QObject):
 
         self.import_layer_dialog = ImportLayerDialog()
 
-        self.import_layer_dialog.drop_file_dropzone.file_dropped.connect(self.handle_gpkg_file_response)
-        self.import_layer_dialog.select_file_button.clicked.connect(self.browse_gpkg_file)
-        self.import_layer_dialog.add_button.clicked.connect(self.handle_selected_gpkg_layer_from_dialog)
+        self.import_layer_dialog.add_button.clicked.connect(self.handle_import_from_project)
 
         self.dockwidget.import_layer_button.clicked.connect(self.import_layer_dialog.show)
 
@@ -94,6 +92,24 @@ class Layers(BaseLogicClass, QObject):
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
 
+    def handle_import_from_project(self) -> None:
+        """
+        Pobiera wybraną warstwę z projektu QGIS, eksportuje do GPKG i wysyła.
+        """
+        layer_id = self.import_layer_dialog.layer_combobox.currentData()
+        if not layer_id:
+            return
+
+        layer = QgsProject.instance().mapLayer(layer_id)
+        if not layer:
+            return
+
+        # Zapis warstwy do tymczasowego GPKG
+        temp_gpkg_path = self.gpkg_handler.save_layer_to_temp_gpkg(layer)
+
+        if temp_gpkg_path:
+            self.upload_layer_to_api(temp_gpkg_path, is_temp_file=True)
+
     class LoadLayerToQgisTask(QgsTask):
 
         download_finished = pyqtSignal(bool)
@@ -118,13 +134,17 @@ class Layers(BaseLogicClass, QObject):
             provider = self.layer.dataProvider()
 
             fields = QgsFields()
-            features = self.data["features"]
+            features = self.data.get("features", [])
 
-            if not features:
-                self.download_finished.emit(False)
-                return False
-
-            example_props = features[0].get("properties", {})
+            example_props = {}
+            if features:
+                # Jeśli warstwa ma obiekty
+                example_props = features[0].get("properties", {})
+            else:
+                # Obsługa pustej warstwy
+                empty_response = self.parent.api.simple_get(f"org/layers/{self.layer_uuid}/empty")
+                if empty_response and not empty_response.get("error"):
+                    example_props = empty_response.get("data", {})
 
             if Qgis.QGIS_VERSION_INT >= 34000:  # QGIS 3.40+
                 fields.append(QgsField("_id", QMetaType.Int))
@@ -152,7 +172,7 @@ class Layers(BaseLogicClass, QObject):
             self.layer.updateFields()
             self.layer.setEditorWidgetSetup(self.layer.fields().indexOf('_id'), QgsEditorWidgetSetup('Hidden', {}))
 
-            for feat_data in self.data["features"]:
+            for feat_data in features:
                 feat = QgsFeature()
                 feat.setFields(fields)
 
@@ -184,7 +204,7 @@ class Layers(BaseLogicClass, QObject):
             project = QgsProject.instance()
             custom_variables = project.customVariables()
             stored_mappings = custom_variables.get("usemaps_lite/id") or ''
-            mappings = json.loads(stored_mappings) if stored_mappings else {}    
+            mappings = json.loads(stored_mappings) if stored_mappings else {}
 
             layer_qgis_id = self.layer.id()
 
@@ -205,15 +225,15 @@ class Layers(BaseLogicClass, QObject):
         """
         Usuwa ikonkę warstwy tymczasowej i wyświetla komunikat wczytania warstwy
         """
-        
+
         if not was_downloaded:
             self.show_error_message(f"{TRANSLATOR.translate_error('cannot load empty gpkg')}")
             return
-        
+
         node = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
         indicators = iface.layerTreeView().indicators(node)
         if indicators:
-            iface.layerTreeView().removeIndicator(node, indicators[0])            
+            iface.layerTreeView().removeIndicator(node, indicators[0])
 
         self.show_success_message(f"{TRANSLATOR.translate_info('load layer success')}: {self.selected_layer_name}")
 
@@ -234,7 +254,7 @@ class Layers(BaseLogicClass, QObject):
         )
 
         self.import_layer_dialog.setWindowFlags(self.import_layer_dialog.windowFlags() | Qt.WindowStaysOnTopHint)
-        self.import_layer_dialog.show()        
+        self.import_layer_dialog.show()
 
         if file_path:
             self.handle_gpkg_file_response(file_path)
@@ -354,7 +374,7 @@ class Layers(BaseLogicClass, QObject):
 
         selected_index = self.dockwidget.layers_listview.selectedIndexes()
         layer_name = selected_index[0].data()
-        
+
         reply = QMessageBox.question(
             self.dockwidget,
             TRANSLATOR.translate_ui("remove layer label"),
@@ -403,7 +423,7 @@ class Layers(BaseLogicClass, QObject):
         project = QgsProject.instance()
         custom_variables = project.customVariables()
         stored_mappings = custom_variables.get("usemaps_lite/id") or ''
-        mappings = json.loads(stored_mappings) if stored_mappings else {}    
+        mappings = json.loads(stored_mappings) if stored_mappings else {}
 
         layer_uuid = mappings.get(layer.id())
 
@@ -438,10 +458,10 @@ class Layers(BaseLogicClass, QObject):
                 self.show_error_message(f"{TRANSLATOR.translate_error('edit layer')}: {server_msg}")
             else:
                 self.show_error_message(f"{TRANSLATOR.translate_error('edit layer')}: {error_msg}")
-            return        
+            return
 
     def get_added_features(self, edit_buffer) -> List[Dict[str, Any]]:
-        """ 
+        """
         Zwraca listę z dodanymi obiektami do warstwy
         """
 
@@ -510,7 +530,7 @@ class Layers(BaseLogicClass, QObject):
 
         return features
 
-    
+
     def sanetize_data_type(self, value: Any) -> str:
         """
         Formatuje wybrane typy danych do string.
@@ -537,7 +557,7 @@ class Layers(BaseLogicClass, QObject):
         project = QgsProject.instance()
         custom_variables = project.customVariables()
         stored_mappings = custom_variables.get("usemaps_lite/id") or ''
-        mappings = json.loads(stored_mappings) if stored_mappings else {}    
+        mappings = json.loads(stored_mappings) if stored_mappings else {}
 
         for layer_qgis_id in layer_qgis_ids:
             if layer_qgis_id in mappings:
@@ -554,15 +574,15 @@ class Layers(BaseLogicClass, QObject):
         data = event_data.get("data")
         layer_uuid = data.get("uuid")
         layer_name = data.get("name")
-        
+
         row_to_remove = -1
-        
+
         for layer_row in range(self.dockwidget.layers_model.rowCount()):
             item = self.dockwidget.layers_model.item(layer_row, 0)
             if item and item.data(Qt.UserRole) == layer_uuid:
                 row_to_remove = layer_row
                 break
-        
+
         if row_to_remove != -1:
             self.dockwidget.layers_model.removeRow(row_to_remove)
 
@@ -576,7 +596,7 @@ class Layers(BaseLogicClass, QObject):
         """
 
         data = event_data.get("data")
-        
+
         layer_name = data.get("name")
         layer_uuid = data.get("uuid")
         layer_type = data.get("type")
@@ -607,7 +627,7 @@ class Layers(BaseLogicClass, QObject):
         user_email = USER_MAPPER.get_user_email(event_data.get("user"))
 
         self.refresh_layer(layer_uuid, user_email)
-        
+
         self.show_info_message(f"{user_email} {TRANSLATOR.translate_info('edited layer')} {layer_name}")
 
     def refresh_layer(self, layer_uuid: str, user_email: str) -> None:
@@ -618,7 +638,7 @@ class Layers(BaseLogicClass, QObject):
         project = QgsProject.instance()
         custom_variables = project.customVariables()
         stored_mappings = custom_variables.get("usemaps_lite/id") or ''
-        mappings = json.loads(stored_mappings) if stored_mappings else {}    
+        mappings = json.loads(stored_mappings) if stored_mappings else {}
 
         layer_qgis_id = next((layer_qgis_id for layer_qgis_id, mapped_layer_uuid in mappings.items() if mapped_layer_uuid == layer_uuid), None)
 
@@ -627,7 +647,7 @@ class Layers(BaseLogicClass, QObject):
             return
 
         self.refreshed_layer = project.mapLayer(layer_qgis_id)
-        
+
         if self.refreshed_layer.isEditable() and user_email != ORGANIZATION_METADATA.get_logged_user_email():
             # zaktualizowana warstwa jest aktualnie przez nas edytowana i to nie były nasze zmiany: nie nadpisujemy jej
             return
@@ -691,8 +711,8 @@ class Layers(BaseLogicClass, QObject):
         """
         Obsługuje przychodzące zdarzenie zmiany wykorzystanego limitu danych w organizacji.
         """
-        
+
         data = event_data.get("data")
         value = data.get("limitUsed")
-        
+
         self.dockwidget.limit_progressbar.setValue(value)

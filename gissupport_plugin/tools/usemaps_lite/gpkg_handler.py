@@ -4,6 +4,7 @@ import os
 from typing import Dict, Any
 
 from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QgsIconUtils, QgsProject
+from qgis.utils import iface
 
 
 class GpkgHandler:
@@ -24,19 +25,19 @@ class GpkgHandler:
         path = Path(gpkg_file_path)
         layer = QgsVectorLayer(str(path), "layer", "ogr")
         layers = layer.dataProvider().subLayers()
-        
+
         for sub in layers:
             name = sub.split('!!::!!')[1]
             temppath = f"{str(path)}|layername={name}"
             templayer = QgsVectorLayer(temppath, name, "ogr")
             geom_type = templayer.geometryType()
             icon = QgsIconUtils.iconForGeometryType(geom_type)
-            
+
             layer_info.append({
                 "name": name,
                 "icon": icon
             })
-            
+
         return layer_info
 
     def extract_layer_to_temp_gpkg(self, source_uri: str, selected_layer_name: str):
@@ -67,3 +68,31 @@ class GpkgHandler:
         )
 
         return temp_gpkg_path
+
+    def save_layer_to_temp_gpkg(self, layer: QgsVectorLayer) -> str:
+        if not layer or not layer.isValid():
+            return None
+
+        sanitized_name = "".join(c for c in layer.name() if c.isalnum() or c in (' ', '_', '-')).strip()
+        temp_path = os.path.join(tempfile.gettempdir(), f"{sanitized_name}.gpkg")
+
+        options = QgsVectorFileWriter.SaveVectorOptions()
+        options.driverName = "GPKG"
+        options.fileEncoding = "UTF-8"
+        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
+
+        error_code, _, _, error_msg = QgsVectorFileWriter.writeAsVectorFormatV3(
+            layer,
+            temp_path,
+            QgsProject.instance().transformContext(),
+            options
+        )
+
+        if error_code == QgsVectorFileWriter.NoError:
+            return temp_path
+        else:
+            iface.messageBar().pushCritical(
+                "Usemaps Lite",
+                f"Błąd eksportu warstwy {layer.name()}: {error_msg}"
+            )
+            return None

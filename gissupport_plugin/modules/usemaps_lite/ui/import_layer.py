@@ -4,6 +4,7 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog, QFrame
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.utils import iface
+from qgis.core import QgsProject, QgsMapLayerType, QgsIconUtils
 
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
 
@@ -47,26 +48,27 @@ class ImportLayerDialog(QDialog, FORM_CLASS):
         super(ImportLayerDialog, self).__init__(parent=iface.mainWindow())
         self.setupUi(self)
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
-        
-        layout = self.drop_file_frame.parent().layout()
-        self.drop_file_dropzone = DropFrame(self.drop_file_frame.parent())
-        self.drop_file_dropzone.setLayout(self.drop_file_frame.layout())
-
-        layout.replaceWidget(self.drop_file_frame, self.drop_file_dropzone)
-        self.drop_file_frame.deleteLater()
 
         self.cancel_button.clicked.connect(self.hide)
 
     def showEvent(self, event):
         super().showEvent(event)
-        self.layer_combobox.setVisible(False)
-        self.layer_combobox.clear()
-        self.layer_label.setVisible(False)
-        self.add_button.setVisible(False)
+        self.layer_combobox.setVisible(True)
+        self.layer_label.setVisible(True)
+        self.add_button.setVisible(True)
 
         self.setWindowTitle(TRANSLATOR.translate_ui("import layer title"))
-        self.select_file_button.setText(TRANSLATOR.translate_ui("select_file_button"))
-        self.select_file_label.setText(TRANSLATOR.translate_ui("select_file_label"))
         self.layer_label.setText(TRANSLATOR.translate_ui("layer_label"))
         self.add_button.setText(TRANSLATOR.translate_ui("add"))
         self.cancel_button.setText(TRANSLATOR.translate_ui("cancel"))
+
+        self.populate_layers()
+
+    def populate_layers(self):
+        """Wypełnia combobox'a warstwami wektorowymi z projektu"""
+        self.layer_combobox.clear()
+        layers = QgsProject.instance().mapLayers().values()
+        for layer in layers:
+            if layer.type() == QgsMapLayerType.VectorLayer:
+                icon = QgsIconUtils.iconForLayer(layer)
+                self.layer_combobox.addItem(icon, layer.name(), layer.id())

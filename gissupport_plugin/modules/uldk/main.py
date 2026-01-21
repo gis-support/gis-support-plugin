@@ -11,7 +11,6 @@ from gissupport_plugin.modules.uldk.modules.layer_import.main import LayerImport
 from gissupport_plugin.modules.uldk.modules.teryt_search.main import TerytSearch
 from gissupport_plugin.modules.uldk.modules.from_csv_file.main import FromCSVFile
 from gissupport_plugin.modules.uldk.plugin_dockwidget import wyszukiwarkaDzialekDockWidget
-from gissupport_plugin.modules.uldk.resources import resources
 from gissupport_plugin.modules.uldk.uldk.resultcollector import ResultCollectorSingle
 
 class Main(BaseModule):
@@ -22,33 +21,20 @@ class Main(BaseModule):
 
         self.canvas = iface.mapCanvas()
         self.dockwidget = wyszukiwarkaDzialekDockWidget()
-        # self.menu = self.tr(PLUGIN_NAME)
-        # self.toolbar = self.iface.addToolBar(PLUGIN_NAME)
-        # self.toolbar.setObjectName(PLUGIN_NAME)
 
-        self.teryt_search_result_collector = ResultCollectorSingle(self)
-        self.map_point_search_result_collector = self.teryt_search_result_collector
+        collector = ResultCollectorSingle(self)
 
         self.project = QgsProject.instance()
-        self.wms_layer = None
-        self.module_csv_import = None
-        self.module_teryt_search = None
-        self.module_layer_import = None
-        self.module_from_csv_file = None
-        self.module_wms_kieg_initialized = False
-        self.module_map_point_search = MapPointSearch(self, self.teryt_search_result_collector)
+        self.module_map_point_search = MapPointSearch(self, collector)
 
         self.module_teryt_search = TerytSearch(
             self,
             self.dockwidget.tab_teryt_search_layout,
-            self.teryt_search_result_collector,
-            )
-        self.module_teryt_search.lpis_bbox_found.connect(self.add_wms_lpis)
+            collector)
 
         self.module_csv_import = CSVImport(
             self,
-            self.dockwidget.tab_import_csv_layout,
-            )
+            self.dockwidget.tab_import_csv_layout)
 
         self.module_layer_import = LayerImport(
             self,
@@ -56,20 +42,11 @@ class Main(BaseModule):
 
         self.module_from_csv_file = FromCSVFile(
             self,
-            self.dockwidget.tab_from_csv_file_layout,
-            )
+            self.dockwidget.tab_from_csv_file_layout)
 
-        self.check_layer_result_collector = ResultCollectorSingle(self)
         self.module_layer_check = CheckLayer(self,
             self.dockwidget.tab_check_layer_layout,
-            self.teryt_search_result_collector)
-
-
-        self.wms_kieg_layer = None
-        self.module_wms_kieg_initialized = True
-
-        self.wms_lpis_layer = None
-        self.module_wms_lpis_initialized = True
+            collector)
 
         icon_info_path = ':/plugins/plugin/info.png'
         self.dockwidget.label_info_map_point_search.setPixmap(QPixmap(icon_info_path))
@@ -107,55 +84,6 @@ class Main(BaseModule):
     def unload(self):
         """ Wyłączenie modułu """
         iface.removeDockWidget(self.dockwidget)
-
-    def add_wms_kieg(self):
-
-        if self.wms_kieg_layer is None:
-            url = ("contextualWMSLegend=0&"
-                    "crs=EPSG:2180&"
-                    "dpiMode=7&"
-                    "featureCount=10&"
-                    "format=image/png&"
-                    "layers=dzialki&layers=numery_dzialek&"
-                    "styles=&styles=&"
-                    "version=1.1.1&"
-                    "url=http://integracja.gugik.gov.pl/cgi-bin/KrajowaIntegracjaEwidencjiGruntow")
-            layer = QgsRasterLayer(url, 'Krajowa Integracja Ewidencji Gruntów', 'wms')
-            layer.setCustomProperty("ULDK", "wms_kieg_layer")
-            self.wms_kieg_layer = layer
-            self.project.addMapLayer(self.wms_kieg_layer)
-            self.project.layerWillBeRemoved[QgsMapLayer].connect(self.before_layer_removed)
-        else:
-            self.canvas.refresh()
-
-    def add_wms_lpis(self):
-
-        if self.wms_lpis_layer is None:
-            url = (
-                'contextualWMSLegend=0&'
-                'crs=EPSG:4326&'
-                'dpiMode=7&'
-                'featureCount=10&'
-                'format=image/png&'
-                'layers=02&layers=04&layers=06&layers=10&layers=08&layers=12&layers=14&layers=16&layers=18&layers=20&layers=22&layers=24&layers=26&layers=28&layers=30&layers=32&'
-                '{}'
-                'url=http://integracja.gugik.gov.pl/cgi-bin/arimr_lpis/'
-            ).format('styles&' * 16)
-            layer = QgsRasterLayer(url, "Działki LPIS", "wms")
-            layer.setCustomProperty("ULDK", "wms_lpis_layer")
-            layer.setMinimumScale(6000)
-            layer.setScaleBasedVisibility(True)
-            self.wms_lpis_layer = layer
-            self.project.addMapLayer(self.wms_lpis_layer)
-            self.project.layerWillBeRemoved[QgsMapLayer].connect(self.before_layer_removed)
-        else:
-            self.canvas.refresh()
-
-    def before_layer_removed(self, layer):
-        if layer.customProperty("ULDK") == "wms_lpis_layer":
-            self.wms_lpis_layer = None
-        if layer.customProperty("ULDK") == "wms_kieg_layer":
-            self.wms_kieg_layer = None
 
     def toggle_map_point_search_tool(self, checked):
         """

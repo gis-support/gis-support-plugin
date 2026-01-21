@@ -2,7 +2,7 @@ import os
 from itertools import chain
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject
+from PyQt5.QtCore import Qt, QThread, QObject
 from PyQt5.QtGui import QKeySequence, QPixmap
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
@@ -10,7 +10,6 @@ from qgis.utils import iface
 from ...uldk.api import ULDKSearchTeryt, ULDKSearchParcel, ULDKSearchLogger, ULDKSearchWorker
 from ...uldk.resultcollector import ResultCollectorMultiple
 from ...uldk import validators
-from ...lpis.qgis_adapter import extract_lpis_bbox
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
@@ -41,8 +40,6 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
 
 class TerytSearch(QObject):
 
-    lpis_bbox_found = pyqtSignal()
-
     def __init__(self, parent, target_layout, result_collector):
         super().__init__()
         self.parent = parent
@@ -67,15 +64,6 @@ class TerytSearch(QObject):
         else:
             teryt = self.ui.lineedit_full_teryt.text()
             self.__search({0: {"teryt": teryt}})
-
-    def _zoom_to_lpis(self, lpis_response):
-        teryt = lpis_response["identyfikator"]
-        iface.messageBar().pushSuccess("Wtyczka GIS Support", f"Znaleziono historyczną lokację działki '{teryt}'")
-        canvas_crs = self.canvas.mapSettings().destinationCrs()
-        lpis_bbox = extract_lpis_bbox(lpis_response, canvas_crs)
-        self.canvas.setExtent(lpis_bbox)
-
-
 
     def __search(self, teryts):
         self.ui.button_search_uldk.setEnabled(False)

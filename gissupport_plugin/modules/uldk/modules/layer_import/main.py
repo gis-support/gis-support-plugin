@@ -178,6 +178,7 @@ class LayerImport:
     def __progressed(self, layer_found, layer_not_found, found, omitted_count, saved, feature_processed):
         if saved:
             self.saved_count += 1
+            self.__reload_and_add_layer(layer_found)
         if found and feature_processed:
             self.found_count += 1
         elif not found:
@@ -250,5 +251,5 @@ class LayerImport:
         layer.reload()
         if not QgsProject.instance().mapLayersByName(layer.name()):
             QgsProject.instance().addMapLayer(layer)
-            
+
         layer.triggerRepaint()

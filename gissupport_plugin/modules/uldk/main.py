@@ -11,6 +11,7 @@ from gissupport_plugin.modules.uldk.modules.layer_import.main import LayerImport
 from gissupport_plugin.modules.uldk.modules.teryt_search.main import TerytSearch
 from gissupport_plugin.modules.uldk.modules.from_csv_file.main import FromCSVFile
 from gissupport_plugin.modules.uldk.plugin_dockwidget import wyszukiwarkaDzialekDockWidget
+from gissupport_plugin.modules.uldk.resources import resources
 from gissupport_plugin.modules.uldk.uldk.resultcollector import ResultCollectorSingle
 
 class Main(BaseModule):

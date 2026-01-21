@@ -127,6 +127,8 @@ class LayerImport:
         dock = self.parent.dockwidget
         is_existing = dock.radioExistingLayer.isChecked()
 
+        self.ui.combobox_fields_select.setEnabled(not is_existing)
+
         if is_existing:
             self.ui.text_edit_target_layer_name.setEnabled(False)
 
@@ -248,3 +250,5 @@ class LayerImport:
         layer.reload()
         if not QgsProject.instance().mapLayersByName(layer.name()):
             QgsProject.instance().addMapLayer(layer)
+            
+        layer.triggerRepaint()

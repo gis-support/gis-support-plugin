@@ -36,7 +36,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="layer_combobox"/>
+      <widget class="QgsMapLayerComboBox" name="layer_combobox"/>
      </item>
     </layout>
    </item>
@@ -97,6 +97,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsMapLayerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>qgsmaplayercombobox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

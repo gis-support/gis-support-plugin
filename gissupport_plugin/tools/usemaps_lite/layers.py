@@ -96,11 +96,8 @@ class Layers(BaseLogicClass, QObject):
         """
         Pobiera wybraną warstwę z projektu QGIS, eksportuje do GPKG i wysyła.
         """
-        layer_id = self.import_layer_dialog.layer_combobox.currentData()
-        if not layer_id:
-            return
-
-        layer = QgsProject.instance().mapLayer(layer_id)
+        layer = self.import_layer_dialog.layer_combobox.currentLayer()
+        
         if not layer:
             return
 
@@ -331,38 +328,40 @@ class Layers(BaseLogicClass, QObject):
             self.parent = parent
 
         def run(self):
+            try:
+                response = self.parent.api.simple_post_file("org/upload", self.file_path_to_upload)
 
-            response = self.parent.api.simple_post_file("org/upload", self.file_path_to_upload)
+                if (error_msg := response.get("error")) is not None:
 
-            if (error_msg := response.get("error")) is not None:
+                    if (nested_error := error_msg.get("error")) is not None:
+                        if nested_error == 'Nie można zapisać' or 'Entity Too Large' in nested_error:
+                            # nginx
+                            self.show_error_message(TRANSLATOR.translate_error("gpkg too large", params={"mb_limit": ORGANIZATION_METADATA.get_mb_limit()}))
+                            return
 
-                if (nested_error := error_msg.get("error")) is not None:
-                    if nested_error == 'Nie można zapisać' or 'Entity Too Large' in nested_error:
-                        # nginx
-                        self.show_error_message(TRANSLATOR.translate_error("gpkg too large", params={"mb_limit": ORGANIZATION_METADATA.get_mb_limit()}))
+                    if (server_msg := error_msg.get("server_message")) is not None:
+                        if 'ogrinfo' in server_msg:
+                            self.show_error_message(TRANSLATOR.translate_error('ogr error'))
+
+                        elif server_msg == "limit exceeded":
+                            self.show_error_message(TRANSLATOR.translate_error('limit exceeded'))
+
+                        else:
+                            self.show_error_message(f"{TRANSLATOR.translate_error('import layer')}: {server_msg}")
+
                         return
 
-                if (server_msg := error_msg.get("server_message")) is not None:
-                    if 'ogrinfo' in server_msg:
-                        self.show_error_message(TRANSLATOR.translate_error('ogr error'))
-
-                    elif server_msg == "limit exceeded":
-                        self.show_error_message(TRANSLATOR.translate_error('limit exceeded'))
-
                     else:
-                        self.show_error_message(f"{TRANSLATOR.translate_error('import layer')}: {server_msg}")
+                        self.show_error_message(f"{TRANSLATOR.translate_error('import layer')}: {error_msg}")
+                        return
 
-                    return
+                self.upload_finished.emit(True)
+                return True
 
-                else:
-                    self.show_error_message(f"{TRANSLATOR.translate_error('import layer')}: {error_msg}")
-                    return
-
-            # Sprzątanie: usuń plik TYLKO jeśli był to plik tymczasowy
-            if self.is_temp_file and os.path.exists(self.file_path_to_upload):
-                os.remove(self.file_path_to_upload)
-            self.upload_finished.emit(True)
-            return True
+            finally:
+                # Sprzątanie: usuń plik TYLKO jeśli był to plik tymczasowy
+                if self.is_temp_file and os.path.exists(self.file_path_to_upload):
+                    os.remove(self.file_path_to_upload)
 
         def finished(self, result: bool):
             pass

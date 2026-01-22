@@ -32,7 +32,7 @@ TRANSLATIONS = {
         "limit exceeded": {"pl": "Wykorzystano dostępny limit na dane w Usemaps Lite. Aby kontynuować, usuń część danych lub skontaktuj się z zespołem GIS Support", "en": "The available data limit in Usemaps Lite has been reached. To continue, please delete some data or contact the GIS Support team"}
     },
     "ui": {
-        "info_label": {"pl": '<span style="font-size:11pt;">Usemaps Lite to narzędzie pozwalające na współpracę w QGIS. Dowiedz się więcej na <a href="https://usemaps.com/usemaps-lite/">stronie Usemaps Lite</a>.', "en": '<span style="font-size:11pt;">Usemaps Lite is the free version of the Usemaps platform for collaborative mapping. It enables easy teamwork in QGIS. Learn more on <a href="https://usemaps.com/usemaps-lite/">the Usemaps Lite website</a>.'},
+        "info_label": {"pl": '<span style="font-size:10pt;">Usemaps Lite to narzędzie pozwalające na współpracę w QGIS. Dowiedz się więcej na <a href="https://usemaps.com/usemaps-lite/">stronie Usemaps Lite</a>.', "en": '<span style="font-size:10pt;">Usemaps Lite is the free version of the Usemaps platform for collaborative mapping. It enables easy teamwork in QGIS. Learn more on <a href="https://usemaps.com/usemaps-lite/">the Usemaps Lite website</a>.'},
         "login_button": {"pl": "Zaloguj się", "en": "Login"},
         "register_button": {"pl": "Utwórz nowe konto", "en": "Create new account"},
         "user":  {"pl": "Użytkownik", "en": "User"},

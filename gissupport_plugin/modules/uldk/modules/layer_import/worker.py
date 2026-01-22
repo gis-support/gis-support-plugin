@@ -1,3 +1,4 @@
+import os
 from PyQt5.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsField, QgsGeometry,
@@ -120,6 +121,17 @@ class LayerImportWorker(QObject):
     def search(self) -> None:
         self._prepare_layers_for_search()
 
+        # Wczytanie granic Polski
+        boundary_path = os.path.join(os.path.dirname(__file__), "poland_boundary.gpkg")
+        boundary_layer = QgsVectorLayer(f"{boundary_path}|layername=poland_boundary", "boundary", "ogr")
+
+        poland_geom = QgsGeometry()
+        if boundary_layer.isValid():
+            feat_iter = boundary_layer.getFeatures()
+            boundary_feat = next(feat_iter, None)
+            if boundary_feat:
+                poland_geom = boundary_feat.geometry()
+
         source_geom_type = self.source_layer.wkbType()
         geom_type = QgsWkbTypes.flatType(source_geom_type)
 
@@ -145,6 +157,14 @@ class LayerImportWorker(QObject):
             if self.transformation:
                 geom.transform(self.transformation)
 
+            if not poland_geom.isEmpty():
+                geom = geom.intersection(poland_geom)
+
+                # Jeśli po docięciu obiekt jest poza Polską (pusta geometria), pomijamy go
+                if geom.isEmpty():
+                    self.progressed.emit(self.layer_found, self.layer_not_found, True, 0, False, True)
+                    continue
+
             geom_type = QgsWkbTypes.flatType(geom.wkbType())
 
             if geom_type in (QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon):
@@ -167,6 +187,10 @@ class LayerImportWorker(QObject):
 
     def _process_polygon_with_fishnet(self, source_feature: QgsFeature, search_geometry: QgsGeometry):
         step = 1.0
+        start_area = search_geometry.area()
+        if start_area <= 0:
+            return
+
         bbox = search_geometry.boundingBox()
         additional_attributes = [source_feature.attribute(field.name()) for field in self.additional_output_fields]
 
@@ -179,11 +203,14 @@ class LayerImportWorker(QObject):
 
                 point = QgsPointXY(curr_x, curr_y)
 
-                if search_geometry.contains(point):
+                if search_geometry.intersects(QgsGeometry.fromPointXY(point)):
                     found_parcel_geom = self._fetch_single_parcel(point, additional_attributes)
 
                     if found_parcel_geom:
                         search_geometry = search_geometry.difference(found_parcel_geom.buffer(0.1, 3))
+                    else:
+                        skip_area = QgsGeometry.fromPointXY(point).buffer(10.0, 3)
+                        search_geometry = search_geometry.difference(skip_area)
 
                 curr_y += step
             curr_x += step
@@ -306,7 +333,7 @@ class LayerImportWorker(QObject):
             return
 
         point = source_feature.geometry().asPoint()
-        if self.parcels_geometry.contains(point):
+        if self.parcels_geometry.intersects(QgsGeometry.fromPointXY(point)):
             if made_progress:
                 self.__commit()
                 self.progressed.emit(self.layer_found, self.layer_not_found, True, 1, False, made_progress)

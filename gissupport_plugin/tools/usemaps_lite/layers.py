@@ -1,6 +1,7 @@
 import json
 from typing import Dict, List, Any
 import os
+from pathlib import Path
 
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5 import QtWidgets
@@ -97,7 +98,7 @@ class Layers(BaseLogicClass, QObject):
         Pobiera wybraną warstwę z projektu QGIS, eksportuje do GPKG i wysyła.
         """
         layer = self.import_layer_dialog.layer_combobox.currentLayer()
-        
+
         if not layer:
             return
 
@@ -105,7 +106,7 @@ class Layers(BaseLogicClass, QObject):
         temp_gpkg_path = self.gpkg_handler.save_layer_to_temp_gpkg(layer)
 
         if temp_gpkg_path:
-            self.upload_layer_to_api(temp_gpkg_path, is_temp_file=True)
+            self.upload_layer_to_api(Path(temp_gpkg_path))
 
     class LoadLayerToQgisTask(QgsTask):
 
@@ -234,65 +235,7 @@ class Layers(BaseLogicClass, QObject):
 
         self.show_success_message(f"{TRANSLATOR.translate_info('load layer success')}: {self.selected_layer_name}")
 
-    def browse_gpkg_file(self) -> None:
-        """
-        Wyświetla dialog do wskazania pliku GPKG do importu.
-        """
-
-        # w momencie przeglądania plików, zdejmujemy flagi zeby dialog importu nie zakrywal file dialogu
-        self.import_layer_dialog.setWindowFlags(self.import_layer_dialog.windowFlags() & ~Qt.WindowStaysOnTopHint)
-        self.import_layer_dialog.show()
-
-        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self.dockwidget,
-            TRANSLATOR.translate_ui("select_file"),
-            "",
-            TRANSLATOR.translate_ui("file_filter")
-        )
-
-        self.import_layer_dialog.setWindowFlags(self.import_layer_dialog.windowFlags() | Qt.WindowStaysOnTopHint)
-        self.import_layer_dialog.show()
-
-        if file_path:
-            self.handle_gpkg_file_response(file_path)
-
-
-    def handle_gpkg_file_response(self, file_path) -> None:
-        """
-        Weryfikuje wybrany plik GPKG.
-        """
-
-        self.current_gpkg_file_path = file_path
-
-        layer_infos = self.gpkg_handler.get_layer_info(self.current_gpkg_file_path)
-
-        if len(layer_infos) == 1:
-            # TYLKO JEDNA WARSTWA: przekaż oryginalny plik GPKG
-            self.upload_layer_to_api(file_path, is_temp_file=False)
-            return
-        else:
-            # WIELE WARSTW: wyświetl combobox z wyborem warstw
-            for info in layer_infos:
-                self.import_layer_dialog.layer_combobox.addItem(info.get('icon'), info.get('name'))
-
-            self.import_layer_dialog.layer_combobox.setVisible(True)
-            self.import_layer_dialog.layer_label.setVisible(True)
-            self.import_layer_dialog.add_button.setVisible(True)
-
-    def handle_selected_gpkg_layer_from_dialog(self) -> None:
-        """
-        Obsługuje wgranie wybranej warstwy z GPKG.
-        """
-
-        selected_layer_name = self.import_layer_dialog.layer_combobox.currentText()
-
-        uri = f"{self.current_gpkg_file_path}|layername={selected_layer_name}"
-
-        temp_gpkg_path = self.gpkg_handler.extract_layer_to_temp_gpkg(uri, selected_layer_name)
-
-        self.upload_layer_to_api(temp_gpkg_path, is_temp_file=True)
-
-    def upload_layer_to_api(self, file_path_to_upload: str, is_temp_file: bool) -> None:
+    def upload_layer_to_api(self, file_path_to_upload: Path) -> None:
         """
         Ogólna metoda do wysyłania pliku
         (oryginalnego GPKG lub tymczasowo wyodrębnionej warstwy)
@@ -303,7 +246,7 @@ class Layers(BaseLogicClass, QObject):
         self.show_info_message(TRANSLATOR.translate_info('import layer start'))
 
 
-        self.task = self.UploadLayerTask(file_path_to_upload, is_temp_file,
+        self.task = self.UploadLayerTask(file_path_to_upload,
                                             self)
         self.task.upload_finished.connect(self.on_upload_layer_finished)
 
@@ -320,16 +263,15 @@ class Layers(BaseLogicClass, QObject):
 
         upload_finished = pyqtSignal(bool)
 
-        def __init__(self, file_path_to_upload: str, is_temp_file: str, parent):
+        def __init__(self, file_path_to_upload: Path, parent):
             description = f"{TRANSLATOR.translate_info('import layer start')}"
             self.file_path_to_upload = file_path_to_upload
-            self.is_temp_file = is_temp_file
             super().__init__(description, QgsTask.CanCancel)
             self.parent = parent
 
         def run(self):
             try:
-                response = self.parent.api.simple_post_file("org/upload", self.file_path_to_upload)
+                response = self.parent.api.simple_post_file("org/upload", str(self.file_path_to_upload))
 
                 if (error_msg := response.get("error")) is not None:
 
@@ -359,12 +301,8 @@ class Layers(BaseLogicClass, QObject):
                 return True
 
             finally:
-                # Sprzątanie: usuń plik TYLKO jeśli był to plik tymczasowy
-                if self.is_temp_file and os.path.exists(self.file_path_to_upload):
-                    os.remove(self.file_path_to_upload)
-
-        def finished(self, result: bool):
-            pass
+                if self.file_path_to_upload.exists():
+                    self.file_path_to_upload.unlink()
 
     def remove_selected_layer(self):
         """

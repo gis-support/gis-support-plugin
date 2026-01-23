@@ -5,7 +5,7 @@ from PyQt5.QtCore import QThread, QVariant
 from PyQt5.QtGui import QPixmap
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsMapLayerProxyModel,
-                       QgsProject, QgsVectorLayer, QgsField, QgsFeature, NULL)
+                       QgsProject, QgsVectorLayer, QgsField, QgsFeature, NULL, QgsMessageLog, Qgis)
 from qgis.utils import iface
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKPoint, ULDKSearchLogger, ULDKSearchPoint, ULDKSearchPointWorker
@@ -68,14 +68,15 @@ class CheckLayer:
         self.parent = parent
         self.canvas = iface.mapCanvas()
         self.ui = UI(target_layout)
-        self.__init_ui()
 
         self.result_collector = result_collector
         self.output_responses = []
         self.output_responses_features = []
         self.query_points = []
+        self.source_layer = None
 
         self.search_in_progress = False
+        self.__init_ui()
 
     def __init_ui(self):
         self.ui.button_start.clicked.connect(self.__search)
@@ -87,20 +88,48 @@ class CheckLayer:
         self.ui.label_not_found_count.setText("")
 
     def __on_layer_changed(self, layer):
-        self.ui.button_start.setEnabled(False)
+        # Rozłączenie sygnałów od poprzedniej warstwy
+        if hasattr(self, 'source_layer') and self.source_layer:
+            try:
+                self.source_layer.selectionChanged.disconnect(self.__on_layer_features_selection_changed)
+                self.source_layer.featureAdded.disconnect(self.__update_start_button_state)
+                self.source_layer.featureDeleted.disconnect(self.__update_start_button_state)
+            except (TypeError, RuntimeError):
+                QgsMessageLog.logMessage(
+                    "Wtyczka GIS Support",
+                    "Próba rozłączenia sygnałów, które nie były wcześniej podpięte.",
+                    "Wtyczka ULDK",
+                    level=Qgis.Info
+                )
+
+        self.source_layer = layer
+
         if layer:
-            if layer.dataProvider().featureCount() == 0:
-                return
-            self.source_layer = layer
             layer.selectionChanged.connect(self.__on_layer_features_selection_changed)
-            self.ui.button_start.setEnabled(True)
+            layer.featureAdded.connect(self.__update_start_button_state)
+            layer.featureDeleted.connect(self.__update_start_button_state)
+
+            self.__update_start_button_state()
+
             suggested_target_layer_name = "Wyniki sprawdzenia ULDK"
             self.ui.text_edit_target_layer_name.setText(suggested_target_layer_name)
-            self.ui.button_start.setEnabled(True)
         else:
             self.source_layer = None
+            self.ui.button_start.setEnabled(False)
             self.ui.text_edit_target_layer_name.setText("")
             self.ui.checkbox_selected_only.setText("Tylko zaznaczone obiekty [0]")
+
+    def __update_start_button_state(self, *args):
+        """Aktualizuje dostępność przycisku Start na podstawie liczby obiektów i stanu wyszukiwania."""
+        if self.search_in_progress:
+            self.ui.button_start.setEnabled(False)
+            return
+
+        if self.source_layer:
+            count = self.source_layer.featureCount()
+            self.ui.button_start.setEnabled(count > 0)
+        else:
+            self.ui.button_start.setEnabled(False)
 
     def __on_layer_features_selection_changed(self, selected_features):
         if not self.source_layer:
@@ -178,7 +207,7 @@ class CheckLayer:
 
     def __handle_finished(self):
         self.search_in_progress = False
-        self.ui.button_start.setEnabled(True)
+        self.__update_start_button_state()
         self.ui.button_cancel.setEnabled(False)
         self.ui.progress_bar.setValue(0)
 
@@ -203,7 +232,7 @@ class CheckLayer:
 
     def __handle_interrupted(self):
         self.search_in_progress = False
-        self.ui.button_start.setEnabled(True)
+        self.__update_start_button_state()
         self.ui.button_cancel.setText("Anuluj")
         self.ui.button_cancel.setEnabled(False)
         self.ui.progress_bar.setValue(0)

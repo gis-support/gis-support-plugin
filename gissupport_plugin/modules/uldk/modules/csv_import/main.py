@@ -3,7 +3,7 @@ import os
 from collections import defaultdict
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QThread, QVariant
+from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
 from qgis.gui import QgsMessageBarItem
@@ -11,6 +11,7 @@ from qgis.utils import iface
 from qgis.core import QgsField, QgsMapLayerProxyModel
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
+from gissupport_plugin.modules.uldk.uldk.resultcollector import PLOTS_LAYER_DEFAULT_FIELDS
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
@@ -63,21 +64,42 @@ class CSVImport:
 
         self.uldk_search = ULDKSearchLogger(uldk_search)
 
+        self.fields_to_add = []
+
     def start_import(self) -> None:
         self.__cleanup_before_search()
 
         teryts = {}
         self.additional_attributes = defaultdict(list)
+        self.fields_to_add = []
 
         teryt_column = self.ui.combobox_teryt_column.currentText()
-        additional_fields = [name for name in self.ui.layer_select.currentLayer().fields().names() if name != teryt_column]
+        source_layer = self.ui.layer_select.currentLayer()
 
-        for i, row in enumerate(self.ui.layer_select.currentLayer().getFeatures()):
-            teryt = row[teryt_column]
+        fields = source_layer.fields()
+        teryt_idx = fields.lookupField(teryt_column)
+
+
+        default_field_names = [f.name() for f in PLOTS_LAYER_DEFAULT_FIELDS]
+        additional_fields_names = [name for name in fields.names()
+                                   if name != teryt_column and
+                                   name not in default_field_names]
+        additional_indices = []
+        if additional_fields_names:
+            for name in additional_fields_names:
+                src_field = fields.field(name)
+                idx = fields.lookupField(name)
+                if idx != -1:
+                    additional_indices.append(idx)
+                    new_field = QgsField(src_field.name(), src_field.type(), src_field.typeName())
+                    self.fields_to_add.append(new_field)
+
+        for i, row in enumerate(source_layer.getFeatures()):
+            teryt = row.attributes()[teryt_idx]
             teryts[i] = {"teryt": teryt}
-            if additional_fields:
-                for field in additional_fields:
-                    self.additional_attributes[i].append(row[field])
+            if additional_indices:
+                for idx in additional_indices:
+                    self.additional_attributes[i].append(row.attributes()[idx])
 
         dock = self.parent.dockwidget
         if dock.radioExistingLayer.isChecked() and dock.comboLayers.currentLayer():
@@ -87,7 +109,7 @@ class CSVImport:
             layer = self.layer_factory(
                 name = layer_name,
                 custom_properties = {"ULDK": layer_name},
-                additional_fields=[QgsField(field, QVariant.String) for field in additional_fields]
+                additional_fields=self.fields_to_add
             )
 
         self.result_collector = self.result_collector_factory(self.parent, layer)
@@ -167,23 +189,31 @@ class CSVImport:
             else:
                 self.ui.text_edit_layer_name.setText("")
 
-    def __handle_found(self, uldk_response_dict):
+    def __handle_found(self, uldk_response_dict: dict[int, list]) -> None:
+        current_features = []
         for id_, uldk_response_rows in uldk_response_dict.items():
             for row in uldk_response_rows:
                 try:
-                    attributes = self.additional_attributes.get(id_)
-                    feature = self.result_collector.uldk_response_to_qgs_feature(row, attributes)
-                except self.result_collector.BadGeometryException as e:
-                    e = self.result_collector.BadGeometryException(e.feature, "Niepoprawna geometria")
-                    self._handle_bad_geometry(e.feature, e)
-                    return
+                    attributes = self.additional_attributes.get(id_, [])
+                    feature = self.result_collector.uldk_response_to_qgs_feature(
+                        row,
+                        attributes,
+                        additional_fields_defs=self.fields_to_add
+                    )
+                except self.result_collector.BadGeometryException as error:
+                    e = self.result_collector.BadGeometryException(error.feature, "Niepoprawna geometria")
+                    self._handle_bad_geometry(error.feature, e)
+                    continue
                 except self.result_collector.ResponseDataException as e:
                     e = self.result_collector.ResponseDataException("Błąd przetwarzania danych wynikowych")
                     self._handle_data_error(self.worker.teryt_ids[id_]["teryt"], e)
-                    return
+                    continue
 
-                self.features_found.append(feature)
+                current_features.append(feature)
                 self.found_count += 1
+
+        if current_features:
+            self.result_collector.update_with_features(current_features)
 
     def __handle_not_found(self, teryt, exception):
         self._add_table_errors_row(teryt, str(exception))
@@ -207,7 +237,6 @@ class CSVImport:
         self.ui.label_not_found_count.setText("Nie znaleziono: {}".format(not_found_count))
 
     def __handle_finished(self):
-        self.__collect_received_features()
         form = "obiekt"
         found_count = self.found_count
         if found_count == 1:
@@ -231,12 +260,9 @@ class CSVImport:
         self.__cleanup_after_search()
 
     def __handle_interrupted(self):
-        self.__collect_received_features()
+        iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
+            f"Wyszukiwanie przerwane. Zapisano {self.found_count} obiektów."))
         self.__cleanup_after_search()
-
-    def __collect_received_features(self):
-        if self.features_found:
-            self.result_collector.update_with_features(self.features_found)
 
     def _export_table_errors_to_csv(self):
         count = self.ui.table_errors.rowCount()

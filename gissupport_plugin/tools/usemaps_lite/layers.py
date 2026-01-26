@@ -1,6 +1,5 @@
 import json
 from typing import Dict, List, Any
-import os
 from pathlib import Path
 
 from PyQt5.QtWidgets import QMessageBox
@@ -88,7 +87,8 @@ class Layers(BaseLogicClass, QObject):
 
         self.task = self.LoadLayerToQgisTask(self.selected_layer_name, self.selected_layer_uuid,
                                             layer, self)
-        self.task.download_finished.connect(lambda was_downloaded: self.on_load_layer_finished(was_downloaded, layer))
+        self.task.download_finished.connect(lambda was_downloaded: self.on_load_layer_finished(was_downloaded, layer),
+                                            Qt.QueuedConnection)
 
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
@@ -116,108 +116,105 @@ class Layers(BaseLogicClass, QObject):
             description = f"{TRANSLATOR.translate_info('layer loading')}: {layer_name}"
             self.layer_uuid = layer_uuid
             self.layer = layer
-            super().__init__(description, QgsTask.CanCancel)
             self.parent = parent
+            self.error_msg = None
+            super().__init__(description, QgsTask.CanCancel)
 
         def run(self):
+            try:
+                response = self.parent.api.simple_get(f"org/layers/{self.layer_uuid}/geojson")
+                if (error := response.get("error")) is not None:
+                    self.error_msg = f"{TRANSLATOR.translate_error('load layer')}: {error}"
+                    return False
 
-            response = self.parent.api.simple_get(f"org/layers/{self.layer_uuid}/geojson")
+                data = response.get("data")
+                if not data:
+                    return False
 
-            if (error_msg := response.get("error")) is not None:
+                features = data.get("features", [])
+                provider = self.layer.dataProvider()
+                fields = QgsFields()
 
-                self.show_error_message(f"{TRANSLATOR.translate_error('load layer')}: {error_msg}")
-                return
-
-            self.data = response.get("data")
-            provider = self.layer.dataProvider()
-
-            fields = QgsFields()
-            features = self.data.get("features", [])
-
-            example_props = {}
-            if features:
-                # Jeśli warstwa ma obiekty
-                example_props = features[0].get("properties", {})
-            else:
-                # Obsługa pustej warstwy
-                empty_response = self.parent.api.simple_get(f"org/layers/{self.layer_uuid}/empty")
-                if empty_response and not empty_response.get("error"):
-                    example_props = empty_response.get("data", {})
-
-            if Qgis.QGIS_VERSION_INT >= 34000:  # QGIS 3.40+
-                fields.append(QgsField("_id", QMetaType.Int))
-
-                for key, value in example_props.items():
-                    if isinstance(value, int):
-                        fields.append(QgsField(key, QMetaType.Int))
-                    elif isinstance(value, float):
-                        fields.append(QgsField(key, QMetaType.Double))
-                    else:
-                        fields.append(QgsField(key, QMetaType.QString))
-
-            else:  # starsze QGIS < 3.40
-                fields.append(QgsField("_id", QVariant.Int))
-
-                for key, value in example_props.items():
-                    if isinstance(value, int):
-                        fields.append(QgsField(key, QVariant.Int))
-                    elif isinstance(value, float):
-                        fields.append(QgsField(key, QVariant.Double))
-                    else:
-                        fields.append(QgsField(key, QVariant.String))
-
-            provider.addAttributes(fields)
-            self.layer.updateFields()
-            self.layer.setEditorWidgetSetup(self.layer.fields().indexOf('_id'), QgsEditorWidgetSetup('Hidden', {}))
-
-            for feat_data in features:
-                feat = QgsFeature()
-                feat.setFields(fields)
-
-                attributes = []
-                for field in fields:
-                    if field.name() == "_id":
-                        attributes.append(feat_data.get("id"))
-                    else:
-                        attributes.append(feat_data["properties"].get(field.name()))
-                feat.setAttributes(attributes)
-
-                geojson_str = json.dumps(feat_data.get("geometry"))
-
-                if Qgis.QGIS_VERSION_INT >= 33600:
-                    # Dostępna metoda od QGIS 3.36
-                    geometry = QgsJsonUtils.geometryFromGeoJson(geojson_str)
+                # Bezpieczne pobieranie przykładu pól
+                example_props = {}
+                if features:
+                    example_props = features[0].get("properties") or {}
                 else:
-                    feats = QgsJsonUtils.stringToFeatureList(
-                        f'{{"type":"Feature","geometry":{geojson_str}}}', QgsFields())
-                    geometry = feats[0].geometry() if feats else QgsGeometry()
+                    empty_res = self.parent.api.simple_get(f"org/layers/{self.layer_uuid}/empty")
+                    if empty_res and not empty_res.get("error"):
+                        example_props = empty_res.get("data") or {}
 
-                feat.setGeometry(geometry)
+                # Definiowanie pól
+                if Qgis.QGIS_VERSION_INT >= 34000:
+                    fields.append(QgsField("_id", QMetaType.Int))
+                    for key, value in example_props.items():
+                        if isinstance(value, int):
+                            fields.append(QgsField(key, QMetaType.Int))
+                        elif isinstance(value, float):
+                            fields.append(QgsField(key, QMetaType.Double))
+                        else:
+                            fields.append(QgsField(key, QMetaType.QString))
+                else:
+                    fields.append(QgsField("_id", QVariant.Int))
+                    for key, value in example_props.items():
+                        if isinstance(value, int):
+                            fields.append(QgsField(key, QVariant.Int))
+                        elif isinstance(value, float):
+                            fields.append(QgsField(key, QVariant.Double))
+                        else:
+                            fields.append(QgsField(key, QVariant.String))
 
-                provider.addFeatures([feat])
+                provider.addAttributes(fields)
+                self.layer.updateFields()
 
-            self.layer.updateExtents()
-            self.layer.beforeCommitChanges.connect(self.parent.update_layer)
+                for feat_data in features:
+                    feat = QgsFeature(fields)
+                    props = feat_data.get("properties") or {} # Zabezpieczenie przed None
 
-            project = QgsProject.instance()
-            custom_variables = project.customVariables()
-            stored_mappings = custom_variables.get("usemaps_lite/id") or ''
-            mappings = json.loads(stored_mappings) if stored_mappings else {}
+                    attrs = []
+                    for field in fields:
+                        if field.name() == "_id":
+                            attrs.append(feat_data.get("id"))
+                        else:
+                            attrs.append(props.get(field.name()))
 
-            layer_qgis_id = self.layer.id()
+                    feat.setAttributes(attrs)
+                    geom_str = json.dumps(feat_data.get("geometry"))
 
-            if layer_qgis_id not in mappings:
-                mappings[layer_qgis_id] = self.layer_uuid
-                custom_variables["usemaps_lite/id"] = json.dumps(mappings)
-                project.setCustomVariables(custom_variables)
+                    if Qgis.QGIS_VERSION_INT >= 33600:
+                        geometry = QgsJsonUtils.geometryFromGeoJson(geom_str)
+                    else:
+                        tmp_feats = QgsJsonUtils.stringToFeatureList(f'{{"type":"Feature","geometry":{geom_str}}}', QgsFields())
+                        geometry = tmp_feats[0].geometry() if tmp_feats else QgsGeometry()
 
-            project.addMapLayer(self.layer)
-            self.download_finished.emit(True)
+                    feat.setGeometry(geometry)
+                    provider.addFeatures([feat])
 
-            return True
+                self.layer.updateExtents()
+                return True
+            except Exception as e:
+                self.error_msg = str(e)
+                return False
 
         def finished(self, result: bool):
-            pass
+            if not result:
+                if self.error_msg:
+                    self.parent.show_error_message(self.error_msg)
+                self.download_finished.emit(False)
+                return
+
+            QgsProject.instance().addMapLayer(self.layer)
+            self.layer.beforeCommitChanges.connect(self.parent.update_layer)
+            project = QgsProject.instance()
+            project_config = project.customVariables()
+
+            mappings = json.loads(project_config.get("usemaps_lite/id", "{}"))
+            mappings[self.layer.id()] = self.layer_uuid
+
+            project_config["usemaps_lite/id"] = json.dumps(mappings)
+            project.setCustomVariables(project_config)
+
+            self.download_finished.emit(True)
 
     def on_load_layer_finished(self, was_downloaded, layer):
         """
@@ -248,7 +245,7 @@ class Layers(BaseLogicClass, QObject):
 
         self.task = self.UploadLayerTask(file_path_to_upload,
                                             self)
-        self.task.upload_finished.connect(self.on_upload_layer_finished)
+        self.task.upload_finished.connect(self.on_upload_layer_finished, Qt.QueuedConnection)
 
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
@@ -268,41 +265,43 @@ class Layers(BaseLogicClass, QObject):
             self.file_path_to_upload = file_path_to_upload
             super().__init__(description, QgsTask.CanCancel)
             self.parent = parent
+            self.error_msg = None
 
         def run(self):
             try:
                 response = self.parent.api.simple_post_file("org/upload", str(self.file_path_to_upload))
 
                 if (error_msg := response.get("error")) is not None:
-
+                    # Zamiast wyświetlać błąd, zapisujemy go i kończymy (return False)
                     if (nested_error := error_msg.get("error")) is not None:
                         if nested_error == 'Nie można zapisać' or 'Entity Too Large' in nested_error:
-                            # nginx
-                            self.show_error_message(TRANSLATOR.translate_error("gpkg too large", params={"mb_limit": ORGANIZATION_METADATA.get_mb_limit()}))
-                            return
+                            self.error_msg = TRANSLATOR.translate_error("gpkg too large", params={"mb_limit": ORGANIZATION_METADATA.get_mb_limit()})
+                            return False
 
                     if (server_msg := error_msg.get("server_message")) is not None:
                         if 'ogrinfo' in server_msg:
-                            self.show_error_message(TRANSLATOR.translate_error('ogr error'))
-
+                            self.error_msg = TRANSLATOR.translate_error('ogr error')
                         elif server_msg == "limit exceeded":
-                            self.show_error_message(TRANSLATOR.translate_error('limit exceeded'))
-
+                            self.error_msg = TRANSLATOR.translate_error('limit exceeded')
                         else:
-                            self.show_error_message(f"{TRANSLATOR.translate_error('import layer')}: {server_msg}")
-
-                        return
-
+                            self.error_msg = f"{TRANSLATOR.translate_error('import layer')}: {server_msg}"
+                        return False
                     else:
-                        self.show_error_message(f"{TRANSLATOR.translate_error('import layer')}: {error_msg}")
-                        return
+                        self.error_msg = f"{TRANSLATOR.translate_error('import layer')}: {error_msg}"
+                        return False
 
                 self.upload_finished.emit(True)
                 return True
-
+            except Exception as e:
+                self.error_msg = str(e)
+                return False
             finally:
                 if self.file_path_to_upload.exists():
                     self.file_path_to_upload.unlink()
+
+        def finished(self, result: bool):
+            if not result and self.error_msg:
+                self.parent.show_error_message(self.error_msg)
 
     def remove_selected_layer(self):
         """

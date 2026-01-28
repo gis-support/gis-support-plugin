@@ -65,7 +65,7 @@ TRANSLATIONS = {
         "import layer title": {"pl": "Prześlij warstwę do Usemaps Lite", "en": "Upload layer to Usemaps Lite"},
         "select_file_button": {"pl": "Wybierz plik", "en": "Select file"},
         "select_file_label": {"pl": "lub przeciągnij tutaj (GeoPackage)", "en": "or drop it here (GeoPackage)"},
-        "layer_label": {"pl": "Wybierz warstwę", "en": "Select layer"},
+        "layer_label": {"pl": "Wybierz warstwę: ", "en": "Select layer: "},
         "add": {"pl": "Dodaj", "en": "Add"},
         "login title": {"pl": "Logowanie", "en": "Login"},
         "email_label": {"pl": "Email", "en": "Email"},

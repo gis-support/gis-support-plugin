@@ -89,7 +89,7 @@ class CheckLayer:
 
     def __on_layer_changed(self, layer):
         # Rozłączenie sygnałów od poprzedniej warstwy
-        if hasattr(self, 'source_layer') and self.source_layer:
+        if self.source_layer:
             try:
                 self.source_layer.selectionChanged.disconnect(self.__on_layer_features_selection_changed)
                 self.source_layer.featureAdded.disconnect(self.__update_start_button_state)

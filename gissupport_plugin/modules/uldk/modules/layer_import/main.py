@@ -148,7 +148,7 @@ class LayerImport:
                 self.ui.text_edit_target_layer_name.setText(suggested_name)
 
     def __on_layer_changed(self, layer: Optional[QgsVectorLayer]) -> None:
-        if hasattr(self, 'source_layer') and self.source_layer:
+        if self.source_layer:
             try:
                 self.source_layer.selectionChanged.disconnect(self.__on_layer_features_selection_changed)
                 self.source_layer.updatedFields.disconnect(self.__fill_combobox_fields_select)

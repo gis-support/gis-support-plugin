@@ -5,6 +5,7 @@ from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsProject, QgsDistanceArea, QgsFields)
 
 from ...uldk.api import ULDKSearchPoint, ULDKSearchLogger, ULDKPoint
+from typing import Optional, List, Any
 
 PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("wojewodztwo", QVariant.String),
@@ -14,16 +15,30 @@ PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("arkusz", QVariant.String),
     QgsField("nr_dzialki", QVariant.String),
     QgsField("teryt", QVariant.String),
-    QgsField("pow_m2", QVariant.String),
+    QgsField("pow_m2", QVariant.Double, prec=2),
 ]
 
 CRS_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
+
+ATTRIBUTE_MAPPING = {
+            'wojewodztwo': 'wojewodztwo',
+            'woj': 'wojewodztwo',
+            'powiat': 'powiat',
+            'gmina': 'gmina',
+            'obreb': 'obreb',
+            'arkusz': 'arkusz',
+            'nr_dzialki': 'nr_dzialki',
+            'teryt': 'teryt',
+            'pow_m2': 'pow_m2'
+        }
 
 class BadGeometryException(Exception):
     pass
 
 
-def uldk_response_to_qgs_feature(response_row, additional_attributes = []):
+def uldk_response_to_qgs_feature(response_row: str,
+                                 additional_attributes: List[Any] = [],
+                                 additional_fields_def: Optional[List[QgsField]] = None) -> QgsFeature:
     def get_sheet(teryt):
         split = teryt.split(".")
         if len(split) == 4:
@@ -35,7 +50,7 @@ def uldk_response_to_qgs_feature(response_row, additional_attributes = []):
         response_row.split("|")
 
     sheet = get_sheet(teryt)
-    
+
     ewkt = geom_wkt.split(";")
     if len(ewkt) == 2:
         geom_wkt = ewkt[1]
@@ -47,8 +62,16 @@ def uldk_response_to_qgs_feature(response_row, additional_attributes = []):
         geometry = geometry.makeValid()
         if not geometry.isGeosValid():
             raise BadGeometryException()
+    all_fields = QgsFields()
+    for field in PLOTS_LAYER_DEFAULT_FIELDS:
+        all_fields.append(field)
+
+    if additional_fields_def:
+        for field in additional_fields_def:
+            all_fields.append(field)
 
     feature = QgsFeature()
+    feature.setFields(all_fields)
     feature.setGeometry(geometry)
     attributes = [province, county, municipality, precinct, sheet, plot_id, teryt, area]
     attributes += additional_attributes
@@ -63,29 +86,59 @@ class LayerImportWorker(QObject):
     interrupted = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
     progressed = pyqtSignal(QgsVectorLayer, QgsVectorLayer, bool, int, bool, bool)
 
-    def __init__(self, source_layer, selected_only, layer_name, additional_output_fields=None):
+    def __init__(self,
+                 source_layer: QgsVectorLayer,
+                 selected_only: bool,
+                 layer_name: str,
+                 additional_output_fields: Optional[List[QgsField]] = None,
+                 layer_found: Optional[QgsVectorLayer] = None,
+                 use_existing_layer: Optional[bool] = None) -> None:
         super().__init__()
         self.source_layer = source_layer
         self.selected_only = selected_only
         self.additional_output_fields = additional_output_fields if additional_output_fields else []
+        self.use_existing_layer = use_existing_layer
 
-        self.layer_found = QgsVectorLayer(f"Polygon?crs=EPSG:{2180}", layer_name, "memory")
-        self.layer_found.setCustomProperty("ULDK", f"{layer_name} point_import_found")
+        # Warstwa dla znalezionych działek
+        if layer_found:
+            # Używamy istniejącej warstwy
+            self.layer_found = layer_found
+            self._layer_found_is_new = False
+        else:
+            # Tworzymy nową warstwę
+            self.layer_found = QgsVectorLayer(f"Polygon?crs=EPSG:{2180}", layer_name, "memory")
+            self.layer_found.setCustomProperty("ULDK", f"{layer_name} point_import_found")
+            self._layer_found_is_new = True
 
-        self.layer_not_found = QgsVectorLayer(f"Point?crs=EPSG:{2180}", f"{layer_name} (nieznalezione)", "memory")
+        self.layer_not_found = QgsVectorLayer(f"Point?crs=EPSG:{2180}",
+                                               f"{layer_name} (nieznalezione)", "memory")
         self.layer_not_found.setCustomProperty("ULDK", f"{layer_name} point_import_not_found")
 
     @pyqtSlot()
-    def search(self):
+    def search(self) -> None:
         fields = PLOTS_LAYER_DEFAULT_FIELDS + self.additional_output_fields
 
-        self.layer_found.startEditing()
-        self.layer_found.dataProvider().addAttributes(fields)
+        if self._layer_found_is_new:
+            self.layer_found.startEditing()
+            self.layer_found.dataProvider().addAttributes(fields)
+            self.layer_found.commitChanges()
+        else:
+            target_fields = self.layer_found.fields()
+            missing_fields = []
+            for field in self.additional_output_fields:
+                if target_fields.lookupField(field.name()) == -1:
+                    missing_fields.append(field)
+
+            if missing_fields:
+                # Dodawnie tylko tych pól, których brakuje
+                self.layer_found.dataProvider().addAttributes(missing_fields)
+                self.layer_found.updateFields()
 
         self.layer_not_found.startEditing()
         self.layer_not_found.dataProvider().addAttributes([
             QgsField("tresc_bledu", QVariant.String),
         ])
+        self.layer_not_found.commitChanges()
 
         self.uldk_search = ULDKSearchPoint(
             "dzialka",
@@ -159,7 +212,10 @@ class LayerImportWorker(QObject):
         self.layer_found.commitChanges()
         self.layer_not_found.commitChanges()
 
-    def _process_feature(self, source_feature, made_progress=False, last_feature=False):
+    def _process_feature(self,
+                         source_feature: QgsFeature,
+                         made_progress=False,
+                         last_feature=False) -> Optional[bool]:
 
         if QThread.currentThread().isInterruptionRequested():
             self.__commit()
@@ -184,7 +240,13 @@ class LayerImportWorker(QObject):
             for field in self.additional_output_fields:
                 additional_attributes.append(source_feature[field.name()])
             try:
-                found_feature = uldk_response_to_qgs_feature(uldk_response_row, additional_attributes)
+                found_feature = uldk_response_to_qgs_feature(
+                    uldk_response_row,
+                    additional_fields_def=self.additional_output_fields,
+                    additional_attributes=additional_attributes
+                    )
+                if self.use_existing_layer:
+                    found_feature = self._map_feature_to_existing_layer(found_feature)
                 geometry_wkt = found_feature.geometry().asWkt()
             except BadGeometryException:
                 raise BadGeometryException("Niepoprawna geometria")
@@ -263,3 +325,31 @@ class LayerImportWorker(QObject):
             features.append(feature)
 
         return features
+
+    def _map_feature_to_existing_layer(self, source_feature: QgsFeature) -> QgsFeature:
+        new_feat = QgsFeature(self.layer_found.fields())
+
+        geometry = source_feature.geometry()
+        target_crs = self.layer_found.crs()
+
+        if CRS_2180 != target_crs:
+            transform = QgsCoordinateTransform(CRS_2180, target_crs, QgsProject.instance())
+            geometry.transform(transform)
+
+        new_feat.setGeometry(geometry)
+
+        # Mapowanie atrybutów
+        target_fields = self.layer_found.fields()
+        for target_name, source_name in ATTRIBUTE_MAPPING.items():
+            field_idx = target_fields.lookupField(target_name)
+            if field_idx != -1:
+                new_feat.setAttribute(field_idx, source_feature[source_name])
+
+        # Mapowanie dodatkowych pól
+        for field in self.additional_output_fields:
+            field_name = field.name()
+            target_idx = target_fields.lookupField(field_name)
+            if target_idx != -1:
+                new_feat.setAttribute(target_idx, source_feature.attribute(field_name))
+
+        return new_feat

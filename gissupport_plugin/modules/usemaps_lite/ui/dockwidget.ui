@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>465</width>
-    <height>828</height>
+    <height>779</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -17,14 +17,14 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>GIS.Box Lite</string>
+   <string>Usemaps Lite</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QLabel" name="info_label">
       <property name="text">
-       <string>GIS.Box Lite to darmowa część platformy do współpracy na mapach GIS.Box. Pozwala na łatwą pracę zespołową w QGIS. Dowiedz się więcej na &lt;a href=&quot;https://gis-support.pl/gis-box-lite&quot;&gt;stronie GIS.Box Lite&lt;/a&gt;</string>
+       <string>Usemaps Lite to narzędzie pozwalające na współpracę w QGIS. Dowiedz się więcej na &lt;a href=&quot;https://usemaps.com/usemaps-lite/&quot;&gt;stronie Usemaps Lite&lt;/a&gt;</string>
       </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>
@@ -76,7 +76,7 @@
          </size>
         </property>
         <property name="text">
-         <string>zarejestruj się</string>
+         <string>Utwórz nowe konto</string>
         </property>
        </widget>
       </item>
@@ -214,7 +214,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Prześlij warstwę do GIS.Box Lite</string>
+             <string>Prześlij warstwę do Usemaps Lite</string>
             </property>
            </widget>
           </item>

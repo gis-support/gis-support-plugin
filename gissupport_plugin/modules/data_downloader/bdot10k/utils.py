@@ -24,7 +24,7 @@ class BDOT10kDownloadTask(QgsTask):
         self.url = f"https://opendata.geoportal.gov.pl/bdot10k/schemat2021/{self.teryt_woj}/{self.teryt_pow}_GML.zip"
         super().__init__(description, QgsTask.CanCancel)
 
-    def run(self):
+    def run(self) -> bool:
         handler = NetworkHandler()
         response = handler.get(self.url, True)
 
@@ -43,7 +43,7 @@ class BDOT10kDownloadTask(QgsTask):
                 if total_size > 0:
                     progress = (bytes_received / total_size) * 100
                     self.progress_updated.emit(progress)
-                    
+
         self.log_message(f"{full_filepath} - pobrano", level=Qgis.Info)
         self.download_finished.emit(True)
 
@@ -52,7 +52,7 @@ class BDOT10kDownloadTask(QgsTask):
     def finished(self, result: bool):
         pass
 
-    def log_message(self, message: str, level: Qgis.MessageLevel):
+    def log_message(self, message: str, level: Qgis.MessageLevel) -> None:
         QgsMessageLog.logMessage(message, self.message_group_name, level)
 
 class BDOT10kDataBoxDownloadTask(QgsTask):
@@ -61,13 +61,32 @@ class BDOT10kDataBoxDownloadTask(QgsTask):
     downloaded_details = pyqtSignal(str)
 
     def __init__(self, description: str, layer: str, geojson: QgsGeometry):
+        super().__init__(description, QgsTask.CanCancel)
         self.layer = layer
-        self.geojson = json.loads(geojson.asJson())
+
+        #Zabezpieczenie przed pustą geometrią
+        try:
+            json_str = geojson.asJson()
+            if json_str == 'null' or json_str is None:
+                # Jeśli asJson zwraca 'null', geometry jest puste/błędne
+                self.geojson = None
+            else:
+                self.geojson = json.loads(json_str)
+        except Exception:
+            self.geojson = None
+
+        if self.geojson is None:
+            QgsMessageLog.logMessage("Przekazano nieprawidłową geometrię do zadania pobierania!", "GIS Support", Qgis.Warning)
+            return
+
         self.geojson["crs"] = {"type": "name", "properties": {"name": "EPSG:2180"}}
         self.url = f"https://api-oze.gisbox.pl/layers/{self.layer}?output_srid=2180&promote_to_multi=false"
-        super().__init__(description, QgsTask.CanCancel)
 
-    def run(self):
+    def run(self) -> bool:
+        # Sprawdzamy czy init przeszedł poprawnie
+        if not hasattr(self, 'geojson') or self.geojson is None:
+            return False
+
         handler = NetworkHandler()
         response = handler.post(self.url, data=self.geojson, databox=True)
         if details := response.get("details"):
@@ -90,7 +109,7 @@ class BDOT10kClassDownloadTask(QgsTask):
         self.url = f"https://s3.gis.support/public/bdot10k/{self.bdot_class}.gpkg"
         super().__init__(description, QgsTask.CanCancel)
 
-    def run(self):
+    def run(self) -> bool:
         handler = NetworkHandler()
         handler.downloadProgress.connect( lambda value: self.setProgress(value) )
         response = handler.get(self.url, reply_only=True)
@@ -110,7 +129,7 @@ class BDOT10kClassDownloadTask(QgsTask):
 
         return True
 
-    def log_message(self, message: str, level: Qgis.MessageLevel):
+    def log_message(self, message: str, level: Qgis.MessageLevel) -> None:
         QgsMessageLog.logMessage(message, self.message_group_name, level)
 
 def get_databox_layers():
@@ -131,14 +150,14 @@ def check_geoportal_connection() -> bool:
         raise GeoportalResponseException("Brak odpowiedzi")
     return True
 
-def convert_multi_polygon_to_polygon(geometry: QgsGeometry):
+def convert_multi_polygon_to_polygon(geometry: QgsGeometry) -> QgsGeometry:
     # rubber bandy zwracają multipoligony, konieczne jest rozbicie geometrii przed wysłaniem do api oze
     geometry.convertToSingleType()
     crs_src = iface.mapCanvas().mapSettings().destinationCrs()
     geometry = transform_geometry_to_2180(geometry, crs_src)
     return geometry
 
-def transform_geometry_to_2180(geometry: QgsGeometry, crs_src: QgsCoordinateReferenceSystem):
+def transform_geometry_to_2180(geometry: QgsGeometry, crs_src: QgsCoordinateReferenceSystem) -> QgsGeometry:
     crs_dest = QgsCoordinateReferenceSystem().fromEpsgId(2180)
     transform = QgsCoordinateTransform(crs_src, crs_dest, QgsProject.instance())
     geometry.transform(transform)

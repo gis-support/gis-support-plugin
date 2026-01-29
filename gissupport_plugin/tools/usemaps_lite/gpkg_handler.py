@@ -2,6 +2,7 @@ from pathlib import Path
 import tempfile
 import os
 from typing import Dict, Any
+import itertools
 
 from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QgsIconUtils, QgsProject, QgsWkbTypes, QgsFields, QgsFeature
 from qgis.utils import iface
@@ -69,72 +70,29 @@ class GpkgHandler:
 
         return temp_gpkg_path
 
-    def save_layer_to_temp_gpkg(self, layer: QgsVectorLayer) -> str:
+    def save_layer_to_temp_gpkg(self, layer: QgsVectorLayer, is_usemaps: bool = False) -> str:
         if not layer or not layer.isValid():
-            return None
-
-        sanitized_name = "".join(c for c in layer.name() if c.isalnum() or c in (' ', '_', '-')).strip()
-        temp_path = Path(tempfile.gettempdir(), f"{sanitized_name}.gpkg")
-
-        if temp_path.exists():
-            try:
-                temp_path.unlink()
-            except Exception:
-                pass
-
-        # Tworzenie nowej warstwy tymczasowej bez pól ID
-        geom_type_name = QgsWkbTypes.displayString(layer.wkbType())
-        temp_layer = QgsVectorLayer(
-            f"{geom_type_name}?crs={layer.crs().authid()}",
-            "temp",
-            "memory"
-        )
-        temp_provider = temp_layer.dataProvider()
-
-        # Kopiowanie pól, które nie są ID
-        blacklisted = {'fid', '_id', 'id'}
-        fields_to_copy = QgsFields()
-
-        for field in layer.fields():
-            if field.name().lower() not in blacklisted:
-                fields_to_copy.append(field)
-
-        temp_provider.addAttributes(fields_to_copy)
-        temp_layer.updateFields()
-
-        # Kopiowanie obiektów bez pól ID
-        new_features = []
-        for feature in layer.getFeatures():
-            new_feat = QgsFeature(fields_to_copy)
-
-            attrs = []
-            for field in fields_to_copy:
-                attrs.append(feature[field.name()])
-
-            new_feat.setAttributes(attrs)
-            new_feat.setGeometry(feature.geometry())
-            new_features.append(new_feat)
-
-        temp_provider.addFeatures(new_features)
-
-        # Zapis czystej warstwy bez żadnych pól ID
-        options = QgsVectorFileWriter.SaveVectorOptions()
-        options.driverName = "GPKG"
-        options.fileEncoding = "UTF-8"
-        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
-
-        error_code, _, _, error_msg = QgsVectorFileWriter.writeAsVectorFormatV3(
-            temp_layer,
-            str(temp_path),
-            QgsProject.instance().transformContext(),
-            options
-        )
-
-        if error_code == QgsVectorFileWriter.NoError:
-            return temp_path
-        else:
-            iface.messageBar().pushCritical(
-                "Usemaps Lite",
-                f"Błąd eksportu warstwy {layer.name()}: {error_msg}"
-            )
             return
+
+        temp_layer = layer.clone()
+
+        idx = temp_layer.fields().indexFromName('_id')
+        if idx != -1:
+            temp_layer.startEditing()
+            temp_layer.renameAttribute(idx, 'fid' if is_usemaps else next(
+                f"_id{i}" for i in itertools.count(1)
+                if f"_id{i}" not in {f.name() for f in temp_layer.fields()}
+            ))
+            temp_layer.commitChanges()
+
+        temp_path = os.path.join(tempfile.gettempdir(), f"{''.join(c for c in layer.name() if c.isalnum() or c in (' ', '_', '-')).strip()}.gpkg")
+
+        if QgsVectorFileWriter.writeAsVectorFormatV3(
+            temp_layer,
+            temp_path,
+            QgsProject.instance().transformContext(),
+            QgsVectorFileWriter.SaveVectorOptions()
+        )[0] == QgsVectorFileWriter.NoError:
+            return temp_path
+
+        return

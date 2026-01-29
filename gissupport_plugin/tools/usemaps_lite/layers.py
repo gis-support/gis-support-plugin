@@ -103,10 +103,13 @@ class Layers(BaseLogicClass, QObject):
             return
 
         # Zapis warstwy do tymczasowego GPKG
-        temp_gpkg_path = self.gpkg_handler.save_layer_to_temp_gpkg(layer)
+        temp_path = self.gpkg_handler.save_layer_to_temp_gpkg(
+            layer,
+            layer.id() in json.loads(QgsProject.instance().customVariables().get("usemaps_lite/id", "{}"))
+        )
 
-        if temp_gpkg_path:
-            self.upload_layer_to_api(Path(temp_gpkg_path))
+        if temp_path:
+            self.upload_layer_to_api(Path(temp_path))
 
     class LoadLayerToQgisTask(QgsTask):
 

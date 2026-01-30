@@ -7,7 +7,7 @@ from qgis.core import QgsNetworkAccessManager
 from PyQt5.QtCore import QObject, QUrl, QByteArray, pyqtSignal, QTimer, QCoreApplication
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from PyQt5.QtNetwork import QHttpMultiPart, QHttpPart
-from PyQt5.QtCore import QFile, QIODevice
+from PyQt5.QtCore import QFile, QIODevice, QEventLoop
 
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
 
@@ -178,9 +178,9 @@ class ApiClient(QObject):
 
         reply = try_request(url)
 
-        app = QCoreApplication.instance()
-        while self.result is None and not reply.isFinished():
-            app.processEvents()
+        loop = QEventLoop()
+        reply.finished.connect(loop.quit)
+        loop.exec_()
 
         return self.result
 
@@ -218,9 +218,11 @@ class ApiClient(QObject):
 
         multi_part.setParent(reply)
 
-        app = QCoreApplication.instance()
-        while self.result is None and not reply.isFinished():
-            app.processEvents()
+        loop = QEventLoop()
+        reply.finished.connect(loop.quit)
+        loop.exec_()
+
+        file.close()
 
         return self.result
 
@@ -250,9 +252,9 @@ class ApiClient(QObject):
 
         reply = try_request(url, data)
 
-        app = QCoreApplication.instance()
-        while self.result is None and not reply.isFinished():
-            app.processEvents()
+        loop = QEventLoop()
+        reply.finished.connect(loop.quit)
+        loop.exec_()
 
         return self.result
 

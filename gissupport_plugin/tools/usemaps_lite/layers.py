@@ -298,11 +298,15 @@ class Layers(BaseLogicClass, QObject):
             except Exception as e:
                 self.error_msg = str(e)
                 return False
-            finally:
-                if self.file_path_to_upload.exists():
-                    self.file_path_to_upload.unlink()
 
         def finished(self, result: bool):
+            """Wywoływane po zakończeniu run(). Bezpieczne usuwanie plików"""
+            if self.file_path_to_upload.exists():
+                try:
+                    self.file_path_to_upload.unlink()
+                except PermissionError:
+                    pass
+                
             if not result and self.error_msg:
                 self.parent.show_error_message(self.error_msg)
 

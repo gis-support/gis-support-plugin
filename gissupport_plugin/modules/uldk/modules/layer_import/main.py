@@ -121,7 +121,6 @@ class LayerImport:
 
         self.ui.label_status.setText("")
         self.ui.label_found_count.setText("")
-        self.ui.label_not_found_count.setText("")
 
     def __toggle_target_input(self) -> None:
         dock = self.parent.dockwidget
@@ -173,24 +172,18 @@ class LayerImport:
         fields = self.source_layer.dataProvider().fields()
         self.ui.combobox_fields_select.addItems(map(lambda x: x.name(), fields))
 
-    def __progressed(self, layer_found, layer_not_found, found, omitted_count, saved, feature_processed):
+    def __progressed(self, layer_found, found, omitted_count, saved, feature_processed):
         if saved:
             self.saved_count += 1
-        if found and feature_processed:
-            self.found_count += 1
-        elif not found:
-            self.not_found_count += 1
+            if layer_found.dataProvider().featureCount():
+                self.__reload_and_add_layer(layer_found)
         if feature_processed:
+            self.found_count += 1
             if layer_found.dataProvider().featureCount():
                 self.__reload_and_add_layer(layer_found)
 
-            if layer_not_found.dataProvider().featureCount():
-                self.__reload_and_add_layer(layer_not_found)
-
         self.omitted_count += omitted_count
         progressed_count = self.found_count
-        if self.worker.count_not_found_as_progressed:
-            progressed_count += self.not_found_count
 
         self.ui.progress_bar.setValue(int(progressed_count/self.source_features_count*100))
         self.ui.label_status.setText(f"Postęp przetwarzania: {progressed_count} z {self.source_features_count} obiektów")
@@ -199,20 +192,17 @@ class LayerImport:
             found_message += f" (pominięto: {self.omitted_count})"
 
         self.ui.label_found_count.setText(found_message)
-        self.ui.label_not_found_count.setText(f"Brak dopasowań: {self.not_found_count}")
 
-    def __handle_finished(self, layer_found, layer_not_found):
+    def __handle_finished(self):
         self.__cleanup_after_search()
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
             f"Import z warstwy: zakończono wyszukiwanie. Zapisano {self.saved_count} {get_obiekty_form(self.saved_count)} do warstwy <b>{self.ui.text_edit_target_layer_name.text()}</b>"))
 
-    def __handle_interrupted(self, layer_found, layer_not_found):
+    def __handle_interrupted(self, layer_found):
         self.__cleanup_after_search()
 
         if layer_found.dataProvider().featureCount():
             self.__reload_and_add_layer(layer_found)
-        if layer_not_found.dataProvider().featureCount():
-            self.__reload_and_add_layer(layer_not_found)
 
     def __cleanup_after_search(self):
         self.__set_controls_enabled(True)
@@ -225,10 +215,8 @@ class LayerImport:
         self.ui.button_cancel.setEnabled(True)
         self.ui.label_status.setText("")
         self.ui.label_found_count.setText("")
-        self.ui.label_not_found_count.setText("")
 
         self.found_count = 0
-        self.not_found_count = 0
         self.omitted_count = 0
         self.saved_count = 0
 

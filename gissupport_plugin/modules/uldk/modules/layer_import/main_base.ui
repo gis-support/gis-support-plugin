@@ -243,21 +243,11 @@ wynikowej</string>
           <string>TextLabel</string>
          </property>
          <property name="indent">
-          <number>6</number>
+          <number>0</number>
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QLabel" name="label_not_found_count">
-         <property name="text">
-          <string>TextLabel</string>
-         </property>
-         <property name="indent">
-          <number>6</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
+       </layout>
      </item>
      <item row="3" column="1" colspan="2">
       <widget class="QCheckBox" name="checkbox_selected_only">

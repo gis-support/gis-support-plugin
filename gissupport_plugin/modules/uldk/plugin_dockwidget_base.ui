@@ -346,6 +346,33 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="tab_from_csv_file">
+            <attribute name="title">
+            <string>Z pliku CSV</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_csv_main">
+            <item>
+            <layout class="QVBoxLayout" name="tab_from_csv_file_layout">
+                <property name="spacing">
+                <number>2</number>
+                </property>
+            </layout>
+            </item>
+            <item>
+            <spacer name="verticalSpacer_csv">
+                <property name="orientation">
+                <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                <size>
+                <width>20</width>
+                <height>40</height>
+                </size>
+                </property>
+            </spacer>
+            </item>
+            </layout>
+            </widget>
           <widget class="QWidget" name="tab_import_layer">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">

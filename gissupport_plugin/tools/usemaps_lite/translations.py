@@ -29,10 +29,11 @@ TRANSLATIONS = {
         "ogr error": {"pl": "Wystąpił błąd serwera przy wgrywaniu warstwy.", "en": "A server error occurred while uploading the layer."},
         "reset password": {"pl": "Błąd resetowania hasła", "en": "Password reset error"},
         "api error": {"pl": "Błąd połączenia z serwerem", "en": "Server connection error"},
-        "limit exceeded": {"pl": "Wykorzystano dostępny limit na dane w Usemaps Lite. Aby kontynuować, usuń część danych lub skontaktuj się z zespołem GIS Support", "en": "The available data limit in Usemaps Lite has been reached. To continue, please delete some data or contact the GIS Support team"}
+        "limit exceeded": {"pl": "Wykorzystano dostępny limit na dane w Usemaps Lite. Aby kontynuować, usuń część danych lub skontaktuj się z zespołem GIS Support", "en": "The available data limit in Usemaps Lite has been reached. To continue, please delete some data or contact the GIS Support team"},
+        "cannot load empty gpkg": {"pl": "Nie można wczytać pustego pliku GeoPackage", "en": "Cannot load empty GeoPackage file"}
     },
     "ui": {
-        "info_label": {"pl": 'Usemaps Lite to narzędzie pozwalające na współpracę w QGIS. Dowiedz się więcej na <a href="https://usemaps.com/kb/definicje/usemaps-lite/">stronie Usemaps Lite</a>.', "en": 'Usemaps Lite is the free version of the Usemaps platform for collaborative mapping. It enables easy teamwork in QGIS. Learn more on <a href="https://usemaps.com/kb/definicje/usemaps-lite/">the Usemaps Lite website</a>.'},
+        "info_label": {"pl": '<span style="font-size:10pt;">Usemaps Lite to narzędzie pozwalające na współpracę w QGIS. Dowiedz się więcej na <a href="https://usemaps.com/usemaps-lite/">stronie Usemaps Lite</a>.', "en": '<span style="font-size:10pt;">Usemaps Lite is the free version of the Usemaps platform for collaborative mapping. It enables easy teamwork in QGIS. Learn more on <a href="https://usemaps.com/usemaps-lite/">the Usemaps Lite website</a>.'},
         "login_button": {"pl": "Zaloguj się", "en": "Login"},
         "register_button": {"pl": "Utwórz nowe konto", "en": "Create new account"},
         "user":  {"pl": "Użytkownik", "en": "User"},
@@ -64,7 +65,7 @@ TRANSLATIONS = {
         "import layer title": {"pl": "Prześlij warstwę do Usemaps Lite", "en": "Upload layer to Usemaps Lite"},
         "select_file_button": {"pl": "Wybierz plik", "en": "Select file"},
         "select_file_label": {"pl": "lub przeciągnij tutaj (GeoPackage)", "en": "or drop it here (GeoPackage)"},
-        "layer_label": {"pl": "Wybierz warstwę", "en": "Select layer"},
+        "layer_label": {"pl": "Wybierz warstwę: ", "en": "Select layer: "},
         "add": {"pl": "Dodaj", "en": "Add"},
         "login title": {"pl": "Logowanie", "en": "Login"},
         "email_label": {"pl": "Email", "en": "Email"},
@@ -130,18 +131,18 @@ class Translator:
     def _get_locale(self) -> str:
         settings = QSettings()
         locale = settings.value("locale/userLocale", "en")[:2]
-        
+
         if locale != 'pl':
             return 'en'
-        
+
         return locale
 
     def translate(self, group: str, key: str) -> str:
-        
+
         translation = self.translations[group][key][self.lang]
-        
+
         return translation
-        
+
     def translate_error(self, error_key: str, params: Dict[str, Any] = None) -> str:
 
         translated_text = self.translate("error", error_key)
@@ -149,13 +150,13 @@ class Translator:
             translated_text = translated_text.format(**params)
 
         return translated_text
-    
+
     def translate_ui(self, ui_key: str) -> str:
-        
+
         return self.translate("ui", ui_key)
-    
+
     def translate_info(self, info_key) -> str:
-        
+
         return self.translate("info", info_key)
 
 TRANSLATOR = Translator()

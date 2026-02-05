@@ -44,8 +44,10 @@ class Auth(BaseLogicClass):
         self.register_dialog.reg_register_button.clicked.connect(self.register)
 
         self.verify_org_dialog.verify_button.clicked.connect(self.verify_org)
+        self.verify_org_dialog.cancel_button.clicked.connect(self.register_dialog.show) #Anulowanie weryfikacji, przywraca okno rejestracji
 
         self.forgot_password_dialog.reset_button.clicked.connect(self.reset_password)
+        self.forgot_password_dialog.cancel_button.clicked.connect(self.login_dialog.show) #Anulowanie resetu hasla, przywraca okno loginu
 
         self.dockwidget.logout_button.clicked.connect(self.logout)
 
@@ -56,7 +58,6 @@ class Auth(BaseLogicClass):
         """
         Wykonuje request logowania do Usemaps Lite.
         """
-
         self.username = self.login_dialog.log_email_line.text()
         self.pwd = self.login_dialog.log_pwd_line.text()
 
@@ -72,7 +73,7 @@ class Auth(BaseLogicClass):
         """
 
         if (error_msg := response.get("error")) is not None:
-            
+
             server_message = error_msg.get("server_message")
             if server_message == 'invalid credentials':
                 self.show_error_message(TRANSLATOR.translate_error('invalid credentials'))
@@ -88,7 +89,7 @@ class Auth(BaseLogicClass):
 
         data = response.get("data")
         self.api.auth_token = data.get('token')
-        
+
         ORGANIZATION_METADATA.set_logged_user_email(self.username)
         self.api.get("org/metadata", callback=self.handle_metadata_response)
         self.show_success_message(TRANSLATOR.translate_info("logged in"))
@@ -119,7 +120,7 @@ class Auth(BaseLogicClass):
             limits_info = data.get('limits')
 
             num_of_users_limit = limits_info.get('limitUsers')
-            
+
             if len(org_members_info) == num_of_users_limit:
                 self.dockwidget.invite_user_button.setEnabled(False)
 
@@ -146,8 +147,8 @@ class Auth(BaseLogicClass):
 
                 online_icon_path = ":images/themes/default/repositoryDisabled.svg"
                 if is_online:
-                    online_icon_path = ":images/themes/default/repositoryConnected.svg"                   
-                
+                    online_icon_path = ":images/themes/default/repositoryConnected.svg"
+
                 online_icon = QIcon(online_icon_path)
                 online_icon_item = QStandardItem()
                 online_icon_item.setIcon(online_icon)
@@ -179,10 +180,10 @@ class Auth(BaseLogicClass):
                 ]
 
                 self.dockwidget.layers_model.appendRow(row)
-            
+
             # wypełnianie listy z eventami organizacji
             events = data.get("events")
-                
+
             for event_item in events:
                 event_name_str = event_item.get("name")
                 event_type = Event(event_name_str)
@@ -226,18 +227,18 @@ class Auth(BaseLogicClass):
                     self.show_error_message(TRANSLATOR.translate_error("register user exists"))
 
                 if 'validation errors' in server_message:
-                    
+
                     if "'Email'" in server_message:
                         self.show_error_message(TRANSLATOR.translate_error("email validation"))
 
                     elif "'Password" in server_message:
-                        
+
                         if 'failed validation: max' in server_message:
                             self.show_error_message(TRANSLATOR.translate_error("password too long"))
-                        
+
                         elif 'failed validation: min' in server_message:
                             self.show_error_message(TRANSLATOR.translate_error("password too short"))
-                        
+
                         elif 'failed validation: eqfield' in server_message:
                             self.show_error_message(TRANSLATOR.translate_error("password not equal"))
 
@@ -253,8 +254,9 @@ class Auth(BaseLogicClass):
         else:
             data = response.get("data")
             self.registered_user_uuid = data.get('uuid')
+            self.register_dialog.hide() #Ukrycie okna rejestracji
             self.verify_org_dialog.show()
-    
+
     def verify_org(self) -> None:
         """
         Wykonuje request weryfikacji rejestracji w Usemaps Lite.
@@ -289,7 +291,7 @@ class Auth(BaseLogicClass):
         """
         Wylogowuje aktualnie zalogowanego usera Usemaps Lite.
         """
-        
+
         self.dockwidget.events_tab.setEnabled(False)
         self.dockwidget.layers_tab.setEnabled(False)
         self.dockwidget.users_tab.setEnabled(False)
@@ -305,7 +307,7 @@ class Auth(BaseLogicClass):
         self.dockwidget.login_button.setVisible(True)
         self.dockwidget.register_button.setVisible(True)
         self.dockwidget.logout_button.setVisible(False)
-        
+
         self.dockwidget.remove_user_button.setEnabled(False)
         self.dockwidget.remove_layer_button.setEnabled(False)
 
@@ -315,13 +317,14 @@ class Auth(BaseLogicClass):
         self.dockwidget.comment_lineedit.clear()
 
     def show_forgot_password_dialog(self) -> None:
-        
+
         typed_email = self.login_dialog.log_email_line.text()
         self.forgot_password_dialog.reset_email_line.setText(typed_email)
+        self.login_dialog.hide() #Ukrycie okna logowania, aby nie zasłaniało
         self.forgot_password_dialog.show()
-    
+
     def reset_password(self):
-        
+
         email = self.forgot_password_dialog.reset_email_line.text()
 
         self.api.post(
@@ -329,17 +332,16 @@ class Auth(BaseLogicClass):
             {"email": email},
             callback=self.handle_reset_password_response
         )
-    
+
     def handle_reset_password_response(self, response: Dict[str, Any]) -> None:
 
         if (error_msg := response.get("error")) is not None:
-            
+
             self.show_error_message(TRANSLATOR.translate_error("reset password"))
-            
+
         else:
-            
+
             self.forgot_password_dialog.hide()
             self.login_dialog.hide()
-            
+
             self.show_success_message(TRANSLATOR.translate_info("reset email send"))
-    

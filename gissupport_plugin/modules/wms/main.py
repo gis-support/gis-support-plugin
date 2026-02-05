@@ -21,7 +21,7 @@ class Main(BaseModule):
 
     def __init__(self, parent):
         super().__init__(parent)
-        
+
         self.canvas = iface.mapCanvas()
         self.dlg = BazaWMSDialog()
         self.curServiceData = None
@@ -71,23 +71,23 @@ class Main(BaseModule):
         self.dlg.layerTypeCb.currentIndexChanged.connect(self.changeLayerTypeCb)
 
         self.updateServicesList()
-        
+
         #Zarejestrowanie we wtyczce
 
         self.dlg.lblInfo.setPixmap(QPixmap(':/plugins/plugin/info.png'))
         self.dlg.lblInfo.setToolTip((
             "Brakuje adresu WMS, którego szukasz?\n"
             "Napisz do nas: info@gis-support.pl"))
-        
+
         self.parent.add_action(
             ":/plugins/gissupport_plugin/wms/wms.svg",
             self.module_name,
             callback = self.dlg.show,
             checkable = False,
             parent = iface.mainWindow(),
-            add_to_topmenu=True 
+            add_to_topmenu=True
         )
-    
+
     def unload(self):
         """ Wyłączenie modułu """
         del self.dlg
@@ -172,47 +172,53 @@ class Main(BaseModule):
 
     def addToMap(self):
         selectedRows = [i.row() for i in self.dlg.layersTableWidget.selectionModel().selectedRows()]
+        if not selectedRows:
+            return
+
         if self.layerType == 'WMS':
-            for layerId in selectedRows:
-                url = (
+            wmsLayer = QgsRasterLayer(
+                (
                     "contextualWMSLegend=0&"
                     "crs={}&"
                     "dpiMode=7&"
                     "featureCount=10&"
                     "format={}&"
-                    "layers={}&"
-                    "styles=&"
-                    "url={}".format(
+                    "tilePixelRatio=0&"
+                    "url={}&"
+                    "{}&"
+                    "{}".format(
                         self.dlg.crsCb.currentText(),
                         self.dlg.formatCb.currentText(),
-                        urllib.parse.quote(self.dlg.layersTableWidget.item(layerId, 1).text(), '/:'),
-                        self.curServiceData['url']
+                        self.curServiceData['url'],
+                        "&".join("layers={}".format(self.dlg.layersTableWidget.item(r, 1).text()) for r in selectedRows),
+                        "&".join("styles=" for _ in selectedRows)
                     )
+                ),
+                " / ".join(self.dlg.layersTableWidget.item(r, 2).text() for r in selectedRows),
+                'wms'
+            )
+
+            if wmsLayer.isValid():
+                QgsProject.instance().addMapLayer(wmsLayer)
+            else:
+                iface.messageBar().pushMessage(
+                    'Baza krajowych usług WMS',
+                    'Nie udało się wczytać złożonej warstwy: {}'.format(wmsLayer.error().message()),
+                    level=Qgis.Warning
                 )
-
-                wmsLayer = QgsRasterLayer(url, self.dlg.layersTableWidget.item(layerId, 2).text(), 'wms')
-
-                if wmsLayer.isValid():
-                    QgsProject.instance().addMapLayer(wmsLayer)
-                else:
-                    iface.messageBar().pushMessage(
-                        'Baza krajowych usług WMS',
-                        'Nie udało się wczytać warstwy %s' % self.dlg.layersTableWidget.item(layerId, 2).text(),
-                        level=Qgis.Warning
-                    )
 
         elif self.layerType == 'WFS':
             for layerId in selectedRows:
                 url = QgsDataSourceUri(
                     (
                     """
-                        pagingEnabled='disabled' 
+                        pagingEnabled='disabled'
                         srsname='{}'
-                        typename='{}' 
-                        url='{}' 
+                        typename='{}'
+                        url='{}'
                         version='2.0.0'
                         preferCoordinatesForWfsT11='false'
-                        restrictToRequestBBOX='1' 
+                        restrictToRequestBBOX='1'
                     """
                     ).format(
                         self.dlg.crsCb.currentText(),
@@ -237,7 +243,7 @@ class Main(BaseModule):
         for index, crs in enumerate(crses, start=1):
             if self.dlg.crsCb.findText(crs) == -1:
                 self.dlg.crsCb.insertItem(index, crs)
-        
+
         # Ustawiamy domyślny układ, jeśli jest na liście
         for crs in (QgsProject.instance().crs().authid(), 'EPSG:2180'):
             if (cid := self.dlg.crsCb.findText(crs)) != -1:

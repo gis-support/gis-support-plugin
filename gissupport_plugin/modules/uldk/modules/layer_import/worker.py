@@ -122,17 +122,6 @@ class LayerImportWorker(QObject):
             self.layer_found.startEditing()
             self.layer_found.dataProvider().addAttributes(fields)
             self.layer_found.commitChanges()
-        else:
-            target_fields = self.layer_found.fields()
-            missing_fields = []
-            for field in self.additional_output_fields:
-                if target_fields.lookupField(field.name()) == -1:
-                    missing_fields.append(field)
-
-            if missing_fields:
-                # Dodawnie tylko tych pól, których brakuje
-                self.layer_found.dataProvider().addAttributes(missing_fields)
-                self.layer_found.updateFields()
 
         self.layer_not_found.startEditing()
         self.layer_not_found.dataProvider().addAttributes([

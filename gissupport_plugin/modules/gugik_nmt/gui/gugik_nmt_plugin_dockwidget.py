@@ -22,9 +22,13 @@
  ***************************************************************************/
 """
 
-import os, csv
+import csv
+import os
+
 from qgis.core import Qgis
+
 from gissupport_plugin.tools.requests import NetworkHandler
+
 #Nie każdy instalator QGIS ma wbudowanego matplotliba, a bibliotek zewnętrznych nie można instalować
 # dla wtyczek w oficjalnym repo
 # https://github.com/gis-support/gis-support-plugin/issues/4
@@ -34,13 +38,24 @@ try:
 except ImportError:
     matplotlib_library = False
 
-from qgis.PyQt import QtGui, uic
-from qgis.PyQt.QtWidgets import QDockWidget, QInputDialog, QFileDialog
-from qgis.PyQt.QtCore import pyqtSignal, QVariant
+from qgis.core import (
+    Qgis,
+    QgsApplication,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsExpression,
+    QgsFeature,
+    QgsFeatureRequest,
+    QgsField,
+    QgsMapLayerProxyModel,
+    QgsProject,
+    QgsTask,
+    QgsVectorLayer,
+)
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QVariant, pyqtSignal
 from qgis.PyQt.QtGui import QIcon
-from qgis.core import (QgsMapLayerProxyModel, QgsField, Qgis, QgsTask, QgsApplication,
-    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsVectorLayer,
-    QgsFeature, QgsWkbTypes, QgsGeometry, QgsExpression, QgsFeatureRequest)
+from qgis.PyQt.QtWidgets import QDockWidget, QFileDialog, QInputDialog
 from qgis.utils import iface
 
 from ..tools import IdentifyTool, ProfileTool

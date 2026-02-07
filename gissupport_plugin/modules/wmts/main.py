@@ -1,15 +1,15 @@
-from gissupport_plugin.modules.base import BaseModule
-from qgis.utils import iface
-from qgis.PyQt.QtGui import QPixmap
-from qgis.PyQt.QtCore import QSettings
-from qgis.core import Qgis, QgsRasterLayer, QgsProject
-from os import path
 import json
+from os import path
 
-from PyQt5 import QtWidgets
-from PyQt5.Qt import QStandardItemModel, QStandardItem
+from qgis.core import Qgis, QgsProject, QgsRasterLayer
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtGui import QPixmap, QStandardItem, QStandardItemModel
+from qgis.utils import iface
 
+from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.wmts.wmts_dockwidget import WMTSDockWidget
+
 
 class WMTSCacheModule(BaseModule):
     module_name = "Narzędzie do szybkiego wczytywania WMTS"

@@ -1,9 +1,20 @@
-from PyQt5.QtCore import QVariant
-from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-                       QgsCoordinateTransformContext, QgsFeature, QgsField,
-                       QgsFields, QgsGeometry, QgsProject, QgsVectorLayer, Qgis, QgsRectangle)
+from typing import List, Optional
+
+from qgis.core import (
+    Qgis,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsCoordinateTransformContext,
+    QgsFeature,
+    QgsField,
+    QgsFields,
+    QgsGeometry,
+    QgsProject,
+    QgsRectangle,
+    QgsVectorLayer,
+)
+from qgis.PyQt.QtCore import QVariant
 from qgis.utils import iface
-from typing import Optional, List
 
 PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("wojewodztwo", QVariant.String),

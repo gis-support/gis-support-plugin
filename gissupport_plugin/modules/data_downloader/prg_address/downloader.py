@@ -1,15 +1,28 @@
-import json
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFileDialog
+from qgis.core import (
+    Qgis,
+    QgsApplication,
+    QgsCoordinateReferenceSystem,
+    QgsGeometry,
+    QgsProject,
+    QgsVectorLayer,
+    QgsWkbTypes,
+)
 from qgis.gui import QgsMessageBarItem
-from qgis.core import QgsApplication, Qgis, QgsGeometry, QgsCoordinateReferenceSystem, QgsVectorLayer, QgsWkbTypes, QgsProject
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import QFileDialog
 from qgis.utils import iface
 
-from gissupport_plugin.modules.data_downloader.prg_address.prg_address_dockwidget import PRGAddressDockWidget
-from gissupport_plugin.modules.data_downloader.prg_address.utils import PRGAddressDownloadTask, \
-    transform_geometry_to_2180, convert_multi_polygon_to_polygon, PRGAddressDataBoxDownloadTask
-from gissupport_plugin.tools.teryt import Wojewodztwa, POWIATY
+from gissupport_plugin.modules.data_downloader.prg_address.prg_address_dockwidget import (
+    PRGAddressDockWidget,
+)
+from gissupport_plugin.modules.data_downloader.prg_address.utils import (
+    PRGAddressDataBoxDownloadTask,
+    PRGAddressDownloadTask,
+    convert_multi_polygon_to_polygon,
+    transform_geometry_to_2180,
+)
+from gissupport_plugin.tools.teryt import POWIATY, Wojewodztwa
 
 
 class PRGAddressDownloader:

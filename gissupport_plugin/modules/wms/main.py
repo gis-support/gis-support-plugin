@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 
 #from .resources import *
-from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
-from qgis.PyQt.QtGui import QPixmap
-from qgis.PyQt.QtCore import Qt
-from qgis.core import QgsProject, QgsRasterLayer, Qgis, QgsVectorLayer, QgsDataSourceUri
-from qgis.utils import iface
 import json
-from os import path
 import urllib
+from os import path
 
-from gissupport_plugin.modules.wms.baza_wms_dialog import BazaWMSDialog
+from qgis.core import Qgis, QgsDataSourceUri, QgsProject, QgsRasterLayer, QgsVectorLayer
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtWidgets import QHeaderView, QTableWidgetItem
+from qgis.utils import iface
+
 from gissupport_plugin.modules.base import BaseModule
-from gissupport_plugin.modules.wms.models import ServicesTableModel, ServicesProxyModel
-from gissupport_plugin.tools.capabilities import CapabilitiesConnectionException, get_capabilities
+from gissupport_plugin.modules.wms.baza_wms_dialog import BazaWMSDialog
+from gissupport_plugin.modules.wms.models import ServicesProxyModel, ServicesTableModel
+from gissupport_plugin.tools.capabilities import (
+    CapabilitiesConnectionException,
+    get_capabilities,
+)
 
 
 class Main(BaseModule):

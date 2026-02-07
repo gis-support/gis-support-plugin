@@ -1,10 +1,15 @@
-import json
 import os
 from json import JSONDecodeError
 
-from PyQt5.QtCore import pyqtSignal, QVariant
-from qgis.core import (QgsPointXY, QgsGeometry, QgsFeature, QgsProject, QgsJsonUtils,
-                       QgsCoordinateReferenceSystem, QgsVectorLayer, QgsField, QgsTask)
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsFeature,
+    QgsField,
+    QgsProject,
+    QgsTask,
+    QgsVectorLayer,
+)
+from qgis.PyQt.QtCore import QVariant, pyqtSignal
 
 from gissupport_plugin.modules.gis_box.layers.geojson import geojson2geom
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION

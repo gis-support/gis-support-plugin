@@ -1,8 +1,12 @@
 # coding: utf-8
-from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem,
-                       QgsProject, QgsMapLayer)
-from qgis.utils import iface
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsMapLayer,
+    QgsProject,
+)
 from qgis.PyQt.QtCore import QObject
+from qgis.utils import iface
 
 from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.tools.project_variables import save_layer_mapping

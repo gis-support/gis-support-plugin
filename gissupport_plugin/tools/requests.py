@@ -1,12 +1,10 @@
 import json
 from typing import Union
+from urllib.parse import urlencode
 
 from qgis.core import QgsNetworkAccessManager
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
-from PyQt5.QtCore import QCoreApplication, QUrl
-from qgis.PyQt.QtCore import QObject, pyqtSignal
-
-from urllib.parse import urlencode
+from qgis.PyQt.QtCore import QCoreApplication, QObject, QUrl, pyqtSignal
+from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
 
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 

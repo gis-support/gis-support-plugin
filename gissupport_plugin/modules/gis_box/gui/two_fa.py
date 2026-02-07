@@ -2,12 +2,11 @@
 import json
 import os
 
-from PyQt5.QtCore import pyqtSignal, QSettings, QUrl
-from PyQt5.QtNetwork import QNetworkRequest
+from qgis.core import Qgis, QgsNetworkAccessManager
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QSettings, QUrl
+from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.PyQt.QtWidgets import QDialog
-from qgis.core import QgsNetworkAccessManager
-from qgis.core import Qgis
 from qgis.utils import iface
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(

@@ -5,9 +5,10 @@
 # See https://www.python.org/psf/license for licensing details.
 """Defused xml.dom.minidom
 """
-from __future__ import print_function, absolute_import
+from __future__ import absolute_import, print_function
 
 from xml.dom.minidom import _do_pulldom_parse
+
 from . import expatbuilder as _expatbuilder
 from . import pulldom as _pulldom
 

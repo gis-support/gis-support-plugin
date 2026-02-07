@@ -1,13 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.core import (
+    Qgis,
+    QgsApplication,
+    QgsCoordinateTransformContext,
+    QgsDistanceArea,
+    QgsGeometry,
+    QgsProject,
+    QgsTask,
+    QgsUnitTypes,
+    QgsWkbTypes,
+)
+from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QColor, QCursor, QPixmap
 from qgis.PyQt.QtWidgets import QInputDialog, QTableWidgetItem
-from qgis.PyQt.QtGui import QCursor, QPixmap, QColor
-from qgis.core import (QgsMapLayer, QgsWkbTypes, QgsGeometry, QgsProject, Qgis, QgsDistanceArea,
-    QgsCoordinateTransformContext, QgsUnitTypes, QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-    QgsTask, QgsApplication)
-from qgis.gui import QgsRubberBand, QgsMapTool
 from qgis.utils import iface
+
 
 class IdentifyTool(QgsMapTool):
     """ Narzędzie identyfikacji wysokości """

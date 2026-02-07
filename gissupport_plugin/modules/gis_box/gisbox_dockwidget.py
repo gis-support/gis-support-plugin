@@ -1,20 +1,17 @@
 import os
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal, QEvent
-from PyQt5.QtGui import QIcon, QDropEvent, QDragEnterEvent
-
-from PyQt5.Qt import QStandardItemModel, QStandardItem, QSortFilterProxyModel
-from qgis.utils import iface
-from qgis.PyQt.QtCore import Qt
 from qgis.core import QgsProject
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.Qt import QSortFilterProxyModel, QStandardItem, QStandardItemModel
+from qgis.PyQt.QtCore import QEvent, Qt, pyqtSignal
+from qgis.PyQt.QtGui import QDragEnterEvent, QDropEvent, QIcon
+from qgis.utils import iface
 
-from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
-from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.modules.gis_box.gui.login_settings import LoginSettingsDialog
+from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.tools.project_variables import get_layer_mappings
-
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'gisbox_dockwidget.ui'))

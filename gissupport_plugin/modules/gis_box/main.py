@@ -1,16 +1,21 @@
+from qgis.core import QgsMapLayer, QgsProject
+from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtGui import QIcon
-from qgis.utils import iface
-from qgis.core import QgsProject, QgsMapLayer
-from PyQt5 import QtWidgets
 
 from gissupport_plugin.modules.base import BaseModule
-from gissupport_plugin.modules.gis_box.layers.gisbox_datasource import GisboxDataSource
-from gissupport_plugin.modules.gis_box.modules.auto_digitization.gui.widget import AutoDigitizationWidget
-from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
-from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
-from gissupport_plugin.tools.logger import Logger
 from gissupport_plugin.modules.gis_box.gisbox_dockwidget import GISBoxDockWidget
-from gissupport_plugin.tools.project_variables import get_layer_mapping, migrate_layer_gisbox_id_variable, remove_layer_mapping
+from gissupport_plugin.modules.gis_box.layers.gisbox_datasource import GisboxDataSource
+from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
+from gissupport_plugin.modules.gis_box.modules.auto_digitization.gui.widget import (
+    AutoDigitizationWidget,
+)
+from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+from gissupport_plugin.tools.logger import Logger
+from gissupport_plugin.tools.project_variables import (
+    get_layer_mapping,
+    migrate_layer_gisbox_id_variable,
+    remove_layer_mapping,
+)
 
 
 class GISBox(BaseModule, Logger):

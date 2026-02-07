@@ -1,6 +1,7 @@
+from qgis.PyQt.QtCore import Qt
+
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
 
-from qgis.PyQt.QtCore import Qt
 
 class UserMapper:
     """

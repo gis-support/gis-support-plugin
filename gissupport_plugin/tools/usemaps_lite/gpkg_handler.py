@@ -1,11 +1,15 @@
-from pathlib import Path
-import tempfile
-import os
-from typing import Dict, Any
 import itertools
+import os
+import tempfile
+from pathlib import Path
+from typing import Any, Dict
 
-from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QgsIconUtils, QgsProject, QgsWkbTypes, QgsFields, QgsFeature
-from qgis.utils import iface
+from qgis.core import (
+    QgsIconUtils,
+    QgsProject,
+    QgsVectorFileWriter,
+    QgsVectorLayer,
+)
 
 
 class GpkgHandler:

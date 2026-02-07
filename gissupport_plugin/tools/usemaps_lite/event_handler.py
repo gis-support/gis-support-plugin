@@ -2,13 +2,14 @@ from datetime import datetime
 from enum import Enum
 from typing import Tuple
 
-from PyQt5.QtCore import QObject, Qt
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor
+from qgis.PyQt.QtCore import QObject, Qt
+from qgis.PyQt.QtGui import QColor, QStandardItem, QStandardItemModel
 
-from gissupport_plugin.tools.usemaps_lite.requests import API_CLIENT
-from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
 from gissupport_plugin.tools.usemaps_lite.metadata import ORGANIZATION_METADATA
+from gissupport_plugin.tools.usemaps_lite.requests import API_CLIENT
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
+
 
 class Event(Enum):
     STATUS = 'status'
@@ -106,7 +107,7 @@ class EventHandler(QObject):
         logged_user_email = ORGANIZATION_METADATA.get_logged_user_email()
 
         message = f"{user_email} [{date_str}]\n"
-        alignment = Qt.AlignCenter # Domyślne wyrównanie (dla paska na środku)
+        alignment = Qt.AlignmentFlag.AlignCenter # Domyślne wyrównanie (dla paska na środku)
 
         try:
             event_type = Event(event_name)
@@ -153,7 +154,7 @@ class EventHandler(QObject):
 
         return message, alignment, full_date_str
 
-    def add_event_to_list_model(self, message_text: str, event_type_enum: Event = None, alignment: Qt.AlignmentFlag = Qt.AlignCenter, full_date_str: str = "", add_to_top = False) -> None:
+    def add_event_to_list_model(self, message_text: str, event_type_enum: Event = None, alignment: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignCenter, full_date_str: str = "", add_to_top = False) -> None:
         """
         Dodaje sformatowaną wiadomość o zdarzeniu do QStandardItemModel, z opcjonalnym kolorem tła.
         """

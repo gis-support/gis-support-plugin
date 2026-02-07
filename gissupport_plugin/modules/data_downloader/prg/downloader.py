@@ -1,10 +1,19 @@
+from qgis.core import (
+    QgsApplication,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsField,
+    QgsProject,
+    QgsVectorLayer,
+)
 from qgis.PyQt.QtCore import Qt, QVariant
-from qgis.core import QgsVectorLayer, QgsCoordinateReferenceSystem, QgsProject, QgsApplication, QgsField, \
-    QgsCoordinateTransform
 from qgis.utils import iface
 
-from gissupport_plugin.modules.data_downloader.prg.utils import EntityOption, PRGDownloadTask
 from gissupport_plugin.modules.data_downloader.prg.prg_dockwidget import PRGDockWidget
+from gissupport_plugin.modules.data_downloader.prg.utils import (
+    EntityOption,
+    PRGDownloadTask,
+)
 from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchTeryt
 
 

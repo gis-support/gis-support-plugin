@@ -1,8 +1,8 @@
 import os
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal
 from qgis._core import QgsMapLayerProxyModel
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import pyqtSignal
 
 from gissupport_plugin.tools.widgets.gs_select_area import GsSelectArea
 

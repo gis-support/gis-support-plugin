@@ -1,4 +1,5 @@
-from qgis.PyQt.QtCore import QAbstractTableModel, Qt, QModelIndex, QSortFilterProxyModel
+from qgis.PyQt.QtCore import QAbstractTableModel, QModelIndex, QSortFilterProxyModel, Qt
+
 
 class ServicesTableModel(QAbstractTableModel):
     
@@ -30,7 +31,7 @@ class ServicesTableModel(QAbstractTableModel):
         self.endRemoveRows()
     
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:    
+        if orientation == Qt.Orientation.Horizontal and role == Qt.DisplayRole:    
             if section == 0:
                 return 'ID'
             elif section == 1:

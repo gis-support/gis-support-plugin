@@ -1,8 +1,9 @@
 # coding: utf-8
 
+import json
+
 from osgeo.ogr import CreateGeometryFromJson
 from qgis.core import QgsGeometry
-import json
 
 
 def geojson2geom(geojson: dict) -> QgsGeometry:

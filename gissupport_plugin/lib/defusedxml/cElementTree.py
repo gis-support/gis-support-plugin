@@ -8,9 +8,6 @@
 from __future__ import absolute_import
 
 import warnings
-
-from .common import _generate_etree_functions
-
 from xml.etree.cElementTree import TreeBuilder as _TreeBuilder
 from xml.etree.cElementTree import parse as _parse
 from xml.etree.cElementTree import tostring
@@ -18,9 +15,13 @@ from xml.etree.cElementTree import tostring
 # iterparse from ElementTree!
 from xml.etree.ElementTree import iterparse as _iterparse
 
+from .common import _generate_etree_functions
+
 # This module is an alias for ElementTree just like xml.etree.cElementTree
 from .ElementTree import (
     XML,
+    DefusedXMLParser,
+    ParseError,
     XMLParse,
     XMLParser,
     XMLTreeBuilder,
@@ -28,8 +29,6 @@ from .ElementTree import (
     iterparse,
     parse,
     tostring,
-    DefusedXMLParser,
-    ParseError,
 )
 
 __origin__ = "xml.etree.cElementTree"

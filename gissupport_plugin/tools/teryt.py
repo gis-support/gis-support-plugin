@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Wojewodztwa(Enum):
     DOLNOSLASKIE = "dolnośląskie | 02"
     KUJAWSKO_POMORSKIE = "kujawsko-pomorskie | 04"

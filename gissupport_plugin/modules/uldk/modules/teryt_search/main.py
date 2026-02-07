@@ -1,15 +1,20 @@
 import os
 from itertools import chain
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, QObject
-from PyQt5.QtGui import QKeySequence, QPixmap
 from qgis.gui import QgsMessageBarItem
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import QObject, Qt, QThread
+from qgis.PyQt.QtGui import QKeySequence, QPixmap
 from qgis.utils import iface
 
-from ...uldk.api import ULDKSearchTeryt, ULDKSearchParcel, ULDKSearchLogger, ULDKSearchWorker
-from ...uldk.resultcollector import ResultCollectorMultiple
 from ...uldk import validators
+from ...uldk.api import (
+    ULDKSearchLogger,
+    ULDKSearchParcel,
+    ULDKSearchTeryt,
+    ULDKSearchWorker,
+)
+from ...uldk.resultcollector import ResultCollectorMultiple
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"
@@ -284,7 +289,7 @@ class TerytSearch(QObject):
             try:
                 feature = self.result_collector_precinct_unknown.uldk_response_to_qgs_feature(row)
                 current_features.append(feature)
-            except self.result_collector_precinct_unknown.BadGeometryException as e:
+            except self.result_collector_precinct_unknown.BadGeometryException:
                 continue
 
         if current_features:

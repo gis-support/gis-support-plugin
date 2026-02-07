@@ -1,20 +1,21 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon
-from PyQt5.Qt import QStandardItem
-from qgis.PyQt.QtCore import Qt
 from qgis.core import QgsSettings
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.Qt import QStandardItem
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QIcon
 
+from gissupport_plugin.modules.usemaps_lite.ui.forgot_password import (
+    ForgotPasswordDialog,
+)
+from gissupport_plugin.modules.usemaps_lite.ui.login import LoginDialog
+from gissupport_plugin.modules.usemaps_lite.ui.register import RegisterDialog
+from gissupport_plugin.modules.usemaps_lite.ui.verify_org import VerifyOrgDialog
 from gissupport_plugin.tools.usemaps_lite.base_logic_class import BaseLogicClass
 from gissupport_plugin.tools.usemaps_lite.event_handler import Event
 from gissupport_plugin.tools.usemaps_lite.metadata import ORGANIZATION_METADATA
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
-from gissupport_plugin.modules.usemaps_lite.ui.login import LoginDialog
-from gissupport_plugin.modules.usemaps_lite.ui.register import RegisterDialog
-from gissupport_plugin.modules.usemaps_lite.ui.verify_org import VerifyOrgDialog
-from gissupport_plugin.modules.usemaps_lite.ui.forgot_password import ForgotPasswordDialog
-
 
 
 class Auth(BaseLogicClass):

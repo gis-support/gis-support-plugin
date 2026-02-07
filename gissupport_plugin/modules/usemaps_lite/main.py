@@ -1,6 +1,7 @@
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.usemaps_lite.ui.dockwidget import UsemapsLiteDockwidget
 
+
 class UsemapsLite(BaseModule):
     """
     Moduł Usemaps Lite (GIS.Box Lite).

@@ -193,7 +193,7 @@ class ApiClient(QObject):
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         return self.result
 
@@ -233,7 +233,7 @@ class ApiClient(QObject):
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         file.close()
 
@@ -267,7 +267,7 @@ class ApiClient(QObject):
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         return self.result
 

@@ -81,7 +81,7 @@ class CommentDelegate(QStyledItemDelegate):
 
         painter.setRenderHint(QPainter.Antialiasing)
 
-        if alignment_role != Qt.AlignCenter:
+        if alignment_role != Qt.AlignmentFlag.AlignCenter:
             painter.setBrush(QBrush(background_color))
             painter.setPen(QPen(Qt.NoPen))
             painter.drawRoundedRect(bubble_rect, border_radius, border_radius)
@@ -101,9 +101,9 @@ class CommentDelegate(QStyledItemDelegate):
         elif alignment_role == Qt.AlignLeft:
             text_flags |= Qt.AlignLeft
         else:
-            text_flags |= Qt.AlignCenter
+            text_flags |= Qt.AlignmentFlag.AlignCenter
 
-        if alignment_role == Qt.AlignCenter:
+        if alignment_role == Qt.AlignmentFlag.AlignCenter:
             painter.setPen(QPen(QColor(128, 128, 128)))
         else:
             painter.setPen(QPen(QColor(0, 0, 0)))

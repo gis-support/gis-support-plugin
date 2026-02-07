@@ -107,7 +107,7 @@ class EventHandler(QObject):
         logged_user_email = ORGANIZATION_METADATA.get_logged_user_email()
 
         message = f"{user_email} [{date_str}]\n"
-        alignment = Qt.AlignCenter # Domyślne wyrównanie (dla paska na środku)
+        alignment = Qt.AlignmentFlag.AlignCenter # Domyślne wyrównanie (dla paska na środku)
 
         try:
             event_type = Event(event_name)
@@ -154,7 +154,7 @@ class EventHandler(QObject):
 
         return message, alignment, full_date_str
 
-    def add_event_to_list_model(self, message_text: str, event_type_enum: Event = None, alignment: Qt.AlignmentFlag = Qt.AlignCenter, full_date_str: str = "", add_to_top = False) -> None:
+    def add_event_to_list_model(self, message_text: str, event_type_enum: Event = None, alignment: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignCenter, full_date_str: str = "", add_to_top = False) -> None:
         """
         Dodaje sformatowaną wiadomość o zdarzeniu do QStandardItemModel, z opcjonalnym kolorem tła.
         """

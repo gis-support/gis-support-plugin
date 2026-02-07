@@ -1,9 +1,13 @@
 from enum import Enum
-import requests
 
-from qgis.core import QgsGeometry, QgsFeature, QgsTask, QgsCoordinateReferenceSystem, QgsVectorLayer, QgsProject, \
-    QgsMessageLog, Qgis
-from PyQt5.QtCore import QCoreApplication
+from qgis.core import (
+    Qgis,
+    QgsFeature,
+    QgsGeometry,
+    QgsMessageLog,
+    QgsTask,
+    QgsVectorLayer,
+)
 
 from gissupport_plugin.tools.requests import NetworkHandler
 

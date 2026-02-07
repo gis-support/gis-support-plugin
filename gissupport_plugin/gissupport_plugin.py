@@ -21,17 +21,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-import os.path
-
-from PyQt5.QtCore import (QCoreApplication, Qt, QUrl)
-from PyQt5.QtGui import QDesktopServices, QIcon
-from PyQt5.QtWidgets import QAction, QDockWidget
-from pathlib import Path
 import inspect
+import os.path
 from importlib import util
+from pathlib import Path
+
+from qgis.PyQt.QtCore import QCoreApplication, QUrl
+from qgis.PyQt.QtGui import QDesktopServices, QIcon
+from qgis.PyQt.QtWidgets import QAction, QDockWidget
 
 from gissupport_plugin.modules.base import BaseModule
-from .resources import resources
+
 from .tools.gisbox_connection import GISBOX_CONNECTION
 
 PLUGIN_NAME = "Wtyczka GIS Support"

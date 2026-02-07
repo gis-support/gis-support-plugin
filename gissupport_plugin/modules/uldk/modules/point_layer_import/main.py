@@ -1,12 +1,14 @@
 import os
 
-from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from PyQt5.QtGui import QKeySequence, QPixmap
-from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-                       QgsCoordinateTransformContext, QgsMapLayerProxyModel,
-                       QgsProject)
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsMapLayerProxyModel,
+    QgsProject,
+)
 from qgis.gui import QgsMessageBarItem
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import QThread
+from qgis.PyQt.QtGui import QPixmap
 from qgis.utils import iface
 
 from .worker import PointLayerImportWorker

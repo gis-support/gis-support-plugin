@@ -1,10 +1,10 @@
 import os
 
+from qgis.core import QgsSettings
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QDialog
 from qgis.utils import iface
-from qgis.PyQt.QtCore import Qt
-from qgis.core import QgsSettings
 
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
 

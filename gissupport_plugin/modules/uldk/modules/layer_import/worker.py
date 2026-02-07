@@ -1,11 +1,21 @@
-from PyQt5.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
-from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-                       QgsCoordinateTransformContext, QgsField, QgsGeometry,
-                       QgsPoint, QgsVectorLayer, QgsFeature, QgsWkbTypes,
-                       QgsProject, QgsDistanceArea, QgsFields)
+from typing import Any, List, Optional
 
-from ...uldk.api import ULDKSearchPoint, ULDKSearchLogger, ULDKPoint
-from typing import Optional, List, Any
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsCoordinateTransformContext,
+    QgsDistanceArea,
+    QgsFeature,
+    QgsField,
+    QgsFields,
+    QgsGeometry,
+    QgsProject,
+    QgsVectorLayer,
+    QgsWkbTypes,
+)
+from qgis.PyQt.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
+
+from ...uldk.api import ULDKPoint, ULDKSearchLogger, ULDKSearchPoint
 
 PLOTS_LAYER_DEFAULT_FIELDS = [
     QgsField("wojewodztwo", QVariant.String),

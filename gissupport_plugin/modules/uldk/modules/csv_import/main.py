@@ -2,17 +2,23 @@ import csv
 import os
 from collections import defaultdict
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QThread
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
-from qgis.gui import QgsMessageBarItem
-from qgis.utils import iface
 from qgis.core import QgsField, QgsMapLayerProxyModel, QgsVectorLayer
+from qgis.gui import QgsMessageBarItem
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import QThread
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtWidgets import QFileDialog, QHeaderView, QTableWidget, QTableWidgetItem
+from qgis.utils import iface
 
-from gissupport_plugin.modules.uldk.uldk.api import ULDKSearchParcel, ULDKSearchWorker, ULDKSearchLogger
-from gissupport_plugin.modules.uldk.uldk.resultcollector import PLOTS_LAYER_DEFAULT_FIELDS
-from gissupport_plugin.modules.uldk.uldk.resultcollector import ResultCollectorMultiple
+from gissupport_plugin.modules.uldk.uldk.api import (
+    ULDKSearchLogger,
+    ULDKSearchParcel,
+    ULDKSearchWorker,
+)
+from gissupport_plugin.modules.uldk.uldk.resultcollector import (
+    PLOTS_LAYER_DEFAULT_FIELDS,
+    ResultCollectorMultiple,
+)
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), "main_base.ui"

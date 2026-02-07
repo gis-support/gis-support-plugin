@@ -7,7 +7,7 @@
 
 The code has NO protection against decompression bombs.
 """
-from __future__ import print_function, absolute_import
+from __future__ import absolute_import, print_function
 
 import threading
 import warnings

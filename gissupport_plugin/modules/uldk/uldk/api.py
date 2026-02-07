@@ -1,13 +1,13 @@
 from urllib.error import HTTPError
 from urllib.parse import quote
 
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
+from qgis.core import Qgis, QgsMessageLog
+from qgis.PyQt.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
+
+from gissupport_plugin.tools.requests import NetworkHandler
 
 from .api_limits import RateLimitDecorator, sleep_and_retry
 
-from qgis.core import QgsMessageLog
-from qgis.core import Qgis
-from gissupport_plugin.tools.requests import NetworkHandler
 
 class RequestException(Exception):
     pass

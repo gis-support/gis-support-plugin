@@ -1,11 +1,18 @@
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from PyQt5.QtGui import QCursor
-from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-                       QgsCoordinateTransformContext, QgsFeature, QgsPoint)
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsCoordinateTransformContext,
+)
 from qgis.gui import QgsMapToolEmitPoint
+from qgis.PyQt.QtCore import Qt, QThread
 from qgis.utils import iface
 
-from ...uldk.api import ULDKSearchLogger, ULDKSearchPoint, ULDKSearchPointWorker, ULDKPoint
+from ...uldk.api import (
+    ULDKPoint,
+    ULDKSearchLogger,
+    ULDKSearchPoint,
+    ULDKSearchPointWorker,
+)
 
 CRS_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 

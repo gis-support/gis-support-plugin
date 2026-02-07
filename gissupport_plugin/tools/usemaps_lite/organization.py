@@ -1,17 +1,17 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon
-from PyQt5.Qt import QStandardItem
+# import QMessageBox i QHeaderView robimy tutaj, nie osobno
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.Qt import QStandardItem
 from qgis.PyQt.QtCore import Qt
-from PyQt5.QtWidgets import QMessageBox, QHeaderView
+from qgis.PyQt.QtGui import QIcon
 
+from gissupport_plugin.modules.usemaps_lite.ui.invite_user import InviteUserDialog
 from gissupport_plugin.tools.usemaps_lite.base_logic_class import BaseLogicClass
 from gissupport_plugin.tools.usemaps_lite.event_handler import Event
-from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
 from gissupport_plugin.tools.usemaps_lite.metadata import ORGANIZATION_METADATA
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
-from gissupport_plugin.modules.usemaps_lite.ui.invite_user import InviteUserDialog
+from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
 
 
 class Organization(BaseLogicClass):

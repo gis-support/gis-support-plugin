@@ -1,6 +1,7 @@
-from PyQt5.QtCore import Qt, QSize, QRect
-from PyQt5.QtWidgets import QStyledItemDelegate, QApplication
-from PyQt5.QtGui import QColor, QPainter,  QBrush, QPen
+from qgis.PyQt.QtCore import QRect, QSize, Qt
+from qgis.PyQt.QtGui import QBrush, QColor, QPainter, QPen
+from qgis.PyQt.QtWidgets import QApplication, QStyledItemDelegate
+
 
 class CommentDelegate(QStyledItemDelegate):
     """

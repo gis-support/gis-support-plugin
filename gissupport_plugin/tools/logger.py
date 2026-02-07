@@ -1,9 +1,9 @@
 import configparser
 import os
-
-from qgis.core import QgsMessageLog, Qgis
-from qgis.utils import iface
 from typing import Any
+
+from qgis.core import Qgis, QgsMessageLog
+from qgis.utils import iface
 
 config = configparser.ConfigParser()
 config.read(os.path.join(os.path.dirname(__file__), '..', 'metadata.txt'))

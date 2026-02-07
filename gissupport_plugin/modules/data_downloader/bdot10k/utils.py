@@ -1,13 +1,23 @@
-from io import BytesIO
 import json
+from io import BytesIO
 
-from qgis.PyQt.QtCore import pyqtSignal, Qt
-from qgis.core import QgsTask, QgsMessageLog, Qgis, QgsWkbTypes, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsProject, QgsGeometry
-from gissupport_plugin.tools.requests import NetworkHandler
-from PyQt5.QtNetwork import QNetworkRequest
-from PyQt5.QtGui import QColor
+from qgis.core import (
+    Qgis,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsGeometry,
+    QgsMessageLog,
+    QgsProject,
+    QgsTask,
+    QgsWkbTypes,
+)
 from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtGui import QColor
+from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.utils import iface
+
+from gissupport_plugin.tools.requests import NetworkHandler
 
 
 class BDOT10kDownloadTask(QgsTask):

@@ -1,4 +1,5 @@
-from qgis.PyQt.QtCore import QAbstractTableModel, Qt, QModelIndex, QSortFilterProxyModel
+from qgis.PyQt.QtCore import QAbstractTableModel, QModelIndex, QSortFilterProxyModel, Qt
+
 
 class ServicesTableModel(QAbstractTableModel):
     

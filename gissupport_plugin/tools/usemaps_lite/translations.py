@@ -1,7 +1,6 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
 from qgis.PyQt.QtCore import QSettings
-
 
 TRANSLATIONS = {
     "error": {

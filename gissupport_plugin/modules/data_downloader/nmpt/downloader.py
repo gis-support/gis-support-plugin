@@ -1,16 +1,28 @@
 from os.path import expanduser
 
-from qgis.core import (Qgis, QgsApplication, QgsGeometry, QgsMapLayerProxyModel,
-                       QgsCoordinateReferenceSystem, QgsProject, QgsCoordinateTransform, QgsRasterLayer,
-                       QgsDistanceArea, QgsUnitTypes, QgsCoordinateTransformContext, QgsRectangle)
+from qgis.core import (
+    Qgis,
+    QgsApplication,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsCoordinateTransformContext,
+    QgsDistanceArea,
+    QgsGeometry,
+    QgsProject,
+    QgsRasterLayer,
+    QgsRectangle,
+    QgsUnitTypes,
+)
 from qgis.gui import QgsMessageBarItem
-from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QFileDialog
+from qgis.utils import iface
 
-from gissupport_plugin.modules.data_downloader.nmpt.nmpt_dockwidget import NMPTdockWidget
-from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool
+from gissupport_plugin.modules.data_downloader.nmpt.nmpt_dockwidget import (
+    NMPTdockWidget,
+)
 from gissupport_plugin.modules.data_downloader.nmpt.utils import NMPTdownloadTask
+
 
 def update_download_button_state_dec(func):
 

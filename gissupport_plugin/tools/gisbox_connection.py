@@ -1,14 +1,14 @@
 # coding: utf-8
+import json
 import urllib
 import uuid
 
-from PyQt5.QtCore import QObject, QUrl, pyqtSignal, QSettings
-from PyQt5.QtNetwork import QNetworkRequest
-from qgis.core import QgsNetworkAccessManager, Qgis
-import json
+from qgis.core import Qgis, QgsNetworkAccessManager
+from qgis.PyQt.QtCore import QObject, QSettings, QUrl, pyqtSignal
+from qgis.PyQt.QtNetwork import QNetworkRequest
 
-from .logger import Logger
 from ..modules.gis_box.gui.two_fa import TwoFADialog
+from .logger import Logger
 
 
 class GisboxConnection(QObject, Logger):

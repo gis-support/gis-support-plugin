@@ -2,13 +2,14 @@ from datetime import datetime
 from enum import Enum
 from typing import Tuple
 
-from PyQt5.QtCore import QObject, Qt
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor
+from qgis.PyQt.QtCore import QObject, Qt
+from qgis.PyQt.QtGui import QColor, QStandardItem, QStandardItemModel
 
-from gissupport_plugin.tools.usemaps_lite.requests import API_CLIENT
-from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
 from gissupport_plugin.tools.usemaps_lite.metadata import ORGANIZATION_METADATA
+from gissupport_plugin.tools.usemaps_lite.requests import API_CLIENT
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
+
 
 class Event(Enum):
     STATUS = 'status'

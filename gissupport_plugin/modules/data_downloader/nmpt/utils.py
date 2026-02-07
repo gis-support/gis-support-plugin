@@ -1,8 +1,9 @@
 import os
 from io import BytesIO
 
+from qgis.core import Qgis, QgsMessageLog, QgsRectangle, QgsTask
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import QgsTask, QgsMessageLog, Qgis, QgsRectangle
+
 from gissupport_plugin.tools.requests import NetworkHandler
 
 

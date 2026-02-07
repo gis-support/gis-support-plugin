@@ -5,10 +5,11 @@
 # See https://www.python.org/psf/license for licensing details.
 """Defused xml.dom.pulldom
 """
-from __future__ import print_function, absolute_import
+from __future__ import absolute_import, print_function
 
 from xml.dom.pulldom import parse as _parse
 from xml.dom.pulldom import parseString as _parseString
+
 from .sax import make_parser
 
 __origin__ = "xml.dom.pulldom"

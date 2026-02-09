@@ -159,7 +159,7 @@ class ULDKSearchWorker(QObject):
                 result = self.uldk_search.search(teryt)
                 self.found.emit({k: result})
             except (HTTPError, RequestException) as e:
-                self.not_found.emit(str(teryt), e)
+                self.not_found.emit(teryt, e)
         self.finished.emit()
 
 class ULDKSearchPointWorker(QObject):
@@ -183,5 +183,5 @@ class ULDKSearchPointWorker(QObject):
                 result = self.uldk_search.search(point)
                 self.found.emit(result)
             except (HTTPError, RequestException) as e:
-                self.not_found.emit(str(point), e)
+                self.not_found.emit(point, e)
         self.finished.emit()

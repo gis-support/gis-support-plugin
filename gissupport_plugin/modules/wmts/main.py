@@ -42,7 +42,7 @@ class WMTSCacheModule(BaseModule):
                 service_item = QStandardItem(service['name'])
                 service_item.setData(service)
                 self.list_model.appendRow(service_item)
-            
+
         self.dockwidget.listView.setModel(self.list_model)
         self.dockwidget.listView.doubleClicked.connect(self.addToProject)
         self.dockwidget.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
@@ -54,20 +54,18 @@ class WMTSCacheModule(BaseModule):
         service_data = self.list_model.itemFromIndex(index).data()
         project_crs = iface.mapCanvas().mapSettings().destinationCrs().authid()
         crs = project_crs if project_crs in service_data['supported_crs'] else 'EPSG:2180'
-        
-        wmts_url = (
-            "contextualWMSLegend=0&crs={}&dpiMode=0&"
-            "featureCount=10&format={}&layers={}&"
-            "styles=default&tileMatrixSet={}&url={}".format(
+
+        layer = QgsRasterLayer(
+            "contextualWMSLegend=0&crs={0}&dpiMode=0&featureCount=10&format={1}&layers={2}&styles=default&tileMatrixSet={0}&url={3}".format(
                 crs,
                 service_data['format'],
                 service_data['tiles_name'],
-                crs,
                 service_data['url']+'?service%3DWMTS%26request%3DgetCapabilities'
-            )
+            ),
+            service_data['name'],
+            'wms'
         )
-        
-        layer = QgsRasterLayer(wmts_url, service_data['name'], 'wms')
+
         if layer.isValid():
             root = QgsProject.instance().layerTreeRoot()
             QgsProject.instance().addMapLayer(layer, False)
@@ -78,6 +76,6 @@ class WMTSCacheModule(BaseModule):
                 f'Nie udało się wczytać warstwy {service_data["name"]}',
                 level=Qgis.Warning
             )
-        
+
     def dialogAccepted(self):
         self.settings.setValue('/qgis/defaultTileExpiry', self.dockwidget.sbCacheExpiration.value())

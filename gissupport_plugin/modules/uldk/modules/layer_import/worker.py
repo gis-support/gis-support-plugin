@@ -178,6 +178,12 @@ class LayerImportWorker(QObject):
                 while points != []:
                     saved_features = []
                     for point_number, point in enumerate(points, start=1):
+                        # Sprawdzenie przerwania przed przetwarzaniem każdego punktu
+                        if QThread.currentThread().isInterruptionRequested():
+                            self.__commit()
+                            self.interrupted.emit(self.layer_found, self.layer_not_found)
+                            return
+                        
                         last_point = True if point_number == len(points) else False
                         saved_features.append(self._process_feature(point, last_feature=last_point))
                     if any(saved_features):
@@ -205,12 +211,6 @@ class LayerImportWorker(QObject):
                          source_feature: QgsFeature,
                          made_progress=False,
                          last_feature=False) -> Optional[bool]:
-
-        if QThread.currentThread().isInterruptionRequested():
-            self.__commit()
-            self.interrupted.emit(self.layer_found, self.layer_not_found)
-            self.layer_found.stopEditing()
-            return
 
         point = source_feature.geometry().asPoint()
         if self.parcels_geometry.contains(point):
@@ -304,6 +304,9 @@ class LayerImportWorker(QObject):
         points = geometry.randomPointsInPolygon(int(points_number))
 
         for point in points:
+            if point is None:
+                continue
+            
             feature = QgsFeature()
 
             if additional_attributes:

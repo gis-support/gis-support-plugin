@@ -29,7 +29,7 @@ from gissupport_plugin.tools.requests import NetworkHandler
 # dla wtyczek w oficjalnym repo
 # https://github.com/gis-support/gis-support-plugin/issues/4
 try:
-    from matplotlib import pyplot as plt 
+    from matplotlib import pyplot as plt
     matplotlib_library = True
 except ImportError:
     matplotlib_library = False
@@ -39,7 +39,7 @@ from qgis.PyQt.QtWidgets import QDockWidget, QInputDialog, QFileDialog
 from qgis.PyQt.QtCore import pyqtSignal, QVariant
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import (QgsMapLayerProxyModel, QgsField, Qgis, QgsTask, QgsApplication,
-    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsVectorLayer, 
+    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsVectorLayer,
     QgsFeature, QgsWkbTypes, QgsGeometry, QgsExpression, QgsFeatureRequest)
 from qgis.utils import iface
 
@@ -54,7 +54,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
     on_message = pyqtSignal(str, object, int)
-    PROXY_URL = 'https://gugik.gis.support/nmt/'
+
     GUGIK_URL = 'https://services.gugik.gov.pl/nmt/'
 
     def __init__(self, parent=None):
@@ -106,10 +106,10 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
-        
+
     def showInfo(self):
         self.infoDialog.show()
-    
+
     def showMessage(self, message, level, time=5):
         """ Wyświetlanie wiadomości na pasku """
         iface.messageBar().pushMessage('Narzędzie GUGiK NMT:', message, level, time)
@@ -144,7 +144,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             return response['data']
 
     def getPointsHeights(self, feats_meta):
-        """ 
+        """
         Pobieranie wysokości dla większej ilości punktów. Jeśli ich liczba > 200 -
         lista zostaje podzielona na mniejsze częśći i dopiero dla tych części wysyłane są
         requesty do api
@@ -178,8 +178,8 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         """ Transformacja geometrii """
         if current_crs != dest_crs:
             ct = QgsCoordinateTransform(
-                QgsCoordinateReferenceSystem(current_crs), 
-                QgsCoordinateReferenceSystem(dest_crs), 
+                QgsCoordinateReferenceSystem(current_crs),
+                QgsCoordinateReferenceSystem(dest_crs),
                 QgsProject().instance()
                 )
             geometry.transform(ct)
@@ -225,7 +225,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         """ Dodawanie wysokości dla punktów """
         layer = self.cbLayers.currentLayer()
         layer_crs = layer.crs().authid()
-        feats_meta = {self.transformGeometry(feat.geometry(), layer_crs, multi=True):feat.id() 
+        feats_meta = {self.transformGeometry(feat.geometry(), layer_crs, multi=True):feat.id()
             for feat in data.get('feats')}
         if not feats_meta:
             return
@@ -243,8 +243,8 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         del self.task2
 
     def createTempLayer(self):
-        """ 
-        Tworzenie warstwy tymczasowej i dodanie do niej punktów, 
+        """
+        Tworzenie warstwy tymczasowej i dodanie do niej punktów,
         dla których zostały pobrane wysokości
         """
         if not self.savedFeats:
@@ -287,7 +287,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             return
         path, _ = QFileDialog.getSaveFileName(filter=f'*.csv')
         if not path:
-            return   
+            return
         rows = self.twData.rowCount()
         if not path.lower().endswith('.csv'):
             path += '.csv'
@@ -303,7 +303,11 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                         dist, val, round(float(x)), round(float(y))
                     ])
             writer.writerows(to_write)
+<<<<<<< HEAD
         self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.MessageLevel.Success, 4)   
+=======
+        self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.Success, 4)
+>>>>>>> develop
 
     def generatePlot(self):
         """ Wyświetlenie profilu podłużnego """
@@ -325,7 +329,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         ax.set(xlabel='Interwał [m]', ylabel='Wysokość npm',
             title='Profil podłużny')
         ax.plot(dist_list, values)
-        plt.show()   
+        plt.show()
 
     def activateTool(self, tool):
         """ Zmiana aktywnego narzędzia mapy """
@@ -336,8 +340,5 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
     def createRequest(self, parameters):
         """ Tworzy request. W przypadku braku odpowiedzi przez proxy wysyłane jest zapytanie bezpośrednio do GUGIK """
         handler = NetworkHandler()
-        result = handler.get(self.PROXY_URL + parameters)
-
-        if 'error' in result:
-            result = handler.get(self.GUGIK_URL + parameters)
-        return result
+        
+        return handler.get(self.GUGIK_URL + parameters)

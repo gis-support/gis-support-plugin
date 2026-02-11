@@ -34,7 +34,7 @@ class URL:
 
         if self.params:
             url += "?"
-        
+
         for key,value in self.params.items():
             if isinstance(value, (tuple, list)):
                 value = ",".join(value)
@@ -43,7 +43,7 @@ class URL:
         return url
 
 class ULDKPoint:
-    
+
     def __init__(self, x, y, srid = 2180):
         self.x = x; self.y = y; self.srid = srid
 
@@ -55,31 +55,27 @@ class ULDKPoint:
 
 class ULDKSearch:
 
-    proxy_url = r"https://gugik.gis.support/uldk/service.php"
     gugik_url = r"http://uldk.gugik.gov.pl/service.php"
 
     def __init__(self, target, results, method = ""):
-        self.url = URL(self.proxy_url, obiekt=target, wynik=results)
+        self.url = URL(self.gugik_url, obiekt=target, wynik=results)
         if method:
             self.url.set_param("request", method)
 
     @sleep_and_retry
     @RateLimitDecorator(calls = 5, period = 3)
     def search(self):
-        url = self.url
         handler = NetworkHandler()
-        
+
         content = handler.get(str(self.url))
+
         if "error" in content:
-            self.url = URL(self.gugik_url, **url.params)
-            content = handler.get(str(self.url))
-            if "error" in content:
-                if 'msg' in content:
-                    raise RequestException(content["msg"])
-                raise RequestException("Brak odpowiedzi")
-            
+            if 'msg' in content:
+                raise RequestException(content["msg"])
+            raise RequestException("Brak odpowiedzi")
+
         content = content["data"]
-        
+
         content_lines = content.split("\n")
         status = content_lines[0]
 
@@ -144,7 +140,7 @@ class ULDKSearchWorker(QObject):
     finished = pyqtSignal()
     interrupted = pyqtSignal()
     def __init__(self, uldk_search, teryt_ids):
-        super().__init__()  
+        super().__init__()
         self.uldk_search = uldk_search
         self.teryt_ids = teryt_ids
 
@@ -158,7 +154,7 @@ class ULDKSearchWorker(QObject):
             try:
                 result = self.uldk_search.search(teryt)
                 self.found.emit({k: result})
-            except (HTTPError, RequestException) as e:  
+            except (HTTPError, RequestException) as e:
                 self.not_found.emit(teryt, e)
         self.finished.emit()
 
@@ -169,7 +165,7 @@ class ULDKSearchPointWorker(QObject):
     finished = pyqtSignal()
     interrupted = pyqtSignal()
     def __init__(self, uldk_point_search, uldk_points):
-        super().__init__()  
+        super().__init__()
         self.uldk_search = uldk_point_search
         self.points = uldk_points
 
@@ -182,6 +178,6 @@ class ULDKSearchPointWorker(QObject):
             try:
                 result = self.uldk_search.search(point)
                 self.found.emit(result)
-            except (HTTPError, RequestException) as e:  
+            except (HTTPError, RequestException) as e:
                 self.not_found.emit(point, e)
         self.finished.emit()

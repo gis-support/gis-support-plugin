@@ -1,15 +1,9 @@
 import os
 from itertools import chain
 
-<<<<<<< HEAD
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal, QObject
 from qgis.PyQt.QtGui import QKeySequence, QPixmap
-=======
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import Qt, QThread, QObject
-from PyQt5.QtGui import QKeySequence, QPixmap
->>>>>>> develop
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 
@@ -78,15 +72,9 @@ class TerytSearch(QObject):
         self.uldk_search_worker = ULDKSearchWorker(self.uldk_search, teryts)
         self.thread = QThread()
         self.uldk_search_worker.moveToThread(self.thread)
-<<<<<<< HEAD
         
         
         if self.ui.checkbox_precinct_unknown.isChecked():
-=======
-
-
-        if self.ui.checkbox_precinct_unknown.checkState():
->>>>>>> develop
             self.ui.progress_bar_precinct_unknown.setValue(0)
             self.uldk_search_worker.finished.connect(self.__handle_finished_precinct_unknown)
             self.uldk_search_worker.found.connect(self.__handle_found_precinct_unknown)
@@ -164,13 +152,8 @@ class TerytSearch(QObject):
             self.ui.combobox_province.blockSignals(True)
             self.ui.combobox_province.clear()
             self.ui.combobox_province.addItems([""] + provinces)
-<<<<<<< HEAD
             self.ui.combobox_province.blockSignals(False)
     
-=======
-            self.provinces_downloaded = True
-
->>>>>>> develop
     def fill_combobox_county(self, province_teryt):
         counties = self.get_administratives("powiat", province_teryt) if province_teryt else []
         self.ui.combobox_county.blockSignals(True)

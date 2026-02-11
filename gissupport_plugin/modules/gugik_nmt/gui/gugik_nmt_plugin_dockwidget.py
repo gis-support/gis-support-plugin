@@ -303,11 +303,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                         dist, val, round(float(x)), round(float(y))
                     ])
             writer.writerows(to_write)
-<<<<<<< HEAD
         self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.MessageLevel.Success, 4)   
-=======
-        self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.Success, 4)
->>>>>>> develop
 
     def generatePlot(self):
         """ Wyświetlenie profilu podłużnego """

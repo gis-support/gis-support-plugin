@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from qgis.PyQt import QtWidgets
 from qgis.utils import iface
 
 from gissupport_plugin.tools.usemaps_lite.requests import API_CLIENT

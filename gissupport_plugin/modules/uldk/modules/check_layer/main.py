@@ -99,7 +99,7 @@ class CheckLayer:
                     "Wtyczka GIS Support",
                     "Próba rozłączenia sygnałów, które nie były wcześniej podpięte.",
                     "Wtyczka ULDK",
-                    level=Qgis.Info
+                    level=Qgis.MessageLevel.Info
                 )
 
         self.source_layer = layer

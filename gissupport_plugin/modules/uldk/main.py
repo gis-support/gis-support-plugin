@@ -1,12 +1,5 @@
-<<<<<<< HEAD
-
-
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import *
-=======
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import *
->>>>>>> develop
 from qgis.core import *
 from qgis.utils import iface
 

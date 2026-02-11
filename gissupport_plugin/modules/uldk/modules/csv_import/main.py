@@ -2,17 +2,10 @@ import csv
 import os
 from collections import defaultdict
 
-<<<<<<< HEAD
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import QThread, QVariant
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
-=======
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QThread
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
->>>>>>> develop
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 from qgis.core import QgsField, QgsMapLayerProxyModel, QgsVectorLayer

@@ -10,12 +10,8 @@
 name=Wtyczka GIS Support
 qgisMaximumVersion=4.99
 qgisMinimumVersion=3.0
-<<<<<<< HEAD
 supportsQt6=True
-version=2.11
-=======
 version=3.0
->>>>>>> develop
 author=GIS Support
 email=info@gis-support.pl
 license=GPL-3.0-only

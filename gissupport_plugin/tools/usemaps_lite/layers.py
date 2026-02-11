@@ -2,11 +2,11 @@ import json
 from typing import Dict, List, Any
 from pathlib import Path
 
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QStandardItem
+from qgis.PyQt.QtWidgets import QMessageBox
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtGui import QStandardItem
 from qgis.PyQt.QtCore import Qt, QMetaType,  QDate, QDateTime, QTime, pyqtSignal
-from PyQt5.QtCore import QObject, QVariant
+from qgis.PyQt.QtCore import QObject, QVariant
 from qgis.utils import iface
 from qgis.core import (
     QgsVectorLayer,
@@ -48,8 +48,8 @@ class Layers(BaseLogicClass, QObject):
         BaseLogicClass.__init__(self, dockwidget)
 
         self.dockwidget.layers_listview.selectionModel().selectionChanged.connect(self.on_layers_listview_selection_changed)
-        self.dockwidget.layers_listview.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-        self.dockwidget.layers_listview.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.dockwidget.layers_listview.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+        self.dockwidget.layers_listview.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.dockwidget.layers_listview.doubleClicked.connect(self.get_selected_layer)
 
         self.dockwidget.remove_layer_button.clicked.connect(self.remove_selected_layer)
@@ -74,10 +74,10 @@ class Layers(BaseLogicClass, QObject):
         """
 
         selected_layer = index.sibling(index.row(), 0)
-        selected_layer_uuid = selected_layer.data(Qt.UserRole)
+        selected_layer_uuid = selected_layer.data(Qt.ItemDataRole.UserRole)
 
         self.selected_layer_name = selected_layer.data()
-        self.selected_layer_type = selected_layer.data(Qt.UserRole + 1)
+        self.selected_layer_type = selected_layer.data(Qt.ItemDataRole.UserRole + 1)
         self.selected_layer_uuid = selected_layer_uuid
 
         self.show_info_message(f"{TRANSLATOR.translate_info('load layer start')}: {self.selected_layer_name}")
@@ -88,7 +88,7 @@ class Layers(BaseLogicClass, QObject):
         self.task = self.LoadLayerToQgisTask(self.selected_layer_name, self.selected_layer_uuid,
                                             layer, self)
         self.task.download_finished.connect(lambda was_downloaded: self.on_load_layer_finished(was_downloaded, layer),
-                                            Qt.QueuedConnection)
+                                            Qt.ConnectionType.QueuedConnection)
 
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
@@ -121,7 +121,7 @@ class Layers(BaseLogicClass, QObject):
             self.layer = layer
             self.parent = parent
             self.error_msg = None
-            super().__init__(description, QgsTask.CanCancel)
+            super().__init__(description, QgsTask.Flag.CanCancel)
 
         def run(self):
             try:
@@ -149,14 +149,14 @@ class Layers(BaseLogicClass, QObject):
 
                 # Definiowanie pól
                 if Qgis.QGIS_VERSION_INT >= 34000:
-                    fields.append(QgsField("_id", QMetaType.Int))
+                    fields.append(QgsField("_id", QMetaType.Type.Int))
                     for key, value in example_props.items():
                         if isinstance(value, int):
-                            fields.append(QgsField(key, QMetaType.Int))
+                            fields.append(QgsField(key, QMetaType.Type.Int))
                         elif isinstance(value, float):
-                            fields.append(QgsField(key, QMetaType.Double))
+                            fields.append(QgsField(key, QMetaType.Type.Double))
                         else:
-                            fields.append(QgsField(key, QMetaType.QString))
+                            fields.append(QgsField(key, QMetaType.Type.QString))
                 else:
                     fields.append(QgsField("_id", QVariant.Int))
                     for key, value in example_props.items():
@@ -248,7 +248,7 @@ class Layers(BaseLogicClass, QObject):
 
         self.task = self.UploadLayerTask(file_path_to_upload,
                                             self)
-        self.task.upload_finished.connect(self.on_upload_layer_finished, Qt.QueuedConnection)
+        self.task.upload_finished.connect(self.on_upload_layer_finished, Qt.ConnectionType.QueuedConnection)
 
         manager = QgsApplication.taskManager()
         manager.addTask(self.task)
@@ -266,7 +266,7 @@ class Layers(BaseLogicClass, QObject):
         def __init__(self, file_path_to_upload: Path, parent):
             description = f"{TRANSLATOR.translate_info('import layer start')}"
             self.file_path_to_upload = file_path_to_upload
-            super().__init__(description, QgsTask.CanCancel)
+            super().__init__(description, QgsTask.Flag.CanCancel)
             self.parent = parent
             self.error_msg = None
 
@@ -322,13 +322,13 @@ class Layers(BaseLogicClass, QObject):
             self.dockwidget,
             TRANSLATOR.translate_ui("remove layer label"),
             f"{TRANSLATOR.translate_ui('remove layer question 1')} {layer_name}{TRANSLATOR.translate_ui('remove layer question 2')}",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
         )
 
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
 
-            uuid = selected_index[0].data(Qt.UserRole)
+            uuid = selected_index[0].data(Qt.ItemDataRole.UserRole)
 
             self.api.delete(
                 "org/layers",
@@ -522,7 +522,7 @@ class Layers(BaseLogicClass, QObject):
 
         for layer_row in range(self.dockwidget.layers_model.rowCount()):
             item = self.dockwidget.layers_model.item(layer_row, 0)
-            if item and item.data(Qt.UserRole) == layer_uuid:
+            if item and item.data(Qt.ItemDataRole.UserRole) == layer_uuid:
                 row_to_remove = layer_row
                 break
 
@@ -545,8 +545,8 @@ class Layers(BaseLogicClass, QObject):
         layer_type = data.get("type")
 
         layer_item = QStandardItem(layer_name)
-        layer_item.setData(layer_uuid, Qt.UserRole)
-        layer_item.setData(layer_type, Qt.UserRole + 1)
+        layer_item.setData(layer_uuid, Qt.ItemDataRole.UserRole)
+        layer_item.setData(layer_type, Qt.ItemDataRole.UserRole + 1)
 
         row = [
             layer_item

@@ -167,7 +167,7 @@ class ResultCollectorSingle(ResultCollector):
                 iface.messageBar().pushMessage(
                     "Wtyczka GIS SUPPORT - ULDK",
                     "Nie wybrano warstwy docelowej",
-                    level=Qgis.Critical)
+                    level=Qgis.MessageLevel.Critical)
                 return
 
             self.layer = target_layer
@@ -206,7 +206,7 @@ class ResultCollectorSingle(ResultCollector):
             iface.messageBar().pushMessage(
                 "Wtyczka GIS SUPPORT - ULDK",
                 "Brak warstwy docelowej do zapisu.",
-                level=Qgis.Warning)
+                level=Qgis.MessageLevel.Warning)
             return False
 
         was_editable = self.layer.isEditable()
@@ -215,7 +215,7 @@ class ResultCollectorSingle(ResultCollector):
             iface.messageBar().pushMessage(
                 "Wtyczka GIS SUPPORT - ULDK",
                 "Przed kontynuowaniem musisz zapisać zmiany w warstwie.",
-                level=Qgis.Warning)
+                level=Qgis.MessageLevel.Warning)
             return False
 
         if not was_editable:
@@ -265,7 +265,7 @@ class ResultCollectorMultiple(ResultCollector):
             iface.messageBar().pushMessage(
                 "Wtyczka GIS SUPPORT - ULDK",
                 "Przed kontynuowaniem musisz zapisać zmiany w warstwie.",
-                level=Qgis.Warning)
+                level=Qgis.MessageLevel.Warning)
             return
 
         if not was_editable:
@@ -296,4 +296,4 @@ class ResultCollectorMultiple(ResultCollector):
             iface.messageBar().pushMessage(
                 "Wtyczka GIS SUPPORT - ULDK",
                 "Błąd podczas zapisywania obiektów do warstwy.",
-                level=Qgis.Critical)
+                level=Qgis.MessageLevel.Critical)

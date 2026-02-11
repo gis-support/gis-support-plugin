@@ -1,12 +1,15 @@
-from qgis.PyQt.QtWidgets import QToolButton, QMenu
+from qgis.PyQt.QtWidgets import QMenu, QToolButton
 from qgis.utils import iface
 
-
 from gissupport_plugin.modules.base import BaseModule
-from gissupport_plugin.modules.data_downloader.bdot10k.downloader import BDOT10kDownloader
-from gissupport_plugin.modules.data_downloader.prg.downloader import PRGDownloader
+from gissupport_plugin.modules.data_downloader.bdot10k.downloader import (
+    BDOT10kDownloader,
+)
 from gissupport_plugin.modules.data_downloader.nmpt.downloader import NMPTdownloader
-from gissupport_plugin.modules.data_downloader.prg_address.downloader import PRGAddressDownloader
+from gissupport_plugin.modules.data_downloader.prg.downloader import PRGDownloader
+from gissupport_plugin.modules.data_downloader.prg_address.downloader import (
+    PRGAddressDownloader,
+)
 
 
 class DataDownloaderModule(BaseModule, PRGDownloader, PRGAddressDownloader, BDOT10kDownloader, NMPTdownloader):

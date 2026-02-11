@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsCoordinateTransformContext,
+    QgsDistanceArea,
+    QgsGeometry,
+    QgsPointXY,
+    QgsProject,
+    QgsUnitTypes,
+    QgsWkbTypes,
+)
+from qgis.gui import QgsMapTool, QgsMapToolIdentifyFeature, QgsRubberBand
 from qgis.PyQt.QtCore import Qt, pyqtSignal
-from qgis.PyQt.QtGui import QCursor, QPixmap, QColor
-from qgis.core import (Qgis, QgsWkbTypes, QgsGeometry, QgsProject, QgsDistanceArea,
-                       QgsCoordinateTransformContext, QgsUnitTypes, QgsPointXY,
-                        QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsVectorLayer
-                       )
-from qgis.gui import QgsRubberBand, QgsMapTool, QgsMapToolIdentifyFeature
+from qgis.PyQt.QtGui import QColor, QCursor, QPixmap
 from qgis.utils import iface
 
 

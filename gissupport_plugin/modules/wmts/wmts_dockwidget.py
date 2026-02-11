@@ -1,11 +1,8 @@
 import os
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal
-
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.utils import iface
-from qgis.PyQt.QtCore import Qt
-
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'wmts_dockwidget.ui'))

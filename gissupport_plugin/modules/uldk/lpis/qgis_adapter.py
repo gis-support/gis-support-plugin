@@ -1,7 +1,9 @@
-from PyQt5.QtCore import QVariant
-from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-                       QgsCoordinateTransformContext, QgsFeature, QgsGeometry,
-                       QgsPointXY, QgsWkbTypes)
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsCoordinateTransformContext,
+    QgsGeometry,
+)
 
 crs_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 

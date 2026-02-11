@@ -1,12 +1,13 @@
 import os
 
-from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import QDialog, QFrame
-from qgis.PyQt.QtCore import Qt, pyqtSignal
-from qgis.utils import iface
 from qgis.core import QgsMapLayerProxyModel
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtWidgets import QDialog, QFrame
+from qgis.utils import iface
 
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+
 
 class DropFrame(QFrame):
     """

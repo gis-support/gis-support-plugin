@@ -1,36 +1,43 @@
 import json
-from typing import Dict, List, Any
 from pathlib import Path
+from typing import Any, Dict, List
 
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QStandardItem
-from qgis.PyQt.QtCore import Qt, QMetaType,  QDate, QDateTime, QTime, pyqtSignal
-from PyQt5.QtCore import QObject, QVariant
-from qgis.utils import iface
 from qgis.core import (
-    QgsVectorLayer,
-    QgsProject,
+    NULL,
+    Qgis,
+    QgsApplication,
     QgsFeature,
-    QgsJsonUtils,
+    QgsFeatureRequest,
     QgsField,
     QgsFields,
-    NULL,
-    QgsFeatureRequest,
-    QgsEditorWidgetSetup,
+    QgsGeometry,
+    QgsJsonUtils,
+    QgsProject,
     QgsTask,
-    QgsApplication,
-    Qgis,
-    QgsGeometry
+    QgsVectorLayer,
 )
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import (
+    QDate,
+    QDateTime,
+    QMetaType,
+    QObject,
+    Qt,
+    QTime,
+    QVariant,
+    pyqtSignal,
+)
+from qgis.PyQt.QtGui import QStandardItem
+from qgis.PyQt.QtWidgets import QMessageBox
+from qgis.utils import iface
 
+from gissupport_plugin.modules.usemaps_lite.ui.import_layer import ImportLayerDialog
 from gissupport_plugin.tools.usemaps_lite.base_logic_class import BaseLogicClass
 from gissupport_plugin.tools.usemaps_lite.event_handler import Event
 from gissupport_plugin.tools.usemaps_lite.gpkg_handler import GpkgHandler
-from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
 from gissupport_plugin.tools.usemaps_lite.metadata import ORGANIZATION_METADATA
-from gissupport_plugin.modules.usemaps_lite.ui.import_layer import ImportLayerDialog
+from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
 
 
 class Layers(BaseLogicClass, QObject):

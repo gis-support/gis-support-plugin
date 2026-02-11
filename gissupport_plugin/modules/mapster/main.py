@@ -1,10 +1,10 @@
-from qgis.gui import QgsMapToolEmitPoint
 from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject
+from qgis.gui import QgsMapToolEmitPoint
+from qgis.PyQt.QtCore import Qt, QUrl
+from qgis.PyQt.QtGui import QDesktopServices, QIcon
 from qgis.utils import iface
+
 from gissupport_plugin.modules.base import BaseModule
-from qgis.PyQt.QtGui import QDesktopServices
-from qgis.PyQt.QtCore import QUrl, Qt
-from PyQt5.QtGui import QIcon
 from gissupport_plugin.modules.mapster.mapster_dockwidget import MapsterDockwidget
 
 

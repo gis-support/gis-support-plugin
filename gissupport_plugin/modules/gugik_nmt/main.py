@@ -21,16 +21,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QTranslator, QCoreApplication, Qt
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtCore import Qt
 from qgis.utils import iface
-# Initialize Qt resources from file resources.py
 
+# Initialize Qt resources from file resources.py
 # Import the code for the DockWidget
 from gissupport_plugin.modules.base import BaseModule
-from gissupport_plugin.modules.gugik_nmt.gui.gugik_nmt_plugin_dockwidget import GugikNmtDockWidget
-import os.path
+from gissupport_plugin.modules.gugik_nmt.gui.gugik_nmt_plugin_dockwidget import (
+    GugikNmtDockWidget,
+)
 
 
 class GugikNmt(BaseModule):

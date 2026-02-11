@@ -1,18 +1,17 @@
 import time
 from typing import List, Union
 
-from qgis.PyQt.QtCore import pyqtSignal, QObject
 from qgis.core import QgsProject
+from qgis.PyQt.QtCore import QObject, pyqtSignal
 from qgis.utils import iface
 
-from . import RELATION_VALUES_MAPPING_REGISTRY
+from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+from gissupport_plugin.tools.logger import Logger
+from gissupport_plugin.tools.project_variables import get_layer_mapping
 
+from . import RELATION_VALUES_MAPPING_REGISTRY
 from .basemap_layer import BaseMapLayer
 from .gisbox_datasource import GisboxFeatureLayer
-
-from gissupport_plugin.tools.logger import Logger
-from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
-from gissupport_plugin.tools.project_variables import get_layer_mapping
 
 
 class LayersRegistry(QObject, Logger):

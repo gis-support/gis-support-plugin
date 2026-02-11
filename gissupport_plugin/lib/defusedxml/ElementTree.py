@@ -5,14 +5,13 @@
 # See https://www.python.org/psf/license for licensing details.
 """Defused xml.etree.ElementTree facade
 """
-from __future__ import print_function, absolute_import
+from __future__ import absolute_import, print_function
 
 import sys
 import warnings
-from xml.etree.ElementTree import ParseError
+from xml.etree.ElementTree import ParseError, tostring
 from xml.etree.ElementTree import TreeBuilder as _TreeBuilder
 from xml.etree.ElementTree import parse as _parse
-from xml.etree.ElementTree import tostring
 
 from .common import PY3
 

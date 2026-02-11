@@ -3,15 +3,24 @@ import os
 from enum import Enum
 from functools import reduce
 
+from qgis.core import (
+    Qgis,
+    QgsCoordinateTransformContext,
+    QgsDistanceArea,
+    QgsGeometry,
+    QgsMapLayer,
+    QgsMapLayerProxyModel,
+    QgsMessageLog,
+    QgsPointXY,
+    QgsProject,
+    QgsUnitTypes,
+    QgsWkbTypes,
+)
+from qgis.gui import QgsMapMouseEvent, QgsMapTool, QgsRubberBand
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import QWidget, QSizePolicy
 from qgis.PyQt.QtCore import Qt, pyqtSignal
-from qgis.PyQt.QtGui import QCursor, QPixmap, QColor, QKeyEvent
-from qgis.core import (QgsWkbTypes, QgsGeometry, QgsProject, QgsDistanceArea,
-                       QgsCoordinateTransformContext, QgsUnitTypes, QgsPointXY,
-                       QgsMapLayerProxyModel, QgsMapLayer, QgsMessageLog, Qgis
-                       )
-from qgis.gui import QgsRubberBand, QgsMapTool, QgsMapMouseEvent
+from qgis.PyQt.QtGui import QColor, QCursor, QKeyEvent, QPixmap
+from qgis.PyQt.QtWidgets import QSizePolicy, QWidget
 from qgis.utils import iface
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(

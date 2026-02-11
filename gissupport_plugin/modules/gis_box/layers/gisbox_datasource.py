@@ -1,19 +1,34 @@
 import time
+from typing import Any, Iterable, List
 
-from typing import List, Iterable, Any
-from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsEditFormConfig, QgsEditorWidgetSetup,
-                       QgsAttributeEditorContainer, QgsAttributeEditorField, QgsMapLayer, NULL, QgsFieldConstraints,
-                       QgsProject, QgsVectorLayer, QgsTask, QgsApplication, QgsFeature, Qgis, QgsFeatureRequest)
-from qgis.utils import iface
+from qgis.core import (
+    NULL,
+    Qgis,
+    QgsApplication,
+    QgsAttributeEditorContainer,
+    QgsAttributeEditorField,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsEditFormConfig,
+    QgsEditorWidgetSetup,
+    QgsFeature,
+    QgsFeatureRequest,
+    QgsFieldConstraints,
+    QgsMapLayer,
+    QgsProject,
+    QgsTask,
+    QgsVectorLayer,
+)
+from qgis.PyQt.QtCore import QDate, QDateTime, QObject, QTime, pyqtSignal
 from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtCore import QObject, pyqtSignal, QDate, QDateTime, QTime
+from qgis.utils import iface
+
+from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
+from gissupport_plugin.tools.logger import Logger
+from gissupport_plugin.tools.project_variables import save_layer_mapping
 
 from . import DATA_SOURCE_REGISTRY, RELATION_VALUES_MAPPING_REGISTRY
-
-from gissupport_plugin.tools.logger import Logger
 from .geojson import geojson2geom
-from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
-from gissupport_plugin.tools.project_variables import save_layer_mapping
 
 
 class GisboxDataSource(QObject, Logger):

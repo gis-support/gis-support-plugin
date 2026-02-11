@@ -1,18 +1,20 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import *
 from qgis.core import *
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import *
 from qgis.utils import iface
 
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.uldk.modules.check_layer.main import CheckLayer
 from gissupport_plugin.modules.uldk.modules.csv_import.main import CSVImport
-from gissupport_plugin.modules.uldk.modules.map_point_search.main import MapPointSearch
-from gissupport_plugin.modules.uldk.modules.layer_import.main import LayerImport
-from gissupport_plugin.modules.uldk.modules.teryt_search.main import TerytSearch
 from gissupport_plugin.modules.uldk.modules.from_csv_file.main import FromCSVFile
-from gissupport_plugin.modules.uldk.plugin_dockwidget import wyszukiwarkaDzialekDockWidget
-from gissupport_plugin.modules.uldk.resources import resources
+from gissupport_plugin.modules.uldk.modules.layer_import.main import LayerImport
+from gissupport_plugin.modules.uldk.modules.map_point_search.main import MapPointSearch
+from gissupport_plugin.modules.uldk.modules.teryt_search.main import TerytSearch
+from gissupport_plugin.modules.uldk.plugin_dockwidget import (
+    wyszukiwarkaDzialekDockWidget,
+)
 from gissupport_plugin.modules.uldk.uldk.resultcollector import ResultCollectorSingle
+
 
 class Main(BaseModule):
     module_name = "Wyszukiwarka działek ewidencyjnych"

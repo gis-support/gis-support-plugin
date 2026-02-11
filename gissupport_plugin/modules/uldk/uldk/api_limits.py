@@ -1,11 +1,10 @@
 #from https://pypi.org/project/ratelimit/
 
-from functools import wraps
-from math import floor
-
-import time
 import sys
 import threading
+import time
+from functools import wraps
+from math import floor
 
 # Use monotonic time if available, otherwise fall back to the system clock.
 now = time.monotonic if hasattr(time, 'monotonic') else time.time

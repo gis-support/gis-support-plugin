@@ -1,12 +1,13 @@
 from traceback import print_exc
+from typing import Union
+from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
+
+from owslib.wfs import WebFeatureService
+from owslib.wms import WebMapService
 from owslib.wmts import WebMapTileService
 from qgis.core import QgsNetworkAccessManager
-from owslib.wms import WebMapService
-from owslib.wfs import WebFeatureService
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtCore import QUrl
-from typing import Union
-from urllib.parse import urlencode, parse_qs, urlsplit, urlunsplit
+from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
 
 try:
   import defusedxml.ElementTree as et

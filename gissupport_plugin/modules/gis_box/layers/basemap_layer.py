@@ -1,12 +1,14 @@
 #coding: UTF-8
 
-from qgis.core import QgsProject, QgsRasterLayer, QgsLayerTreeLayer, Qgis
+from qgis.core import Qgis, QgsLayerTreeLayer, QgsProject, QgsRasterLayer
 from qgis.utils import iface
-from owslib.wmts import WebMapTileService
+from requests.exceptions import ConnectionError, MissingSchema
 
-from requests.exceptions import MissingSchema, ConnectionError
+from gissupport_plugin.tools.capabilities import (
+    CapabilitiesConnectionException,
+    get_capabilities,
+)
 
-from gissupport_plugin.tools.capabilities import CapabilitiesConnectionException, get_capabilities
 from .base_layer import BaseLayer
 
 
@@ -128,13 +130,13 @@ class BaseMapLayer(BaseLayer):
                 else:
                     url = self.url
                 layer = QgsRasterLayer(url, self.name, 'wms')
-            except (MissingSchema, ConnectionError) as e:
+            except (MissingSchema, ConnectionError):
                 self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem.", level=Qgis.Critical)
                 return
             except CapabilitiesConnectionException as e:
                 self.message(f"Błąd warstwy {self.name}: błąd połączenia z serwerem (kod: {e.code}). Upewnij się, że połączenie sieciowe i usługa działają poprawnie", level=Qgis.Critical)
                 return
-            except KeyError as e:
+            except KeyError:
                 self.message(f"Błąd warstwy {self.name}: nazwa {self.service_layers_names} nie występuje w Capabilities.", level=Qgis.Critical)
                 return
 

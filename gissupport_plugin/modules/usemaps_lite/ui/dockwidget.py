@@ -1,17 +1,17 @@
 import os
 
-from PyQt5 import uic, QtWidgets
-from qgis.utils import iface
+from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import Qt
-from PyQt5.QtGui import QStandardItemModel
+from qgis.PyQt.QtGui import QStandardItemModel
+from qgis.utils import iface
 
-from gissupport_plugin.tools.usemaps_lite.event_handler import EVENT_HANDLER
-from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
 from gissupport_plugin.tools.usemaps_lite.auth import Auth
-from gissupport_plugin.tools.usemaps_lite.organization import Organization
-from gissupport_plugin.tools.usemaps_lite.layers import Layers
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
 from gissupport_plugin.tools.usemaps_lite.delegate import CommentDelegate
+from gissupport_plugin.tools.usemaps_lite.event_handler import EVENT_HANDLER
+from gissupport_plugin.tools.usemaps_lite.layers import Layers
+from gissupport_plugin.tools.usemaps_lite.organization import Organization
+from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'dockwidget.ui'))

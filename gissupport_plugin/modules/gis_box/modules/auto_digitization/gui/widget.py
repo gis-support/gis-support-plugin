@@ -2,17 +2,23 @@
 import json
 import os
 
-from PyQt5.QtGui import QCursor
+from qgis.core import (
+    Qgis,
+    QgsApplication,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsGeometry,
+    QgsMapLayerProxyModel,
+    QgsProject,
+)
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import (Qgis, QgsCoordinateTransform,
-                       QgsCoordinateReferenceSystem, QgsProject, QgsGeometry, QgsApplication,
-                       QgsMapLayerProxyModel
-                       )
+from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.utils import iface
 
-from gissupport_plugin.modules.gis_box.modules.auto_digitization.utils import AutoDigitizationTask
+from gissupport_plugin.modules.gis_box.modules.auto_digitization.utils import (
+    AutoDigitizationTask,
+)
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 from gissupport_plugin.tools.widgets.gs_select_area import GsSelectArea
 

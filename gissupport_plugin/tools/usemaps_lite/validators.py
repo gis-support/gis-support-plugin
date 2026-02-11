@@ -1,5 +1,6 @@
 import re
 
+
 def validate_email(email: str):
     """
     Prosty walidator maili.

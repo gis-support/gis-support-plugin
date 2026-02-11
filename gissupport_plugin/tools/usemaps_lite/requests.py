@@ -1,15 +1,28 @@
 import json
-import uuid
 import os
+import uuid
 from typing import Union
 
 from qgis.core import QgsNetworkAccessManager
-from PyQt5.QtCore import QObject, QUrl, QByteArray, pyqtSignal, QTimer, QCoreApplication
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
-from PyQt5.QtNetwork import QHttpMultiPart, QHttpPart
-from PyQt5.QtCore import QFile, QIODevice, QEventLoop
+from qgis.PyQt.QtCore import (
+    QByteArray,
+    QEventLoop,
+    QFile,
+    QIODevice,
+    QObject,
+    QTimer,
+    QUrl,
+    pyqtSignal,
+)
+from qgis.PyQt.QtNetwork import (
+    QHttpMultiPart,
+    QHttpPart,
+    QNetworkReply,
+    QNetworkRequest,
+)
 
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+
 
 class ApiClient(QObject):
     """
@@ -180,7 +193,7 @@ class ApiClient(QObject):
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         return self.result
 
@@ -220,7 +233,7 @@ class ApiClient(QObject):
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         file.close()
 
@@ -254,7 +267,7 @@ class ApiClient(QObject):
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         return self.result
 

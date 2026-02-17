@@ -1,7 +1,7 @@
 import json
 from io import BytesIO
 
-from qgis.PyQt.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import QgsTask, QgsMessageLog, Qgis, QgsGeometry, QgsCoordinateReferenceSystem, QgsProject, QgsCoordinateTransform
 from qgis.utils import iface
@@ -25,9 +25,8 @@ class PRGAddressDownloadTask(QgsTask):
         handler = NetworkHandler()
         response = handler.get(self.url, True)
 
-        if response.error() != 0:
-            self.task_failed.emit(
-                "Błąd pobierania danych. Sprawdź swoje połączenie z Internetem oraz czy usługa Geoportal.gov.pl działa.")
+        if response.error() != QNetworkReply.NetworkError.NoError:
+            self.task_failed.emit("Błąd pobierania danych. Sprawdź swoje połączenie z Internetem oraz czy usługa Geoportal.gov.pl działa.")
             return False
 
         total_size = int(response.header(QNetworkRequest.KnownHeaders.ContentLengthHeader)) or 0

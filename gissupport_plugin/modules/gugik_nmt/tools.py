@@ -21,7 +21,7 @@ class IdentifyTool(QgsMapTool):
         set_cursor(self)
         self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.PointGeometry)
         self.tempGeom.setColor(QColor('red'))
-        self.tempGeom.setWidth = 5
+        self.tempGeom.setWidth(5)
         
     def canvasMoveEvent(self, e):
         """ Przeliczanie współrzędnych dla miejsca kursora """
@@ -130,7 +130,7 @@ class ProfileTool(QgsMapTool):
         if self.task is not None:
             self.parent.on_message.emit('Trwa genrowanie profilu. Aby wygenerować następny poczekaj na pobranie danych', Qgis.MessageLevel.Warning, 4)
             return
-        if e.button() == int(Qt.MouseButton.LeftButton):
+        if e.button() == Qt.MouseButton.LeftButton:
             #Dodawanie kolejnych wierzchołków
             if not self.editing:
                 #Nowy obiekt, pierwszy wierzchołek
@@ -141,7 +141,7 @@ class ProfileTool(QgsMapTool):
             self.tempLine.addPoint(point)
             len_m = self.calculateDistance(self.tempGeom.asGeometry())
             self.parent.dsbLineLength.setValue(len_m)
-        elif e.button() == int(Qt.MouseButton.RightButton):
+        elif e.button() == Qt.MouseButton.RightButton:
             if self.tempGeom.numberOfVertices() < 2:
                 return
             #Zakończenie rysowania obiektu

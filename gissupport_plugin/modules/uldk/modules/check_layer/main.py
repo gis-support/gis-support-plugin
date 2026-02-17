@@ -1,8 +1,8 @@
 import os
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QThread, QVariant
-from PyQt5.QtGui import QPixmap
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import QThread, QVariant
+from qgis.PyQt.QtGui import QPixmap
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsMapLayerProxyModel,
                        QgsProject, QgsVectorLayer, QgsField, QgsFeature, NULL, QgsMessageLog, Qgis)
@@ -42,7 +42,7 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
 
         target_layout.layout().addWidget(self)
 
-        self.layer_select.setFilters(QgsMapLayerProxyModel.PolygonLayer)
+        self.layer_select.setFilters(QgsMapLayerProxyModel.Filter.PolygonLayer)
 
         self.label_info_start.setPixmap(QPixmap(self.icon_info_path))
         self.label_info_start.setToolTip((
@@ -99,7 +99,7 @@ class CheckLayer:
                     "Wtyczka GIS Support",
                     "Próba rozłączenia sygnałów, które nie były wcześniej podpięte.",
                     "Wtyczka ULDK",
-                    level=Qgis.Info
+                    level=Qgis.MessageLevel.Info
                 )
 
         self.source_layer = layer
@@ -158,7 +158,7 @@ class CheckLayer:
         source_crs = self.source_layer.sourceCrs()
         transformation = QgsCoordinateTransform(source_crs, CRS_2180, QgsCoordinateTransformContext())
 
-        features = self.source_layer.getSelectedFeatures() if bool(self.ui.checkbox_selected_only.checkState()) else self.source_layer.getFeatures()
+        features = self.source_layer.getSelectedFeatures() if bool(self.ui.checkbox_selected_only.isChecked()) else self.source_layer.getFeatures()
         for feature in features:
             output_feature = QgsFeature(feature)
 

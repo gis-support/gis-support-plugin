@@ -1,7 +1,7 @@
 import json
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFileDialog
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import QFileDialog
 from qgis.gui import QgsMessageBarItem
 from qgis.core import QgsApplication, Qgis, QgsGeometry, QgsCoordinateReferenceSystem, QgsVectorLayer, QgsWkbTypes, QgsProject
 from qgis.utils import iface
@@ -31,7 +31,7 @@ class PRGAddressDownloader:
 
     def init_prg_address_dockwidget(self):
         self.prg_address_dockwidget = PRGAddressDockWidget()
-        iface.addDockWidget(Qt.RightDockWidgetArea, self.prg_address_dockwidget)
+        iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.prg_address_dockwidget)
         self.prg_address_dockwidget.hide()
 
         self.fill_combobox_w()
@@ -110,13 +110,13 @@ class PRGAddressDownloader:
         """
         if self.teryt_w == "" or self.teryt_p == "":
             iface.messageBar().pushMessage("Przed pobraniem należy wybrać województwo i powiat",
-                                           level=Qgis.Warning)
+                                           level=Qgis.MessageLevel.Warning)
             return
 
         prg_address_filepath = self.prg_address_dockwidget.filePathLineEdit.text()
         if not prg_address_filepath or prg_address_filepath == "":
             iface.messageBar().pushMessage("Przed pobraniem należy wybrać ścieżkę zapisu danych",
-                                           level=Qgis.Warning)
+                                           level=Qgis.MessageLevel.Warning)
             return
 
         self.task = PRGAddressDownloadTask("Pobieranie punktów adresowych PRG",
@@ -143,10 +143,10 @@ class PRGAddressDownloader:
         Wyświetla komunikat o pomyślnym pobraniu danych.
         """
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
-                    "Pomyślnie pobrano dane PRG - punkty adresowe", level=Qgis.Info))
+                    "Pomyślnie pobrano dane PRG - punkty adresowe", level=Qgis.MessageLevel.Info))
 
     def handle_prg_address_task_error(self, error_message):
-        iface.messageBar().pushMessage("Wtyczka GIS Support", error_message, level=Qgis.Critical)
+        iface.messageBar().pushMessage("Wtyczka GIS Support", error_message, level=Qgis.MessageLevel.Critical)
 
     ### POBIEARNIE DLA ZASIĘGU
     def set_geometry_from_draw(self, area: float, geom: QgsGeometry):
@@ -198,7 +198,7 @@ class PRGAddressDownloader:
         self.select_features_rectangle_tool_prg.deactivate()
 
     def show_prg_address_databox_limit_exceeded_message(self, message: str):
-        iface.messageBar().pushMessage(message, level=Qgis.Warning)
+        iface.messageBar().pushMessage(message, level=Qgis.MessageLevel.Warning)
 
     def add_prg_address_features_to_map(self, geojson: str):
         existing_layer = QgsProject.instance().mapLayersByName(self.layer_name)
@@ -244,5 +244,5 @@ class PRGAddressDownloader:
         iface.messageBar().pushMessage("Wtyczka GIS Support",
                                        """Na wybranym obszarze nie znajdują się obiekty wybranej warstwy
                                        lub liczba obiektów na wybranym obszarze jest większa niż 100 000""",
-                                       level=Qgis.Warning)
+                                       level=Qgis.MessageLevel.Warning)
 

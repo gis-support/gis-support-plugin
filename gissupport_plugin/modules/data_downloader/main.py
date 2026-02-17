@@ -72,11 +72,13 @@ class DataDownloaderModule(BaseModule, PRGDownloader, PRGAddressDownloader, BDOT
             enabled=True
         )
 
-        self.download_action.setMenu(QMenu())
-        main_menu = self.download_action.menu()
-        main_menu.addAction(self.prg_action)
-        main_menu.addAction(self.prg_address_action)
-        main_menu.addAction(self.bdot10k_action)
-        main_menu.addAction(self.nmpt_action)
+        self.main_menu = QMenu(iface.mainWindow())
+        self.download_action.setMenu(self.main_menu)
+        
+        self.main_menu.addAction(self.prg_action)
+        self.main_menu.addAction(self.prg_address_action)
+        self.main_menu.addAction(self.bdot10k_action)
+        self.main_menu.addAction(self.nmpt_action)
+
         self.toolButton = self.parent.toolbar.widgetForAction(self.download_action)
-        self.toolButton.setPopupMode(QToolButton.InstantPopup)
+        self.toolButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)

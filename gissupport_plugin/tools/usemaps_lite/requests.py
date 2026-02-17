@@ -4,10 +4,10 @@ import os
 from typing import Union
 
 from qgis.core import QgsNetworkAccessManager
-from PyQt5.QtCore import QObject, QUrl, QByteArray, pyqtSignal, QTimer, QCoreApplication
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
-from PyQt5.QtNetwork import QHttpMultiPart, QHttpPart
-from PyQt5.QtCore import QFile, QIODevice, QEventLoop
+from qgis.PyQt.QtCore import QObject, QUrl, QByteArray, pyqtSignal, QTimer, QCoreApplication
+from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
+from qgis.PyQt.QtNetwork import QHttpMultiPart, QHttpPart
+from qgis.PyQt.QtCore import QFile, QIODevice, QEventLoop
 
 from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
 
@@ -42,7 +42,7 @@ class ApiClient(QObject):
 
         url = QUrl(self.base_url + endpoint)
         request = QNetworkRequest(url)
-        request.setHeader(QNetworkRequest.ContentTypeHeader, "application/json")
+        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
 
         if self.auth_token:
             request.setRawHeader(b"Authorization", f"Bearer {self.auth_token}".encode("utf-8"))
@@ -73,7 +73,7 @@ class ApiClient(QObject):
         callback = self._pending_callbacks.pop(request_id, None)
         response_data = {}
 
-        if reply.error() != QNetworkReply.NoError:
+        if reply.error() != QNetworkReply.NetworkError.NoError:
             error_msg_raw = reply.readAll().data().decode('utf-8', errors='ignore')
             parsed_error = {"error": reply.errorString(), "details": error_msg_raw}
             try:
@@ -126,16 +126,16 @@ class ApiClient(QObject):
         if self.auth_token:
             request.setRawHeader(b"Authorization", f"Bearer {self.auth_token}".encode("utf-8"))
 
-        multi_part = QHttpMultiPart(QHttpMultiPart.FormDataType)
+        multi_part = QHttpMultiPart(QHttpMultiPart.ContentType.FormDataType)
 
         file_part = QHttpPart()
-        file_part.setHeader(QNetworkRequest.ContentDispositionHeader,
+        file_part.setHeader(QNetworkRequest.KnownHeaders.ContentDispositionHeader,
                             f'form-data; name="file"; filename="{os.path.basename(file_path)}"')
 
-        file_part.setHeader(QNetworkRequest.ContentTypeHeader, "application/octet-stream")
+        file_part.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/octet-stream")
         file = QFile(file_path)
 
-        if not file.open(QIODevice.ReadOnly):
+        if not file.open(QIODevice.OpenModeFlag.ReadOnly):
             if callback:
                 callback({"error": f"Nie udało się otworzyć pliku: {file_path}"})
             return
@@ -165,7 +165,7 @@ class ApiClient(QObject):
             url = QUrl(self.base_url + url)
             request = QNetworkRequest(url)
 
-            request.setHeader(QNetworkRequest.ContentTypeHeader, "application/json")
+            request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
 
             if self.auth_token:
                 request.setRawHeader(b"Authorization", f"Bearer {self.auth_token}".encode("utf-8"))
@@ -180,7 +180,7 @@ class ApiClient(QObject):
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         return self.result
 
@@ -197,15 +197,15 @@ class ApiClient(QObject):
         if self.auth_token:
             request.setRawHeader(b"Authorization", f"Bearer {self.auth_token}".encode("utf-8"))
 
-        multi_part = QHttpMultiPart(QHttpMultiPart.FormDataType)
+        multi_part = QHttpMultiPart(QHttpMultiPart.ContentType.FormDataType)
 
         file_part = QHttpPart()
-        file_part.setHeader(QNetworkRequest.ContentDispositionHeader,
+        file_part.setHeader(QNetworkRequest.KnownHeaders.ContentDispositionHeader,
                             f'form-data; name="file"; filename="{os.path.basename(file_path)}"')
-        file_part.setHeader(QNetworkRequest.ContentTypeHeader, "application/octet-stream")
+        file_part.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/octet-stream")
 
         file = QFile(file_path)
-        if not file.open(QIODevice.ReadOnly):
+        if not file.open(QIODevice.OpenModeFlag.ReadOnly):
             return {"error": f"Nie udało się otworzyć pliku: {file_path}"}
 
         file_part.setBodyDevice(file)
@@ -220,7 +220,7 @@ class ApiClient(QObject):
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         file.close()
 
@@ -235,7 +235,7 @@ class ApiClient(QObject):
         def try_request(url, body):
             url = QUrl(self.base_url + url)
             request = QNetworkRequest(url)
-            request.setHeader(QNetworkRequest.ContentTypeHeader, "application/json")
+            request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
 
             if self.auth_token:
                 request.setRawHeader(b"Authorization", f"Bearer {self.auth_token}".encode("utf-8"))
@@ -254,7 +254,7 @@ class ApiClient(QObject):
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         return self.result
 
@@ -278,7 +278,7 @@ class ApiClient(QObject):
         url = QUrl(self.base_url + sse_endpoint)
         request = QNetworkRequest(url)
         request.setRawHeader(b"Accept", b"text/event-stream")
-        request.setAttribute(QNetworkRequest.FollowRedirectsAttribute, True)
+        request.setAttribute(QNetworkRequest.Attribute.RedirectPolicyAttribute, QNetworkRequest.RedirectPolicy.NoLessSafeRedirectPolicy)
 
         reply = self.nam.get(request)
         reply.setProperty("endpoint", sse_endpoint)
@@ -357,7 +357,7 @@ class ApiClient(QObject):
 
         self._connect_sse()
 
-        if self._sse_reply and self._sse_reply.error() == QNetworkReply.NoError:
+        if self._sse_reply and self._sse_reply.error() == QNetworkReply.NetworkError.NoError:
             self._sse_reconnect_delay = 1000
 
     def stop_listening(self) -> None:

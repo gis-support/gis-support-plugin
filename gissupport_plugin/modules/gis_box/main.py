@@ -1,7 +1,7 @@
 from qgis.PyQt.QtGui import QIcon
 from qgis.utils import iface
 from qgis.core import QgsProject, QgsMapLayer
-from PyQt5 import QtWidgets
+from qgis.PyQt import QtWidgets
 
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.gis_box.layers.gisbox_datasource import GisboxDataSource
@@ -74,7 +74,7 @@ class GISBox(BaseModule, Logger):
 
         is_connected = GISBOX_CONNECTION.is_connected
         for layer in QgsProject.instance().mapLayers().values():
-            if layers_registry.isGisboxLayer(layer) and layer.type() == QgsMapLayer.VectorLayer:
+            if layers_registry.isGisboxLayer(layer) and layer.type() == QgsMapLayer.LayerType.VectorLayer:
 
                 if is_connected:
                     # Odczytywanie uprawnień użytkownika do edycji warstwy

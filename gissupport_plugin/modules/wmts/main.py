@@ -6,8 +6,8 @@ from qgis.core import Qgis, QgsRasterLayer, QgsProject
 from os import path
 import json
 
-from PyQt5 import QtWidgets
-from PyQt5.Qt import QStandardItemModel, QStandardItem
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 
 from gissupport_plugin.modules.wmts.wmts_dockwidget import WMTSDockWidget
 
@@ -45,7 +45,7 @@ class WMTSCacheModule(BaseModule):
             
         self.dockwidget.listView.setModel(self.list_model)
         self.dockwidget.listView.doubleClicked.connect(self.addToProject)
-        self.dockwidget.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.dockwidget.listView.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         tile_expiry = int(self.settings.value('/qgis/defaultTileExpiry', 24))
         self.dockwidget.sbCacheExpiration.setValue(tile_expiry)
 
@@ -76,7 +76,7 @@ class WMTSCacheModule(BaseModule):
             iface.messageBar().pushMessage(
                 'WMTS Cache',
                 f'Nie udało się wczytać warstwy {service_data["name"]}',
-                level=Qgis.Warning
+                level=Qgis.MessageLevel.Warning
             )
         
     def dialogAccepted(self):

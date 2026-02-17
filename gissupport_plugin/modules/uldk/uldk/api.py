@@ -1,7 +1,7 @@
 from urllib.error import HTTPError
 from urllib.parse import quote
 
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
+from qgis.PyQt.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
 from .api_limits import RateLimitDecorator, sleep_and_retry
 
@@ -105,10 +105,10 @@ class ULDKSearchLogger(ULDKSearch):
         except Exception as e:
             url = str(self._decorated.url)
             message = "{} - błąd {} ({})".format(url, type(e), e)
-            self.log_message(message, Qgis.Critical)
+            self.log_message(message, Qgis.MessageLevel.Critical)
             raise e
 
-    def log_message(self, message, level=Qgis.Info):
+    def log_message(self, message, level=Qgis.MessageLevel.Info):
         QgsMessageLog.logMessage(message, self.message_group_name, level)
 
 class ULDKSearchTeryt(ULDKSearch):

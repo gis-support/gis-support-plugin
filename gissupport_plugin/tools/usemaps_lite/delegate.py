@@ -1,6 +1,6 @@
-from PyQt5.QtCore import Qt, QSize, QRect
-from PyQt5.QtWidgets import QStyledItemDelegate, QApplication
-from PyQt5.QtGui import QColor, QPainter,  QBrush, QPen
+from qgis.PyQt.QtCore import Qt, QSize, QRect
+from qgis.PyQt.QtWidgets import QStyledItemDelegate, QApplication
+from qgis.PyQt.QtGui import QColor, QPainter,  QBrush, QPen, QFontMetrics
 
 class CommentDelegate(QStyledItemDelegate):
     """
@@ -23,10 +23,10 @@ class CommentDelegate(QStyledItemDelegate):
     
     def paint(self, painter: QPainter, option, index):
 
-        message = index.data(Qt.DisplayRole)
-        alignment_role = index.data(Qt.UserRole + 2)
+        message = index.data(Qt.ItemDataRole.DisplayRole)
+        alignment_role = index.data(Qt.ItemDataRole.UserRole + 2)
 
-        flags = Qt.TextWordWrap
+        flags = Qt.TextFlag.TextWordWrap
 
         # skalowane wartości paddingu i promienia
         text_padding_horizontal = self._scale_value(15)
@@ -66,27 +66,27 @@ class CommentDelegate(QStyledItemDelegate):
                             option.rect.top() + int((option.rect.height() - bubble_height) / 2),
                             bubble_width, bubble_height)
 
-        if alignment_role == Qt.AlignRight:
+        if alignment_role == Qt.AlignmentFlag.AlignRight:
             bubble_rect.moveRight(option.rect.right() - side_margin)
-        elif alignment_role == Qt.AlignLeft:
+        elif alignment_role == Qt.AlignmentFlag.AlignLeft:
             bubble_rect.setLeft(option.rect.left() + side_margin)
         else:
             bubble_rect.moveLeft(option.rect.left() + int((option.rect.width() - bubble_width) / 2))
 
         # rysowanie dymka
-        background_color = index.data(Qt.BackgroundRole)
+        background_color = index.data(Qt.ItemDataRole.BackgroundRole)
         if not background_color:
             background_color = QColor(240, 240, 240)
 
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        if alignment_role != Qt.AlignCenter:
+        if alignment_role != Qt.AlignmentFlag.AlignCenter:
             painter.setBrush(QBrush(background_color))
-            painter.setPen(QPen(Qt.NoPen))
+            painter.setPen(QPen(Qt.PenStyle.NoPen))
             painter.drawRoundedRect(bubble_rect, border_radius, border_radius)
         else:
-            painter.setBrush(Qt.NoBrush)
-            painter.setPen(Qt.NoPen)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.setPen(Qt.PenStyle.NoPen)
         
         # rysowanie tekstu wewnątrz dymka
         text_draw_rect = QRect(bubble_rect.left() + text_padding_horizontal,
@@ -94,30 +94,30 @@ class CommentDelegate(QStyledItemDelegate):
                                bubble_width - (text_padding_horizontal * 2),
                                bubble_height - (text_padding_vertical * 2))
         
-        text_flags = Qt.TextWordWrap
-        if alignment_role == Qt.AlignRight:
-            text_flags |= Qt.AlignRight
-        elif alignment_role == Qt.AlignLeft:
-            text_flags |= Qt.AlignLeft
+        text_flags = Qt.TextFlag.TextWordWrap
+        if alignment_role == Qt.AlignmentFlag.AlignRight:
+            text_flags |= Qt.AlignmentFlag.AlignRight
+        elif alignment_role == Qt.AlignmentFlag.AlignLeft:
+            text_flags |= Qt.AlignmentFlag.AlignLeft
         else:
-            text_flags |= Qt.AlignCenter
+            text_flags |= Qt.AlignmentFlag.AlignCenter
 
-        if alignment_role == Qt.AlignCenter:
+        if alignment_role == Qt.AlignmentFlag.AlignCenter:
             painter.setPen(QPen(QColor(128, 128, 128)))
         else:
             painter.setPen(QPen(QColor(0, 0, 0)))
 
         painter.drawText(text_draw_rect, text_flags, message)
 
-        painter.setRenderHint(QPainter.Antialiasing, False)
-        painter.setBrush(QBrush(Qt.NoBrush))
-        painter.setPen(QPen(Qt.black))
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, False)
+        painter.setBrush(QBrush(Qt.BrushStyle.NoBrush))
+        painter.setPen(QPen(Qt.GlobalColor.black))
 
     def sizeHint(self, option, index):
-        message = index.data(Qt.DisplayRole)
-        metrics = QApplication.fontMetrics()
+        message = index.data(Qt.ItemDataRole.DisplayRole)
+        metrics = QFontMetrics(QApplication.font())
         
-        flags_for_bounding = Qt.TextWordWrap
+        flags_for_bounding = Qt.TextFlag.TextWordWrap
 
         # skalowane wartości
         text_padding_horizontal = self._scale_value(15)

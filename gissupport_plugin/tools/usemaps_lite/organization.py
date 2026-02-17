@@ -1,10 +1,9 @@
 from typing import Dict, Any
 
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon
-from PyQt5.Qt import QStandardItem
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtGui import QIcon, QStandardItem
 from qgis.PyQt.QtCore import Qt
-from PyQt5.QtWidgets import QMessageBox, QHeaderView
+from qgis.PyQt.QtWidgets import QMessageBox, QHeaderView
 
 from gissupport_plugin.tools.usemaps_lite.base_logic_class import BaseLogicClass
 from gissupport_plugin.tools.usemaps_lite.event_handler import Event
@@ -36,8 +35,8 @@ class Organization(BaseLogicClass):
         self.dockwidget.users_tableview.setColumnWidth(0, 200)
         self.dockwidget.users_tableview.setColumnWidth(1, 120)
         self.dockwidget.users_tableview.setColumnWidth(2, 50)
-        self.dockwidget.users_tableview.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.dockwidget.users_tableview.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.dockwidget.users_tableview.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.dockwidget.users_tableview.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.dockwidget.users_tableview.selectionModel().selectionChanged.connect(self.on_users_tableview_selection_changed)
 
         self.dockwidget.remove_user_button.clicked.connect(self.remove_selected_user)
@@ -127,11 +126,11 @@ class Organization(BaseLogicClass):
             self.dockwidget,
             TRANSLATOR.translate_ui("remove user label"),
             TRANSLATOR.translate_ui("remove user question"),
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
         )
 
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
 
             selected_index = self.dockwidget.users_tableview.selectedIndexes()
             user_email = selected_index[0].data()
@@ -171,7 +170,7 @@ class Organization(BaseLogicClass):
         verified = TRANSLATOR.translate_info("yes") if data.get("verified") else TRANSLATOR.translate_info("no")
 
         email_item = QStandardItem(email)
-        email_item.setData(user_uuid, Qt.UserRole)
+        email_item.setData(user_uuid, Qt.ItemDataRole.UserRole)
 
         icon = QIcon(":images/themes/default/repositoryDisabled.svg")
         icon_item = QStandardItem()
@@ -217,7 +216,7 @@ class Organization(BaseLogicClass):
 
         for row_index in range(self.dockwidget.users_tableview_model.rowCount()):
             item_email = self.dockwidget.users_tableview_model.item(row_index, 0)
-            if item_email and item_email.data(Qt.UserRole) == user_uuid:
+            if item_email and item_email.data(Qt.ItemDataRole.UserRole) == user_uuid:
                 row_to_remove = row_index
                 break
 

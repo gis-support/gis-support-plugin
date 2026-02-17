@@ -1,10 +1,10 @@
 import csv
 import os
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QThread
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import QThread
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 from qgis.core import QgsFeature
@@ -134,12 +134,12 @@ class FromCSVFile:
 
     def __init_table(self) -> None:
         table = self.ui.table_errors
-        table.setEditTriggers(QTableWidget.NoEditTriggers)
+        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         table.setColumnCount(2)
         table.setHorizontalHeaderLabels(("TERYT", "Treść błędu"))
         header = table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.Interactive)
-        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         header.resizeSection(0, 200)
 
     def __on_file_changed(self, file_path: str) -> None:

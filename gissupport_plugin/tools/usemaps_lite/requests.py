@@ -19,6 +19,7 @@ class ApiClient(QObject):
     """
 
     event_received = pyqtSignal(str, object)
+    authenticated = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -26,7 +27,7 @@ class ApiClient(QObject):
         self.auth_token = None
         self.nam = QgsNetworkAccessManager.instance()
         self._pending_callbacks = {}
-    
+
         self._sse_reply = None
         self._sse_reconnect_timer = QTimer(self)
         self._sse_reconnect_timer.setSingleShot(True)
@@ -82,7 +83,7 @@ class ApiClient(QObject):
                     parsed_error["server_message"] = json_error
             except json.JSONDecodeError:
                 pass
-            
+
             response_data["error"] = parsed_error
 
         else:
@@ -109,7 +110,7 @@ class ApiClient(QObject):
         Funkcja do wykonywania requestów POST
         """
         self._make_request(endpoint, method="POST", data=data, callback=callback)
-    
+
     def delete(self, endpoint, data, callback=None) -> None:
         """
         Funkcja do wykonywania requestów DELETE
@@ -282,7 +283,7 @@ class ApiClient(QObject):
 
         reply = self.nam.get(request)
         reply.setProperty("endpoint", sse_endpoint)
-        
+
         if self._sse_reply:
             self._sse_reply.abort()
             self._sse_reply.deleteLater()
@@ -299,7 +300,7 @@ class ApiClient(QObject):
         """
 
         data = reply.readAll().data().decode('utf-8', errors='ignore')
-        
+
         lines = data.split('\n')
         current_event_type = None
         current_event_data = {}
@@ -312,7 +313,7 @@ class ApiClient(QObject):
                 current_event_type = None
                 current_event_data = {}
                 continue
-            
+
             if line.startswith("event:"):
                 current_event_type = line[len("event:"):].strip()
             elif line.startswith("data:"):
@@ -328,7 +329,7 @@ class ApiClient(QObject):
         """
         Obsługuje utracenie połączenia z endpointem SSE
         """
-        
+
         if self._sse_reply == reply and self._is_sse_listening_requested:
             self._sse_reply.deleteLater()
             self._sse_reply = None
@@ -347,7 +348,7 @@ class ApiClient(QObject):
             return
 
         self._sse_reconnect_timer.start(self._sse_reconnect_delay)
-        
+
         self._sse_reconnect_delay = min(self._sse_reconnect_delay * 2, self._sse_max_reconnect_delay)
 
     def _reconnect_sse(self) -> None:

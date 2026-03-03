@@ -89,6 +89,7 @@ class Auth(BaseLogicClass):
 
         data = response.get("data")
         self.api.auth_token = data.get('token')
+        self.api.authenticated.emit()
 
         ORGANIZATION_METADATA.set_logged_user_email(self.username)
         self.api.get("org/metadata", callback=self.handle_metadata_response)

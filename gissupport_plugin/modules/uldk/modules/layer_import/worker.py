@@ -183,7 +183,7 @@ class LayerImportWorker(QObject):
                             self.__commit()
                             self.interrupted.emit(self.layer_found, self.layer_not_found)
                             return
-                        
+
                         last_point = True if point_number == len(points) else False
                         saved_features.append(self._process_feature(point, last_feature=last_point))
                     if any(saved_features):
@@ -271,9 +271,11 @@ class LayerImportWorker(QObject):
         if self.transformation is not None:
             geometry.transform(self.transformation)
 
-        if geom_type in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
+        if geom_type in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString) or geometry.type() == QgsWkbTypes.LineGeometry:
             points_number = 10
             geometry = geometry.buffer(0.001, 2)
+            if geometry.type() != QgsWkbTypes.PolygonGeometry:
+                geometry = geometry.convertToType(QgsWkbTypes.PolygonGeometry)
 
         if self.parcels_geometry:
             if self.parcels_geometry.contains(geometry):
@@ -285,9 +287,9 @@ class LayerImportWorker(QObject):
                 diff_geometry = geometry.difference(self.parcels_geometry.buffer(0.001, 2))
 
                 # obsługa przypadku, gdy różnicą poligonów jest linia
-                if diff_geometry.wkbType() in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
+                if diff_geometry.wkbType() in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString) or diff_geometry.type() == QgsWkbTypes.LineGeometry:
                     geometry = diff_geometry.buffer(0.001, 5)
-
+                    geometry = geometry.convertToType(QgsWkbTypes.PolygonGeometry)
                 else:
                     geometry = diff_geometry
                 if not geometry:
@@ -301,12 +303,12 @@ class LayerImportWorker(QObject):
         area = int(da.measureArea(geometry))/10000
         if area > 1:
             points_number *= area
-        points = geometry.randomPointsInPolygon(int(points_number))
+        points = geometry.randomPointsInPolygon(int(points_number)) if not geometry.isEmpty() else []
 
         for point in points:
             if point is None:
                 continue
-            
+
             feature = QgsFeature()
 
             if additional_attributes:

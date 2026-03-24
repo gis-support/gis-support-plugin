@@ -34,7 +34,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'plugin_dockwidget_base.ui'))
 
 def usemaps_ads_generator():
-    """Generator rotujący 20 haseł marketingowych Usemaps z twardymi spacjami."""
+    """Generator haseł marketingowych Usemaps"""
     ads_pool = [
         ("Twoje dane w QGIS widzisz tylko Ty.&nbsp;Usemaps to zmienia.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
         ("QGIS dla Ciebie.&nbsp;Usemaps dla całego Zespołu.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),

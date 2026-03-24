@@ -37,26 +37,26 @@ def usemaps_ads_generator():
     """Generator haseł marketingowych Usemaps"""
     ads_pool = [
         ("Twoje dane w QGIS widzisz tylko Ty.&nbsp;Usemaps to zmienia.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("QGIS dla Ciebie.&nbsp;Usemaps dla całego Zespołu.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Pracujesz na plikach.&nbsp;Zespół potrzebuje wiedzy.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Jeden projekt,&nbsp;wiele wersji?&nbsp;Usemaps wprowadza porządek.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Projekty OZE wymagają współpracy.&nbsp;Usemaps ją umożliwia.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("QGIS dla Ciebie.&nbsp;Usemaps dla całego Zespołu.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy dla całej organizacji"),
+        ("Pracujesz na plikach.&nbsp;Zespół potrzebuje wiedzy.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Poznaj Usemaps"),
+        ("Jeden projekt,&nbsp;wiele wersji?&nbsp;Usemaps wprowadza porządek.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy całej organizacji"),
+        ("Projekty OZE wymagają współpracy.&nbsp;Usemaps ją umożliwia.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Poznaj Usemaps dla OZE"),
         ("Od plików do platformy.&nbsp;Usemaps zmienia sposób pracy z GIS.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Inwestycje OZE nie lubią zwłoki.&nbsp;Usemaps przyspiesza obieg informacji.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Zapomnij o wersji „final_v2”.&nbsp;Z Usemaps masz zawsze aktualne dane.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Ty masz dane w QGIS.&nbsp;Reszta zespołu ma tylko pytania.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Mapy dla inwestycji.&nbsp;Dane dla całego zespołu w Usemaps.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Robisz analizy.&nbsp;Zespół robi screeny.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Lokalizacja idealna.&nbsp;Szkoda,&nbsp;że tylko w Twoim QGIS.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Działki sprawdzone.&nbsp;Każda w innym pliku.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Światłowód w terenie.&nbsp;Dane gdzieś w mailu.", "https://usemaps.com/usemaps-network/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Dane o sieci są.&nbsp;Tylko trzeba je znaleźć.", "https://usemaps.com/usemaps-network/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Decyzje za miliony.&nbsp;Dane w załączniku.zip.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Inwestycje OZE nie lubią zwłoki.&nbsp;Usemaps przyspiesza obieg informacji.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Poznaj Usemaps dla OZE"),
+        ("Zapomnij o wersji „final_v2”.&nbsp;Z Usemaps masz zawsze aktualne dane.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy całej organizacji"),
+        ("Ty masz dane w QGIS.&nbsp;Reszta zespołu ma tylko pytania.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz rozwiązanie"),
+        ("Mapy dla inwestycji.&nbsp;Dane dla całego zespołu w Usemaps.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Poznaj Usemaps dla OZE"),
+        ("Robisz analizy.&nbsp;Zespół robi screeny.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Odkryj Usemaps"),
+        ("Lokalizacja idealna.&nbsp;Szkoda,&nbsp;że tylko w Twoim QGIS.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy całej organizacji"),
+        ("Działki sprawdzone.&nbsp;Każda w innym pliku.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Poznaj Usemaps dla OZE"),
+        ("Światłowód w terenie.&nbsp;Dane gdzieś w mailu.", "https://usemaps.com/usemaps-network/?utm_source=qgis_plugin","Zobacz jak zbierać dane w jednym miejscu"),
+        ("Dane o sieci są.&nbsp;Tylko trzeba je znaleźć.", "https://usemaps.com/usemaps-network/?utm_source=qgis_plugin","W Usemaps wszystko widzisz."),
+        ("Decyzje za miliony.&nbsp;Dane w załączniku.zip.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Poznaj Usemaps dla OZE"),
         ("Mapy robisz świetne.&nbsp;Szkoda,&nbsp;że tylko Ty je widzisz.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy całej organizacji"),
         ("„Masz aktualne dane?”&nbsp;Najczęściej zadawane pytanie w GIS", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się, jak to zmienić"),
-        ("Dane gotowe.&nbsp;Synchronizacja…&nbsp;kiedyś.&nbsp;Usemaps ją umożliwia.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Dane gotowe.&nbsp;Synchronizacja…&nbsp;kiedyś.&nbsp;Usemaps ją umożliwia.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy całej organizacji"),
         ("Każda obserwacja ma znaczenie.&nbsp;Pod warunkiem,&nbsp;że ktoś ją widzi.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
-        ("Twoje mapy są świetne.&nbsp;Z Usemaps wreszcie zobaczy je cały zespół.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak")
+        ("Twoje mapy są świetne.&nbsp;Z Usemaps wreszcie zobaczy je cały zespół.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy całej organizacji")
     ]
     while True:
         random.shuffle(ads_pool)

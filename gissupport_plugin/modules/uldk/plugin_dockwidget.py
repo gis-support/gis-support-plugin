@@ -23,13 +23,45 @@
 """
 
 import os
+import random
 
-from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal
+from qgis.PyQt import QtGui, QtWidgets, uic
+from qgis.PyQt.QtCore import pyqtSignal, Qt
+from qgis.PyQt.QtGui import QPixmap
 from qgis.core import QgsMapLayerProxyModel
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'plugin_dockwidget_base.ui'))
+
+def usemaps_ads_generator():
+    """Generator rotujący 20 haseł marketingowych Usemaps z twardymi spacjami."""
+    ads_pool = [
+        ("Twoje dane w QGIS widzisz tylko Ty.&nbsp;Usemaps to zmienia.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("QGIS dla Ciebie.&nbsp;Usemaps dla całego Zespołu.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Pracujesz na plikach.&nbsp;Zespół potrzebuje wiedzy.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Jeden projekt,&nbsp;wiele wersji?&nbsp;Usemaps wprowadza porządek.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Projekty OZE wymagają współpracy.&nbsp;Usemaps ją umożliwia.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Od plików do platformy.&nbsp;Usemaps zmienia sposób pracy z GIS.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Inwestycje OZE nie lubią zwłoki.&nbsp;Usemaps przyspiesza obieg informacji.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Zapomnij o wersji „final_v2”.&nbsp;Z Usemaps masz zawsze aktualne dane.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Ty masz dane w QGIS.&nbsp;Reszta zespołu ma tylko pytania.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Mapy dla inwestycji.&nbsp;Dane dla całego zespołu w Usemaps.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Robisz analizy.&nbsp;Zespół robi screeny.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Lokalizacja idealna.&nbsp;Szkoda,&nbsp;że tylko w Twoim QGIS.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Działki sprawdzone.&nbsp;Każda w innym pliku.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Światłowód w terenie.&nbsp;Dane gdzieś w mailu.", "https://usemaps.com/usemaps-network/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Dane o sieci są.&nbsp;Tylko trzeba je znaleźć.", "https://usemaps.com/usemaps-network/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Decyzje za miliony.&nbsp;Dane w załączniku.zip.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Mapy robisz świetne.&nbsp;Szkoda,&nbsp;że tylko Ty je widzisz.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy całej organizacji"),
+        ("„Masz aktualne dane?”&nbsp;Najczęściej zadawane pytanie w GIS", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się, jak to zmienić"),
+        ("Dane gotowe.&nbsp;Synchronizacja…&nbsp;kiedyś.&nbsp;Usemaps ją umożliwia.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Każda obserwacja ma znaczenie.&nbsp;Pod warunkiem,&nbsp;że ktoś ją widzi.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
+        ("Twoje mapy są świetne.&nbsp;Z Usemaps wreszcie zobaczy je cały zespół.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak")
+    ]
+    while True:
+        random.shuffle(ads_pool)
+        for ad in ads_pool:
+            yield ad
 
 class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
@@ -39,6 +71,8 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         super(wyszukiwarkaDzialekDockWidget, self).__init__(parent)
         self.setupUi(self)
 
+        self.ad_generator = usemaps_ads_generator()
+
         self.comboLayers.setFilters(QgsMapLayerProxyModel.PolygonLayer)
         self.radioExistingLayer.toggled.connect(self.comboLayers.setEnabled)
 
@@ -47,6 +81,27 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.tabs.currentChanged.connect(self._update_layer_selection_ui)
         self._update_layer_selection_ui(self.tabs.currentIndex())
+
+    def showEvent(self, event):
+        super(wyszukiwarkaDzialekDockWidget, self).showEvent(event)
+        self._setup_usemaps_banner()
+
+    def _setup_usemaps_banner(self):
+        """Konfiguruje banner"""
+        self.label_usemaps_logo.setPixmap(
+            QPixmap(":/plugins/gissupport_plugin/usemaps_banner.png").scaledToHeight(
+                60, Qt.TransformationMode.SmoothTransformation)
+        )
+        ad = next(self.ad_generator)
+        self.label_usemaps_text.setTextFormat(Qt.TextFormat.RichText)
+        self.label_usemaps_text.setText(
+            f'<html><body><p align="center">{ad[0]}</p></body></html>'
+        )
+        self.label_usemaps_link.setText(
+            f'<html><body><p align="center" style="font-size:10pt;">'
+            f'<a href="{ad[1]}"><span style="text-decoration: underline; color:#0000ff;">'
+            f'{ad[2]}</span></a></p></body></html>'
+        )
 
     def _update_layer_selection_ui(self, index: int) -> None:
         tab_text = self.tabs.tabText(index)

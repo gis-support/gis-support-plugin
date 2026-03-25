@@ -86,7 +86,7 @@ class NMPTdownloader:
 
         self.nmpt_dockwidget.selectAreaWidget.selectLayerCb.layerChanged.connect(self.on_layer_change)
 
-        iface.addDockWidget(Qt.RightDockWidgetArea, self.nmpt_dockwidget)
+        iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.nmpt_dockwidget)
         self.nmpt_dockwidget.hide()
 
     def change_nmpt_dockwidget_visibility(self):
@@ -151,7 +151,7 @@ class NMPTdownloader:
         area.setSourceCrs(QgsCoordinateReferenceSystem.fromEpsgId(2180), QgsCoordinateTransformContext())
         area.setEllipsoid('GRS80')
         rectangle_area = area.measureArea(bbox_geom)
-        rectangle_area_hectares = area.convertAreaMeasurement(rectangle_area, QgsUnitTypes.AreaHectares)
+        rectangle_area_hectares = area.convertAreaMeasurement(rectangle_area, QgsUnitTypes.AreaUnit.AreaHectares)
         return rectangle_area_hectares
 
     def on_layer_features_selection_changed(self, selected_features):
@@ -249,7 +249,7 @@ class NMPTdownloader:
         layer.setCrs(QgsCoordinateReferenceSystem(2180))
         QgsProject.instance().addMapLayer(layer)
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
-                    "Pomyślnie pobrano NM(P)T", level=Qgis.Info))
+                    "Pomyślnie pobrano NM(P)T", level=Qgis.MessageLevel.Info))
 
     def handle_task_error(self, error_message):
-        iface.messageBar().pushMessage("Wtyczka GIS Support", error_message, level=Qgis.Critical)
+        iface.messageBar().pushMessage("Wtyczka GIS Support", error_message, level=Qgis.MessageLevel.Critical)

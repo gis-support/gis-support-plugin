@@ -23,9 +23,10 @@
 """
 import os.path
 
-from PyQt5.QtCore import (QCoreApplication, Qt, QUrl)
-from PyQt5.QtGui import QDesktopServices, QIcon
-from PyQt5.QtWidgets import QAction, QDockWidget
+from qgis.PyQt.QtCore import (QCoreApplication, Qt, QUrl)
+from qgis.PyQt.QtGui import QDesktopServices, QIcon
+from qgis.PyQt.QtWidgets import QDockWidget
+from qgis.PyQt.QtGui import QAction
 from pathlib import Path
 import inspect
 from importlib import util

@@ -24,8 +24,8 @@
 
 import os
 
-from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal
+from qgis.PyQt import QtGui, QtWidgets, uic
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import QgsMapLayerProxyModel
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -39,7 +39,7 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         super(wyszukiwarkaDzialekDockWidget, self).__init__(parent)
         self.setupUi(self)
 
-        self.comboLayers.setFilters(QgsMapLayerProxyModel.PolygonLayer)
+        self.comboLayers.setFilters(QgsMapLayerProxyModel.Filter.PolygonLayer)
         self.radioExistingLayer.toggled.connect(self.comboLayers.setEnabled)
 
         self.radioTempLayer.setChecked(True)

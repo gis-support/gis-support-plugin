@@ -1,9 +1,9 @@
 import os
 
-from PyQt5 import uic, QtWidgets
+from qgis.PyQt import uic, QtWidgets
 from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
-from PyQt5.QtGui import QStandardItemModel
+from qgis.PyQt.QtGui import QStandardItemModel
 
 from gissupport_plugin.tools.usemaps_lite.event_handler import EVENT_HANDLER
 from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
@@ -24,7 +24,7 @@ class UsemapsLiteDockwidget(QtWidgets.QDockWidget, FORM_CLASS):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        iface.addDockWidget(Qt.RightDockWidgetArea, self)
+        iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
 
         self.layers_model = QStandardItemModel()
         self.layers_listview.setModel(self.layers_model)
@@ -34,7 +34,7 @@ class UsemapsLiteDockwidget(QtWidgets.QDockWidget, FORM_CLASS):
                                                               TRANSLATOR.translate_ui("verified"),
                                                               TRANSLATOR.translate_ui("online")])
         self.users_tableview.setModel(self.users_tableview_model)    
-        self.users_tableview.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.users_tableview.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         
         USER_MAPPER.set_users_model(self.users_tableview_model)
     

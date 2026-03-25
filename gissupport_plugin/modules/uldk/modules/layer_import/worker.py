@@ -1,5 +1,4 @@
-import os
-from PyQt5.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
+from qgis.PyQt.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsField, QgsGeometry,
                        QgsPointXY, QgsVectorLayer, QgsFeature, QgsWkbTypes,
@@ -160,15 +159,15 @@ class LayerImportWorker(QObject):
 
             geom_type = QgsWkbTypes.flatType(geom.wkbType())
 
-            if geom_type in (QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon):
+            if geom_type in (QgsWkbTypes.Type.Polygon, QgsWkbTypes.Type.MultiPolygon):
                 self._process_polygon_with_fishnet(f, geom)
                 self.progressed.emit(self.layer_found, True, 0, False, True)
 
-            elif geom_type in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
+            elif geom_type in (QgsWkbTypes.Type.LineString, QgsWkbTypes.Type.MultiLineString):
                 self._process_line_with_densification(f, geom)
                 self.progressed.emit(self.layer_found, True, 0, False, True)
 
-            elif geom_type in (QgsWkbTypes.Point, QgsWkbTypes.MultiPoint):
+            elif geom_type in (QgsWkbTypes.Type.Point, QgsWkbTypes.Type.MultiPoint):
                 points = geom.asGeometryCollection() if geom.isMultipart() else [geom]
                 additional_attributes = [f.attribute(field.name()) for field in self.additional_output_fields]
                 for p_geom in points:
@@ -369,8 +368,7 @@ class LayerImportWorker(QObject):
         if self.transformation is not None:
             geometry.transform(self.transformation)
 
-        # Dla linii - najpierw robimy bufor żeby stworzyć poligon
-        if geom_type in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
+        if geom_type in (QgsWkbTypes.Type.LineString, QgsWkbTypes.Type.MultiLineString):
             points_number = 10
             geometry = geometry.buffer(0.001, 2)
 
@@ -386,7 +384,7 @@ class LayerImportWorker(QObject):
                 diff_geometry = geometry.difference(self.parcels_geometry.buffer(0.001, 2))
 
                 # obsługa przypadku, gdy różnicą poligonów jest linia
-                if diff_geometry.wkbType() in (QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
+                if diff_geometry.wkbType() in (QgsWkbTypes.Type.LineString, QgsWkbTypes.Type.MultiLineString):
                     geometry = diff_geometry.buffer(0.001, 5)
 
                 else:

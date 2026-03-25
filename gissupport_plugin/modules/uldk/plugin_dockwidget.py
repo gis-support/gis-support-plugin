@@ -89,7 +89,7 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def _setup_usemaps_banner(self):
         """Konfiguruje banner"""
         self.label_usemaps_logo.setPixmap(
-            QPixmap(":/plugins/gissupport_plugin/usemaps_banner.png").scaledToHeight(
+            QPixmap(":/plugins/gissupport_plugin/usemaps_banner.svg").scaledToHeight(
                 60, Qt.TransformationMode.SmoothTransformation)
         )
         ad = next(self.ad_generator)

@@ -53,7 +53,7 @@ def usemaps_ads_generator():
         ("Dane o sieci są.&nbsp;Tylko trzeba je znaleźć.", "https://usemaps.com/usemaps-network/?utm_source=qgis_plugin","W Usemaps wszystko widzisz."),
         ("Decyzje za miliony.&nbsp;Dane w załączniku.zip.", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Poznaj Usemaps dla OZE"),
         ("Mapy robisz świetne.&nbsp;Szkoda,&nbsp;że tylko Ty je widzisz.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy całej organizacji"),
-        ("„Masz aktualne dane?”&nbsp;Najczęściej zadawane pytanie w GIS", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się, jak to zmienić"),
+        ("„Masz aktualne dane?”&nbsp;Najczęściej zadawane pytanie w GIS", "https://usemaps.com/usemaps-renewables/?utm_source=qgis_plugin","Dowiedz się,&nbsp;jak to zmienić"),
         ("Dane gotowe.&nbsp;Synchronizacja…&nbsp;kiedyś.&nbsp;Usemaps ją umożliwia.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy całej organizacji"),
         ("Każda obserwacja ma znaczenie.&nbsp;Pod warunkiem,&nbsp;że ktoś ją widzi.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Dowiedz się więcej"),
         ("Twoje mapy są świetne.&nbsp;Z Usemaps wreszcie zobaczy je cały zespół.", "https://usemaps.com/usemaps-qgis/?utm_source=qgis_plugin","Zobacz jak udostępnić mapy całej organizacji")
@@ -95,12 +95,11 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         ad = next(self.ad_generator)
         self.label_usemaps_text.setTextFormat(Qt.TextFormat.RichText)
         self.label_usemaps_text.setText(
-            f'<html><body><p align="center">{ad[0]}</p></body></html>'
+            f'<div align="center">{ad[0]}</div>'
         )
         self.label_usemaps_link.setText(
-            f'<html><body><p align="center" style="font-size:10pt;">'
-            f'<a href="{ad[1]}"><span style="text-decoration: underline; color:#0000ff;">'
-            f'{ad[2]}</span></a></p></body></html>'
+            f'<div align="center"><a href="{ad[1]}" style="text-decoration: underline; color:#0000ff;">'
+            f'{ad[2]}</a></div>'
         )
 
     def _update_layer_selection_ui(self, index: int) -> None:

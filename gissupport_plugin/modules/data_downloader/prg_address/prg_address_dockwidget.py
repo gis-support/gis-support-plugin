@@ -1,7 +1,7 @@
 import os
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import QgsMapLayerProxyModel
 
 from gissupport_plugin.tools.widgets.gs_select_area import GsSelectArea
@@ -18,7 +18,7 @@ class PRGAddressDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         super(PRGAddressDockWidget, self).__init__(parent)
         self.setupUi(self)
 
-        self.gsSelectAreaWidget = GsSelectArea(select_layer_types=[QgsMapLayerProxyModel.PolygonLayer])
+        self.gsSelectAreaWidget = GsSelectArea(select_layer_types=[QgsMapLayerProxyModel.Filter.PolygonLayer])
         self.widgetLayout.addWidget(self.gsSelectAreaWidget)
 
         self.setWindowTitle("PRG - punkty adresowe")

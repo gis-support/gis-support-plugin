@@ -1,11 +1,11 @@
 import os
 from typing import Optional
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QThread
-from PyQt5.QtGui import QPixmap
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import QThread
+from qgis.PyQt.QtGui import QPixmap
 from qgis.core import (QgsCoordinateReferenceSystem, QgsMapLayerProxyModel,
-                       QgsProject, QgsVectorLayer)
+                       QgsProject, QgsVectorLayer, QgsMessageLog, Qgis)
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 
@@ -45,7 +45,7 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
 
         target_layout.layout().addWidget(self)
 
-        self.layer_select.setFilters(QgsMapLayerProxyModel.PointLayer | QgsMapLayerProxyModel.LineLayer | QgsMapLayerProxyModel.PolygonLayer)
+        self.layer_select.setFilters(QgsMapLayerProxyModel.Filter.PointLayer | QgsMapLayerProxyModel.Filter.LineLayer | QgsMapLayerProxyModel.Filter.PolygonLayer)
 
         self.label_info_start.setPixmap(QPixmap(self.icon_info_path))
         self.label_info_start.setToolTip((
@@ -73,7 +73,7 @@ class LayerImport:
 
         target_layer_name = self.ui.text_edit_target_layer_name.text()
 
-        selected_only = bool(self.ui.checkbox_selected_only.checkState())
+        selected_only = bool(self.ui.checkbox_selected_only.isChecked())
         selected_field_names = self.ui.combobox_fields_select.checkedItems()
         fields_to_copy = [ field for field in layer.dataProvider().fields()
                             if field.name() in selected_field_names ]
@@ -110,6 +110,9 @@ class LayerImport:
     def __init_ui(self) -> None:
         self.ui.button_start.clicked.connect(self.search)
         self.ui.button_cancel.clicked.connect(self.__stop)
+
+        self.source_layer = None
+
         self.__on_layer_changed(self.ui.layer_select.currentLayer())
         self.ui.layer_select.layerChanged.connect(self.__on_layer_changed)
 
@@ -121,11 +124,12 @@ class LayerImport:
 
         self.ui.label_status.setText("")
         self.ui.label_found_count.setText("")
-        self.ui.label_not_found_count.setText("")
 
     def __toggle_target_input(self) -> None:
         dock = self.parent.dockwidget
         is_existing = dock.radioExistingLayer.isChecked()
+
+        self.ui.combobox_fields_select.setEnabled(not is_existing)
 
         if is_existing:
             self.ui.text_edit_target_layer_name.setEnabled(False)
@@ -143,25 +147,47 @@ class LayerImport:
                 self.ui.text_edit_target_layer_name.setText(suggested_name)
 
     def __on_layer_changed(self, layer: Optional[QgsVectorLayer]) -> None:
+        if self.source_layer:
+            try:
+                self.source_layer.selectionChanged.disconnect(self.__on_layer_features_selection_changed)
+                self.source_layer.updatedFields.disconnect(self.__fill_combobox_fields_select)
+                self.source_layer.featureAdded.disconnect(self.__update_start_button_state)
+                self.source_layer.featureDeleted.disconnect(self.__update_start_button_state)
+            except (TypeError, RuntimeError):
+                QgsMessageLog.logMessage(
+                    "Wtyczka GIS Support",
+                    "Próba rozłączenia sygnałów, które nie były wcześniej podpięte.",
+                    "Wtyczka ULDK",
+                    level=Qgis.MessageLevel.Info
+                )
+
         self.ui.combobox_fields_select.clear()
-        self.ui.button_start.setEnabled(False)
+        self.source_layer = layer
         if layer:
-            if layer.dataProvider().featureCount() == 0:
-                return
-            self.source_layer = layer
             layer.selectionChanged.connect(self.__on_layer_features_selection_changed)
             layer.updatedFields.connect(self.__fill_combobox_fields_select)
-            self.ui.button_start.setEnabled(True)
+            layer.featureAdded.connect(self.__update_start_button_state)
+            layer.featureDeleted.connect(self.__update_start_button_state)
+            self.__update_start_button_state()
             fields = layer.dataProvider().fields()
+            self.ui.combobox_fields_select.addItems([f.name() for f in fields])
+
             if not self.parent.dockwidget.radioExistingLayer.isChecked():
-                suggested_target_layer_name = f"{layer.name()} - Działki ULDK"
-                self.ui.text_edit_target_layer_name.setText(suggested_target_layer_name)
-            self.ui.combobox_fields_select.addItems(map(lambda x: x.name(), fields))
-            self.ui.button_start.setEnabled(True)
+                suggested_name = f"{layer.name()} - Działki ULDK"
+                self.ui.text_edit_target_layer_name.setText(suggested_name)
         else:
             self.source_layer = None
+            self.ui.button_start.setEnabled(False)
             self.ui.text_edit_target_layer_name.setText("")
             self.ui.checkbox_selected_only.setText("Tylko zaznaczone obiekty [0]")
+
+    def __update_start_button_state(self, *args) -> None:
+        """Aktualizuje dostępność przycisku Start na podstawie liczby obiektów."""
+        if self.source_layer:
+            count = self.source_layer.featureCount()
+            self.ui.button_start.setEnabled(count > 0)
+        else:
+            self.ui.button_start.setEnabled(False)
 
     def __on_layer_features_selection_changed(self, selected_features):
         if not self.source_layer:
@@ -173,24 +199,18 @@ class LayerImport:
         fields = self.source_layer.dataProvider().fields()
         self.ui.combobox_fields_select.addItems(map(lambda x: x.name(), fields))
 
-    def __progressed(self, layer_found, layer_not_found, found, omitted_count, saved, feature_processed):
+    def __progressed(self, layer_found, found, omitted_count, saved, feature_processed):
         if saved:
             self.saved_count += 1
-        if found and feature_processed:
-            self.found_count += 1
-        elif not found:
-            self.not_found_count += 1
+            if layer_found.dataProvider().featureCount():
+                self.__reload_and_add_layer(layer_found)
         if feature_processed:
+            self.found_count += 1
             if layer_found.dataProvider().featureCount():
                 self.__reload_and_add_layer(layer_found)
 
-            if layer_not_found.dataProvider().featureCount():
-                self.__reload_and_add_layer(layer_not_found)
-
         self.omitted_count += omitted_count
         progressed_count = self.found_count
-        if self.worker.count_not_found_as_progressed:
-            progressed_count += self.not_found_count
 
         self.ui.progress_bar.setValue(int(progressed_count/self.source_features_count*100))
         self.ui.label_status.setText(f"Postęp przetwarzania: {progressed_count} z {self.source_features_count} obiektów")
@@ -199,20 +219,17 @@ class LayerImport:
             found_message += f" (pominięto: {self.omitted_count})"
 
         self.ui.label_found_count.setText(found_message)
-        self.ui.label_not_found_count.setText(f"Brak dopasowań: {self.not_found_count}")
 
-    def __handle_finished(self, layer_found, layer_not_found):
+    def __handle_finished(self):
         self.__cleanup_after_search()
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
             f"Import z warstwy: zakończono wyszukiwanie. Zapisano {self.saved_count} {get_obiekty_form(self.saved_count)} do warstwy <b>{self.ui.text_edit_target_layer_name.text()}</b>"))
 
-    def __handle_interrupted(self, layer_found, layer_not_found):
+    def __handle_interrupted(self, layer_found):
         self.__cleanup_after_search()
 
         if layer_found.dataProvider().featureCount():
             self.__reload_and_add_layer(layer_found)
-        if layer_not_found.dataProvider().featureCount():
-            self.__reload_and_add_layer(layer_not_found)
 
     def __cleanup_after_search(self):
         self.__set_controls_enabled(True)
@@ -225,10 +242,8 @@ class LayerImport:
         self.ui.button_cancel.setEnabled(True)
         self.ui.label_status.setText("")
         self.ui.label_found_count.setText("")
-        self.ui.label_not_found_count.setText("")
 
         self.found_count = 0
-        self.not_found_count = 0
         self.omitted_count = 0
         self.saved_count = 0
 
@@ -236,7 +251,10 @@ class LayerImport:
         dock = self.parent.dockwidget
         is_existing = dock.radioExistingLayer.isChecked()
         self.ui.text_edit_target_layer_name.setEnabled(enabled and not is_existing)
-        self.ui.button_start.setEnabled(enabled)
+        if enabled:
+            self.__update_start_button_state()
+        else:
+            self.ui.button_start.setEnabled(False)
         self.ui.layer_select.setEnabled(enabled)
 
     def __stop(self):
@@ -248,3 +266,5 @@ class LayerImport:
         layer.reload()
         if not QgsProject.instance().mapLayersByName(layer.name()):
             QgsProject.instance().addMapLayer(layer)
+
+        layer.triggerRepaint()

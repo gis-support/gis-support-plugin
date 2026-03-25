@@ -19,7 +19,7 @@ class ForgotPasswordDialog(QDialog, FORM_CLASS):
     def __init__(self):
         super(ForgotPasswordDialog, self).__init__(parent=iface.mainWindow())
         self.setupUi(self)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
 
         self.cancel_button.clicked.connect(self.hide)
 

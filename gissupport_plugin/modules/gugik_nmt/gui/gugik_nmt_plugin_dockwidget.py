@@ -29,7 +29,7 @@ from gissupport_plugin.tools.requests import NetworkHandler
 # dla wtyczek w oficjalnym repo
 # https://github.com/gis-support/gis-support-plugin/issues/4
 try:
-    from matplotlib import pyplot as plt 
+    from matplotlib import pyplot as plt
     matplotlib_library = True
 except ImportError:
     matplotlib_library = False
@@ -39,7 +39,7 @@ from qgis.PyQt.QtWidgets import QDockWidget, QInputDialog, QFileDialog
 from qgis.PyQt.QtCore import pyqtSignal, QVariant
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import (QgsMapLayerProxyModel, QgsField, Qgis, QgsTask, QgsApplication,
-    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsVectorLayer, 
+    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsVectorLayer,
     QgsFeature, QgsWkbTypes, QgsGeometry, QgsExpression, QgsFeatureRequest)
 from qgis.utils import iface
 
@@ -54,7 +54,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
     on_message = pyqtSignal(str, object, int)
-    PROXY_URL = 'https://gugik.gis.support/nmt/'
+
     GUGIK_URL = 'https://services.gugik.gov.pl/nmt/'
 
     def __init__(self, parent=None):
@@ -62,7 +62,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         super(GugikNmtDockWidget, self).__init__(parent)
         self.setupUi(self)
 
-        self.cbLayers.setFilters(QgsMapLayerProxyModel.PointLayer)
+        self.cbLayers.setFilters(QgsMapLayerProxyModel.Filter.PointLayer)
         self.menageSignals()
         self.registerTools()
         self.setButtonIcons()
@@ -106,10 +106,10 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
-        
+
     def showInfo(self):
         self.infoDialog.show()
-    
+
     def showMessage(self, message, level, time=5):
         """ Wyświetlanie wiadomości na pasku """
         iface.messageBar().pushMessage('Narzędzie GUGiK NMT:', message, level, time)
@@ -138,13 +138,13 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         x, y = point.y(), point.x()
         response = self.createRequest(f'?request=GetHbyXY&x={x}&y={y}')
         if 'error' in response:
-            self.on_message.emit(response['error'], Qgis.Critical, 5)
+            self.on_message.emit(response['error'], Qgis.MessageLevel.Critical, 5)
             return
         else:
             return response['data']
 
     def getPointsHeights(self, feats_meta):
-        """ 
+        """
         Pobieranie wysokości dla większej ilości punktów. Jeśli ich liczba > 200 -
         lista zostaje podzielona na mniejsze częśći i dopiero dla tych części wysyłane są
         requesty do api
@@ -155,7 +155,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         if len(feats_meta) <= 200:
             response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(feats_meta))
             if 'error' in response:
-                self.on_message.emit(response['error'], Qgis.Critical, 5)
+                self.on_message.emit(response['error'], Qgis.MessageLevel.Critical, 5)
                 return
             else:
                 return response['data']
@@ -166,7 +166,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             for chunk in chunks:
                 response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(chunk))
                 if 'error' in response:
-                    self.on_message.emit(response['error'], Qgis.Critical, 5)
+                    self.on_message.emit(response['error'], Qgis.MessageLevel.Critical, 5)
                     return
                 else:
                     responses.append(response['data'])
@@ -178,8 +178,8 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         """ Transformacja geometrii """
         if current_crs != dest_crs:
             ct = QgsCoordinateTransform(
-                QgsCoordinateReferenceSystem(current_crs), 
-                QgsCoordinateReferenceSystem(dest_crs), 
+                QgsCoordinateReferenceSystem(current_crs),
+                QgsCoordinateReferenceSystem(dest_crs),
                 QgsProject().instance()
                 )
             geometry.transform(ct)
@@ -206,7 +206,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         exp = QgsExpression('num_geometries($geometry) > 1')
         multipart_features = [f for f in layer.getFeatures(QgsFeatureRequest(exp))]
         if multipart_features:
-            self.on_message.emit("Rozszerzenie nie jest możliwe, ponieważ warstwa zawiera obiekty o wieloczęściowych geometriach", Qgis.Warning, 5)
+            self.on_message.emit("Rozszerzenie nie jest możliwe, ponieważ warstwa zawiera obiekty o wieloczęściowych geometriach", Qgis.MessageLevel.Warning, 5)
         if self.cbxUpdateField.isChecked():
             field_id = layer.dataProvider().fields().indexFromName(self.cbFields.currentText())
         elif 'nmt_wys' not in layer.fields().names():
@@ -225,7 +225,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         """ Dodawanie wysokości dla punktów """
         layer = self.cbLayers.currentLayer()
         layer_crs = layer.crs().authid()
-        feats_meta = {self.transformGeometry(feat.geometry(), layer_crs, multi=True):feat.id() 
+        feats_meta = {self.transformGeometry(feat.geometry(), layer_crs, multi=True):feat.id()
             for feat in data.get('feats')}
         if not feats_meta:
             return
@@ -239,16 +239,16 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                 height = int(float(height))
             to_change[feats_meta.get(coords)] = {field_id:height}
         layer.dataProvider().changeAttributeValues(to_change)
-        self.on_message.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}', Qgis.Success, 4)
+        self.on_message.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}', Qgis.MessageLevel.Success, 4)
         del self.task2
 
     def createTempLayer(self):
-        """ 
-        Tworzenie warstwy tymczasowej i dodanie do niej punktów, 
+        """
+        Tworzenie warstwy tymczasowej i dodanie do niej punktów,
         dla których zostały pobrane wysokości
         """
         if not self.savedFeats:
-            self.on_message.emit('Brak punktów do zapisu', Qgis.Warning, 5)
+            self.on_message.emit('Brak punktów do zapisu', Qgis.MessageLevel.Warning, 5)
             return
         text, ok = QInputDialog.getText(self, 'Stwórz warstwę tymczasową', 'Nazwa warstwy:')
         if not ok:
@@ -276,7 +276,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                 pass
         self.tempLayer.dataProvider().addFeatures(features)
         self.tempLayer.updateExtents(True)
-        self.on_message.emit(f'Utworzono warstwę tymczasową: {self.tempLayer.name()}', Qgis.Success, 4)
+        self.on_message.emit(f'Utworzono warstwę tymczasową: {self.tempLayer.name()}', Qgis.MessageLevel.Success, 4)
         self.identifyTool.reset()
         del self.task
 
@@ -287,7 +287,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             return
         path, _ = QFileDialog.getSaveFileName(filter=f'*.csv')
         if not path:
-            return   
+            return
         rows = self.twData.rowCount()
         if not path.lower().endswith('.csv'):
             path += '.csv'
@@ -303,12 +303,12 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                         dist, val, round(float(x)), round(float(y))
                     ])
             writer.writerows(to_write)
-        self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.Success, 4)   
+        self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.MessageLevel.Success, 4)   
 
     def generatePlot(self):
         """ Wyświetlenie profilu podłużnego """
         if not matplotlib_library:
-            self.on_message.emit("Nie wykryto biblioteki matplotlib. W celu prawidłowego działania wyświetalnia profilu proszę ją doinstalować.", Qgis.Warning, 5)
+            self.on_message.emit("Nie wykryto biblioteki matplotlib. W celu prawidłowego działania wyświetalnia profilu proszę ją doinstalować.", Qgis.MessageLevel.Warning, 5)
             return
         rows = self.twData.rowCount()
         if rows < 1:
@@ -325,7 +325,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         ax.set(xlabel='Interwał [m]', ylabel='Wysokość npm',
             title='Profil podłużny')
         ax.plot(dist_list, values)
-        plt.show()   
+        plt.show()
 
     def activateTool(self, tool):
         """ Zmiana aktywnego narzędzia mapy """
@@ -336,8 +336,5 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
     def createRequest(self, parameters):
         """ Tworzy request. W przypadku braku odpowiedzi przez proxy wysyłane jest zapytanie bezpośrednio do GUGIK """
         handler = NetworkHandler()
-        result = handler.get(self.PROXY_URL + parameters)
-
-        if 'error' in result:
-            result = handler.get(self.GUGIK_URL + parameters)
-        return result
+        
+        return handler.get(self.GUGIK_URL + parameters)

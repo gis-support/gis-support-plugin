@@ -1,3 +1,11 @@
+3.0
+Integracja z usługą Usemaps Lite
+Usunięcie modułu Usemaps - jest ona dalej dostępna jako osobne rozszerzenie Usemaps
+Umożliwienie dodania zapisu wyszukiwania działek do wybranej warstwy
+Zapisywanie wyników pobranych działek na bieżąco do warstwy
+Przywrócenie wyszukiwania działek bezpośrednio z plików CSV
+Poprawiony UX panelu wyszukiwarki działek
+
 2.11
 Nowe narzędzie do pobierania punktów adresowych
 Poprawiono błąd przy ponownym logowaniu do usługi GIS.Box

@@ -455,6 +455,7 @@
      <widget class="QLabel" name="label_usemaps_text">
       <property name="font">
        <font>
+        <pointsize>10</pointsize>
         <weight>50</weight>
         <bold>false</bold>
        </font>
@@ -469,6 +470,11 @@
     </item>
     <item>
      <widget class="QLabel" name="label_usemaps_link">
+       <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>
       </property>

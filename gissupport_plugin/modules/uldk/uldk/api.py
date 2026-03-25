@@ -55,21 +55,20 @@ class ULDKPoint:
 
 class ULDKSearch:
 
-    proxy_url = r"https://gugik.gis.support/uldk/service.php"
     gugik_url = r"http://uldk.gugik.gov.pl/service.php"
 
     def __init__(self, target, results, method = ""):
-        self.url = URL(self.proxy_url, obiekt=target, wynik=results)
+        self.url = URL(self.gugik_url, obiekt=target, wynik=results)
         if method:
             self.url.set_param("request", method)
 
     @sleep_and_retry
     @RateLimitDecorator(calls = 5, period = 3)
     def search(self):
-        url = self.url
         handler = NetworkHandler()
 
         content = handler.get(str(self.url))
+
         if "error" in content:
             self.url = URL(self.gugik_url, **url.params)
             content = handler.get(str(self.url))

@@ -410,6 +410,9 @@ class LayerImportWorker(QObject):
 
         # Tworzymy feature dla każdego punktu
         for point in points:
+            if point is None:
+                continue
+            
             feature = QgsFeature()
 
             if additional_attributes:

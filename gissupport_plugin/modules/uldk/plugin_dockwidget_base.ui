@@ -45,58 +45,6 @@
      </widget>
     </item>
     <item>
-     <widget class="Line" name="usemapsLine">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="label_usemaps_logo">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="alignment">
-       <enum>Qt::AlignCenter</enum>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="label_usemaps_text">
-      <property name="font">
-       <font>
-        <weight>50</weight>
-        <bold>false</bold>
-       </font>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
-      </property>
-      <property name="alignment">
-       <enum>Qt::AlignCenter</enum>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="label_usemaps_link">
-      <property name="textFormat">
-       <enum>Qt::RichText</enum>
-      </property>
-      <property name="openExternalLinks">
-       <bool>true</bool>
-      </property>
-      <property name="alignment">
-       <enum>Qt::AlignCenter</enum>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="Line" name="infoLine">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -485,6 +433,63 @@
         </item>
        </layout>
       </widget>
+     </widget>
+    </item>
+    <item alignment="Qt::AlignHCenter">
+     <widget class="QLabel" name="label_usemaps_logo">
+      <property name="minimumSize">
+       <size>
+        <width>170</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>170</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="pixmap">
+       <pixmap>:/plugins/gissupport_plugin/usemaps_banner.svg</pixmap>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_usemaps_text">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+      <property name="alignment">
+       <enum>Qt::AlignCenter</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_usemaps_link">
+       <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::RichText</enum>
+      </property>
+      <property name="openExternalLinks">
+       <bool>true</bool>
+      </property>
+      <property name="alignment">
+       <enum>Qt::AlignCenter</enum>
+      </property>
      </widget>
     </item>
    </layout>

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-fill
 
 #from .resources import *
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QHeaderView
@@ -42,16 +42,16 @@ class Main(BaseModule):
 
 
         #Initialize table headers
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
-        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(4, QHeaderView.Stretch)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Interactive)
+        self.dlg.servicesTableView.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
         self.dlg.servicesTableView.horizontalHeader().resizeSection(1, 100)
         self.dlg.servicesTableView.horizontalHeader().resizeSection(3, 250)
 
         self.dlg.layersTableWidget.setHorizontalHeaderLabels(['Nr', 'Nazwa', 'Tytuł', 'Streszczenie'])
-        self.dlg.layersTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.dlg.layersTableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.dlg.layersTableWidget.setColumnCount(4)
         self.dlg.layersTableWidget.setColumnWidth(0, 20)
         self.dlg.layersTableWidget.setColumnWidth(1, 70)
@@ -62,7 +62,7 @@ class Main(BaseModule):
         self.dlg.layerTypeCb.addItems(["WMS/WFS", "WMS", "WFS"])
 
         #Connect slots to signals
-        self.dlg.searchLineEdit.textChanged.connect(servicesProxyModel.setFilterRegExp)
+        self.dlg.searchLineEdit.textChanged.connect(servicesProxyModel.setFilterRegularExpression)
         self.dlg.getLayersButton.clicked.connect(self.loadLayers)
         self.dlg.servicesTableView.doubleClicked.connect(self.loadLayers)
         self.dlg.layersTableWidget.itemSelectionChanged.connect(self.enableAddToMap)
@@ -102,7 +102,7 @@ class Main(BaseModule):
         row = self.dlg.servicesTableView.selectionModel().selectedRows()
         if len(row) > 0:
             selected = row[0]
-            self.curServiceData = selected.sibling(selected.row(), selected.column()).data(role=Qt.UserRole)
+            self.curServiceData = selected.sibling(selected.row(), selected.column()).data(role=Qt.ItemDataRole.UserRole)
 
             if self.curServiceData['type'] == 'WMS':
                 self.layerType = "WMS"
@@ -113,7 +113,7 @@ class Main(BaseModule):
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WMS',
                         f'Błąd połączenia z serwerem WMS (kod: {e.code}).',
-                        level=Qgis.Critical
+                        level=Qgis.MessageLevel.Critical
                     )
                     return 1
 
@@ -139,7 +139,7 @@ class Main(BaseModule):
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WFS',
                         f'Błąd połączenia z serwerem WFS (kod: {e.code}).',
-                        level=Qgis.Critical
+                        level=Qgis.MessageLevel.Critical
                     )
                     return 1
 
@@ -147,7 +147,7 @@ class Main(BaseModule):
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WFS',
                         f'Błąd połączenia z serwerem WFS.',
-                        level=Qgis.Critical
+                        level=Qgis.MessageLevel.Critical
                     )
                     return 1
 
@@ -198,7 +198,7 @@ class Main(BaseModule):
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WMS',
                         'Nie udało się wczytać warstwy %s' % self.dlg.layersTableWidget.item(layerId, 2).text(),
-                        level=Qgis.Warning
+                        level=Qgis.MessageLevel.Warning
                     )
 
         elif self.layerType == 'WFS':
@@ -229,7 +229,7 @@ class Main(BaseModule):
                     iface.messageBar().pushMessage(
                         'Baza krajowych usług WFS',
                         'Nie udało się wczytać warstwy %s' % self.dlg.layersTableWidget.item(layerId, 2).text(),
-                        level=Qgis.Warning
+                        level=Qgis.MessageLevel.Warning
                     )
 
     def populateCrsCb(self, crses):

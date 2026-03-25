@@ -47,8 +47,8 @@ class ImportLayerDialog(QDialog, FORM_CLASS):
     def __init__(self):
         super(ImportLayerDialog, self).__init__(parent=iface.mainWindow())
         self.setupUi(self)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
-        self.layer_combobox.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+        self.layer_combobox.setFilters(QgsMapLayerProxyModel.Filter.VectorLayer)
 
         self.cancel_button.clicked.connect(self.hide)
 

@@ -3,7 +3,7 @@ from owslib.wmts import WebMapTileService
 from qgis.core import QgsNetworkAccessManager
 from owslib.wms import WebMapService
 from owslib.wfs import WebFeatureService
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
+from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtCore import QUrl
 from typing import Union
 from urllib.parse import urlencode, parse_qs, urlsplit, urlunsplit
@@ -33,7 +33,7 @@ def get_capabilities(url: str, type: str) -> Union[WebMapService, WebFeatureServ
     request = QNetworkRequest(QUrl(request_url))
     reply = manager.blockingGet(request)
     
-    if reply.error() != QNetworkReply.NoError or not reply.content():
+    if reply.error() != QNetworkReply.NetworkError.NoError or not reply.content():
         raise CapabilitiesConnectionException(code=reply.error())
 
     content = reply.content()

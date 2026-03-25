@@ -1,8 +1,7 @@
 from typing import Dict, Any
 
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon
-from PyQt5.Qt import QStandardItem
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtGui import QIcon, QStandardItem
 from qgis.PyQt.QtCore import Qt
 from qgis.core import QgsSettings
 
@@ -51,7 +50,7 @@ class Auth(BaseLogicClass):
 
         self.dockwidget.logout_button.clicked.connect(self.logout)
 
-        self.dockwidget.events_listview.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.dockwidget.events_listview.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
 
 
     def login(self) -> None:
@@ -142,7 +141,7 @@ class Auth(BaseLogicClass):
                 is_online = org_member.get('online')
 
                 email_item = QStandardItem(email)
-                email_item.setData(user_uuid, Qt.UserRole)
+                email_item.setData(user_uuid, Qt.ItemDataRole.UserRole)
 
 
                 online_icon_path = ":images/themes/default/repositoryDisabled.svg"
@@ -172,8 +171,8 @@ class Auth(BaseLogicClass):
                 layer_type = layer.get("type")
 
                 layer_item = QStandardItem(layer_name)
-                layer_item.setData(layer_uuid, Qt.UserRole)
-                layer_item.setData(layer_type, Qt.UserRole + 1)
+                layer_item.setData(layer_uuid, Qt.ItemDataRole.UserRole)
+                layer_item.setData(layer_type, Qt.ItemDataRole.UserRole + 1)
 
                 row = [
                     layer_item

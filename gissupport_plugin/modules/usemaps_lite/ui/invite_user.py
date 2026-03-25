@@ -20,7 +20,7 @@ class InviteUserDialog(QDialog, FORM_CLASS):
     def __init__(self):
         super(InviteUserDialog, self).__init__(parent=iface.mainWindow())
         self.setupUi(self)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
 
         self.cancel_button.clicked.connect(self.hide)
         self.email_line.textChanged.connect(self.toggle_invite_user_button)

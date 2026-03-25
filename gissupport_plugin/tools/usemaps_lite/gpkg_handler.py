@@ -92,7 +92,7 @@ class GpkgHandler:
             temp_path,
             QgsProject.instance().transformContext(),
             QgsVectorFileWriter.SaveVectorOptions()
-        )[0] == QgsVectorFileWriter.NoError:
+        )[0] == QgsVectorFileWriter.WriterError.NoError:
             return temp_path
 
         return

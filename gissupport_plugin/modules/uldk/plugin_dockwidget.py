@@ -73,7 +73,7 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.ad_generator = usemaps_ads_generator()
 
-        self.comboLayers.setFilters(QgsMapLayerProxyModel.PolygonLayer)
+        self.comboLayers.setFilters(QgsMapLayerProxyModel.Filter.PolygonLayer)
         self.radioExistingLayer.toggled.connect(self.comboLayers.setEnabled)
 
         self.radioTempLayer.setChecked(True)

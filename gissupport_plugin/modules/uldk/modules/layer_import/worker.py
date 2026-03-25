@@ -1,3 +1,5 @@
+import os
+
 from qgis.PyQt.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsField, QgsGeometry,
@@ -410,7 +412,7 @@ class LayerImportWorker(QObject):
         for point in points:
             if point is None:
                 continue
-            
+
             feature = QgsFeature()
 
             if additional_attributes:

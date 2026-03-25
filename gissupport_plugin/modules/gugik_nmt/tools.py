@@ -19,9 +19,9 @@ class IdentifyTool(QgsMapTool):
         
         #Konfiguracja narzędzia
         set_cursor(self)
-        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.PointGeometry)
+        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.PointGeometry)
         self.tempGeom.setColor(QColor('red'))
-        self.tempGeom.setWidth = 5
+        self.tempGeom.setWidth(5)
         
     def canvasMoveEvent(self, e):
         """ Przeliczanie współrzędnych dla miejsca kursora """
@@ -58,23 +58,23 @@ class IdentifyTool(QgsMapTool):
         Usuwanie ostatniego dodanego punktu/segmentu lub
         czyszczenie całości
         """
-        if e.key() == Qt.Key_Escape:
-            self.tempGeom.reset(QgsWkbTypes.PointGeometry)
+        if e.key() == Qt.Key.Key_Escape:
+            self.tempGeom.reset(QgsWkbTypes.GeometryType.PointGeometry)
             if self.parent.savedFeats:
                 self.parent.savedFeats = []
-        elif e.key() == Qt.Key_Delete:
+        elif e.key() == Qt.Key.Key_Delete:
             self.tempGeom.removeLastPoint()
             if self.parent.savedFeats:
                 del self.parent.savedFeats[-1]
 
     def reset(self):
         """ Czyszczenie narzędzia """
-        self.tempGeom.reset(QgsWkbTypes.PointGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PointGeometry)
         self.parent.savedFeats = []
     
     def deactivate(self):
         """ Reagowanie zmiany aktywności narzędzia """
-        self.tempGeom.reset(QgsWkbTypes.PointGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.PointGeometry)
         self.button().setChecked(False)
 
 class ProfileTool(QgsMapTool):
@@ -89,20 +89,20 @@ class ProfileTool(QgsMapTool):
         self.parent = parent
         self.task = None
         #Konfiguracja geometrii tymczasowych
-        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.LineGeometry)
+        self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.LineGeometry)
         self.tempGeom.setColor(QColor('red'))
         self.tempGeom.setWidth(2)
-        self.tempLine = QgsRubberBand(canvas, QgsWkbTypes.LineGeometry)
+        self.tempLine = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.LineGeometry)
         self.tempLine.setColor(QColor('red'))
         self.tempLine.setWidth(2)
-        self.tempLine.setLineStyle(Qt.DotLine)
+        self.tempLine.setLineStyle(Qt.PenStyle.DotLine)
 
     def keyPressEvent(self, e):
         """ 
         Usuwanie ostatniego dodanego punktu/segmentu lub
         czyszczenie całości
         """
-        if e.key() == Qt.Key_Delete:
+        if e.key() == Qt.Key.Key_Delete:
             pointsCount = self.tempLine.numberOfVertices() 
             if pointsCount > 2 and self.editing:
                 self.tempGeom.removePoint(pointsCount-2)
@@ -110,12 +110,12 @@ class ProfileTool(QgsMapTool):
                 len_m = self.calculateDistance(self.tempGeom.asGeometry())
                 self.parent.dsbLineLength.setValue(len_m)
                 if self.tempGeom.numberOfVertices() == 1:
-                    self.tempGeom.reset(QgsWkbTypes.LineGeometry)
-                    self.tempLine.reset(QgsWkbTypes.LineGeometry)
+                    self.tempGeom.reset(QgsWkbTypes.GeometryType.LineGeometry)
+                    self.tempLine.reset(QgsWkbTypes.GeometryType.LineGeometry)
                     self.parent.dsbLineLength.setValue(0)           
             else:
                 self.reset()
-        elif e.key() == Qt.Key_Escape:
+        elif e.key() == Qt.Key.Key_Escape:
             self.reset()
 
     def canvasMoveEvent(self, e):
@@ -128,20 +128,20 @@ class ProfileTool(QgsMapTool):
         """ Rysowanie obiektu """
         point = e.snapPoint()
         if self.task is not None:
-            self.parent.on_message.emit('Trwa genrowanie profilu. Aby wygenerować następny poczekaj na pobranie danych', Qgis.Warning, 4)
+            self.parent.on_message.emit('Trwa genrowanie profilu. Aby wygenerować następny poczekaj na pobranie danych', Qgis.MessageLevel.Warning, 4)
             return
-        if e.button() == int(Qt.LeftButton):
+        if e.button() == Qt.MouseButton.LeftButton:
             #Dodawanie kolejnych wierzchołków
             if not self.editing:
                 #Nowy obiekt, pierwszy wierzchołek
-                self.tempLine.reset(QgsWkbTypes.LineGeometry)
-                self.tempGeom.reset(QgsWkbTypes.LineGeometry)
+                self.tempLine.reset(QgsWkbTypes.GeometryType.LineGeometry)
+                self.tempGeom.reset(QgsWkbTypes.GeometryType.LineGeometry)
                 self.editing = True
             self.tempGeom.addPoint(point)
             self.tempLine.addPoint(point)
             len_m = self.calculateDistance(self.tempGeom.asGeometry())
             self.parent.dsbLineLength.setValue(len_m)
-        elif e.button() == int(Qt.RightButton):
+        elif e.button() == Qt.MouseButton.RightButton:
             if self.tempGeom.numberOfVertices() < 2:
                 return
             #Zakończenie rysowania obiektu
@@ -153,7 +153,7 @@ class ProfileTool(QgsMapTool):
             #Niepoprawna geometria                    
                 for error in errors:
                     if self.tempGeom.numberOfVertices() > 2:
-                        self.parent.on_message.emit('Niepoprawna geometria', Qgis.Critical, 4)
+                        self.parent.on_message.emit('Niepoprawna geometria', Qgis.MessageLevel.Critical, 4)
                     self.tempGeom.reset()
                 return
             self.getInterval()
@@ -170,13 +170,13 @@ class ProfileTool(QgsMapTool):
             )
         meters_len = geom.length()
         if meters_len <= interval:
-            self.parent.on_message.emit('Długość linii krótsza lub równa podanemu interwałowi', Qgis.Critical, 5)
+            self.parent.on_message.emit('Długość linii krótsza lub równa podanemu interwałowi', Qgis.MessageLevel.Critical, 5)
             self.reset()
             return
         try:
             num_points = meters_len/interval
         except ZeroDivisionError:
-            self.parent.on_message.emit('Interwał musi być większy od 0', Qgis.Critical, 4)
+            self.parent.on_message.emit('Interwał musi być większy od 0', Qgis.MessageLevel.Critical, 4)
             self.reset()
             return
         points_on_line = []
@@ -202,7 +202,7 @@ class ProfileTool(QgsMapTool):
             heights.append(height)
         if heights and intervals:   
             self.fillTable(heights, intervals)
-        self.parent.on_message.emit('Pomyślnie wygenerowano profil', Qgis.Success, 4)
+        self.parent.on_message.emit('Pomyślnie wygenerowano profil', Qgis.MessageLevel.Success, 4)
         self.task = None
 
     def fillTable(self, heights, intervals):
@@ -221,13 +221,13 @@ class ProfileTool(QgsMapTool):
         distance_area.setEllipsoid('GRS80')
         distance_area.setSourceCrs(QgsProject.instance().crs(), QgsCoordinateTransformContext())
         length = distance_area.measureLength(geometry)
-        result = distance_area.convertLengthMeasurement(length, QgsUnitTypes.DistanceMeters)
+        result = distance_area.convertLengthMeasurement(length, QgsUnitTypes.DistanceUnit.DistanceMeters)
         return result
         
     def reset(self):
         """ Czyszczenie narzędzia """
-        self.tempLine.reset(QgsWkbTypes.LineGeometry)
-        self.tempGeom.reset(QgsWkbTypes.LineGeometry)
+        self.tempLine.reset(QgsWkbTypes.GeometryType.LineGeometry)
+        self.tempGeom.reset(QgsWkbTypes.GeometryType.LineGeometry)
         self.parent.dsbLineLength.setValue(0)
         self.parent.twData.setRowCount(0)
 

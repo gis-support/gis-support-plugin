@@ -21,7 +21,7 @@ class UserMapper:
         """
         for user_row in range(self.users_tableview_model.rowCount()):
             item = self.users_tableview_model.item(user_row, 0)
-            if item and item.data(Qt.UserRole) == user_uuid:
+            if item and item.data(Qt.ItemDataRole.UserRole) == user_uuid:
                 return item.text()
         return f"({TRANSLATOR.translate_ui('removed')})"
 
@@ -33,7 +33,7 @@ class UserMapper:
         for user_row in range(self.users_tableview_model.rowCount()):
             item = self.users_tableview_model.item(user_row, 0)
             if item and item.text() == user_email:
-                uuid = item.data(Qt.UserRole)
+                uuid = item.data(Qt.ItemDataRole.UserRole)
                 return uuid
         return f"({TRANSLATOR.translate_ui('removed')})"
 

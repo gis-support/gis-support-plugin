@@ -1,12 +1,11 @@
 import os
 
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal, QEvent
-from PyQt5.QtGui import QIcon, QDropEvent, QDragEnterEvent
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem, QIcon, QDropEvent, QDragEnterEvent
 
-from PyQt5.Qt import QStandardItemModel, QStandardItem, QSortFilterProxyModel
+
 from qgis.utils import iface
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import pyqtSignal, QEvent, Qt, QSortFilterProxyModel
 from qgis.core import QgsProject
 
 from gissupport_plugin.modules.gis_box.layers.layers_registry import layers_registry
@@ -39,11 +38,11 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
 
         self.layerTreeView.setDragEnabled(True)
         self.layerTreeView.setAcceptDrops(False)
-        self.layerTreeView.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.layerTreeView.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         self.layerTreeView.viewport().installEventFilter(self)
 
         self.proxy_model = QSortFilterProxyModel()
-        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.proxy_model.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.proxy_model.setRecursiveFilteringEnabled(True)
 
         layers_registry.on_schema.connect(self.add_layers_to_treeview)
@@ -56,7 +55,7 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
         self.mapCanvas.setAcceptDrops(True)
         self.mapCanvas.installEventFilter(self)
 
-        iface.addDockWidget(Qt.RightDockWidgetArea, self)
+        iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
         self.hide()
 
     def closeEvent(self, event):
@@ -124,7 +123,7 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
                             continue
 
                     layer_item = QStandardItem(layer_class.name)
-                    layer_item.setData(layer_class, Qt.UserRole + 1)
+                    layer_item.setData(layer_class, Qt.ItemDataRole.UserRole + 1)
                     group_item.appendRow(layer_item)
 
         def add_groups(groups: list):
@@ -142,7 +141,7 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
 
                 if scope == 'core':
                     group_item = QStandardItem(group['name'])
-                    group_item.setData([group['name'], group['id']], Qt.UserRole + 2)
+                    group_item.setData([group['name'], group['id']], Qt.ItemDataRole.UserRole + 2)
                     add_layers(group_layers, group_item)
                     root_item.appendRow(group_item)
 
@@ -150,7 +149,7 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
         add_groups(groups)
         self.layerTreeView.setModel(self.proxy_model)
         self.layerTreeView.setHeaderHidden(True)
-        self.layerTreeView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.layerTreeView.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.message('Pobrano schemat warstw')
 
 
@@ -162,10 +161,10 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
         source_model = self.proxy_model.sourceModel()
         item = source_model.itemFromIndex(source_index)
 
-        if group_data := item.data(Qt.UserRole + 2):
+        if group_data := item.data(Qt.ItemDataRole.UserRole + 2):
             layers_registry.loadGroup(group_data)
 
-        elif layer_class := item.data(Qt.UserRole + 1):
+        elif layer_class := item.data(Qt.ItemDataRole.UserRole + 1):
             layer_class.loadLayer()
 
 
@@ -176,15 +175,15 @@ class GISBoxDockWidget(QtWidgets.QDockWidget, FORM_CLASS, Logger):
         2. dodawanie warstw/grup po dwukrotnym kliknięciu lewym przyciskiem myszy na drzewku warstw.
         """
         if obj == self.mapCanvas:
-            if event.type() == QDragEnterEvent.DragEnter:
+            if event.type() == QDragEnterEvent.Type.DragEnter:
                 return self.handle_map_canvas_drag_enter(event)
 
-            if event.type() == QDropEvent.Drop:
+            if event.type() == QDropEvent.Type.Drop:
                 return self.handle_map_canvas_drop(event)
 
 
-        if obj == self.layerTreeView.viewport() and event.type() == QEvent.MouseButtonDblClick:
-            if event.button() == Qt.LeftButton:
+        if obj == self.layerTreeView.viewport() and event.type() == QEvent.Type.MouseButtonDblClick:
+            if event.button() == Qt.MouseButton.LeftButton:
                 index = self.layerTreeView.indexAt(event.pos())
                 if index.isValid():
                     self.add_layer_to_map(index)

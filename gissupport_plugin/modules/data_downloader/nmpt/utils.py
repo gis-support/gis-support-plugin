@@ -26,7 +26,7 @@ class NMPTdownloadTask(QgsTask):
         self.bbox = bbox
         self.filepath = filepath
         self.url = self.prepare_url()
-        super().__init__(description, QgsTask.CanCancel)
+        super().__init__(description, QgsTask.Flag.CanCancel)
 
 
     def prepare_url(self):
@@ -81,7 +81,7 @@ class NMPTdownloadTask(QgsTask):
             for chunk in iter(lambda: data.read(1024), b''):
                 file.write(chunk)
 
-        self.log_message(f"{full_filepath} - pobrano", level=Qgis.Info)
+        self.log_message(f"{full_filepath} - pobrano", level=Qgis.MessageLevel.Info)
         self.download_filepath.emit([full_filepath, self.data_format])
 
         return True

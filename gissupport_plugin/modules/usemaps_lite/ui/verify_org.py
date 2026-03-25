@@ -19,7 +19,7 @@ class VerifyOrgDialog(QDialog, FORM_CLASS):
     def __init__(self):
         super(VerifyOrgDialog, self).__init__(parent=iface.mainWindow())
         self.setupUi(self)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
 
         self.cancel_button.clicked.connect(self.hide)
         self.code_line.textChanged.connect(self.verify_code)

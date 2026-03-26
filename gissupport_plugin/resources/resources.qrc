@@ -9,9 +9,10 @@
         <file>gugik_nmt/index.svg</file>
         <file>gugik_nmt/nmt.svg</file>
         <file>mapster/mapster.svg</file>
-	<file>wmts/wmts.svg</file>
+	    <file>wmts/wmts.svg</file>
         <file>szkolenia.svg</file>
         <file>kursy.svg</file>
+        <file>usemaps_banner.svg</file>
 <file>data_downloader/dane_do_pobrania.svg</file>
 <file>gis_box/connected.svg</file>
 <file>gis_box/connection.svg</file>

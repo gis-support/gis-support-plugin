@@ -65,6 +65,8 @@ class Layers(BaseLogicClass, QObject):
         self.event_handler.register_event_handler(Event.UPLOADED_LAYER, self.handle_uploaded_layer_event)
         self.event_handler.register_event_handler(Event.EDITED_LAYER, self.handle_edited_layer_event)
         self.event_handler.register_event_handler(Event.CHANGED_LIMIT, self.handle_changed_limit_event)
+        QgsProject.instance().readProject.connect(self.reload_all_usemaps_layers)
+        self.api.authenticated.connect(self.reload_all_usemaps_layers)
 
         self.gpkg_handler = GpkgHandler()
 
@@ -85,13 +87,17 @@ class Layers(BaseLogicClass, QObject):
         layer = QgsVectorLayer(f"{self.selected_layer_type.capitalize()}?crs=EPSG:4326", self.selected_layer_name, "memory")
         layer.setCustomProperty("skipMemoryLayersCheck", 1)
 
-        self.task = self.LoadLayerToQgisTask(self.selected_layer_name, self.selected_layer_uuid,
-                                            layer, self)
-        self.task.download_finished.connect(lambda was_downloaded: self.on_load_layer_finished(was_downloaded, layer),
-                                            Qt.ConnectionType.QueuedConnection)
+        if not hasattr(self, 'usemaps_tasks'):
+            self.usemaps_tasks = {}
 
-        manager = QgsApplication.taskManager()
-        manager.addTask(self.task)
+        self.usemaps_tasks[layer.id()] = self.LoadLayerToQgisTask(self.selected_layer_name, self.selected_layer_uuid, layer, self)
+
+        self.usemaps_tasks[layer.id()].download_finished.connect(
+            lambda was_downloaded, l=layer: self.on_load_layer_finished(was_downloaded, l),
+            Qt.QueuedConnection
+        )
+
+        QgsApplication.taskManager().addTask(self.usemaps_tasks[layer.id()])
 
     def handle_import_from_project(self) -> None:
         """
@@ -168,7 +174,6 @@ class Layers(BaseLogicClass, QObject):
                             fields.append(QgsField(key, QVariant.String))
 
                 provider.addAttributes(fields)
-                self.layer.updateFields()
 
                 for feat_data in features:
                     feat = QgsFeature(fields)
@@ -193,7 +198,6 @@ class Layers(BaseLogicClass, QObject):
                     feat.setGeometry(geometry)
                     provider.addFeatures([feat])
 
-                self.layer.updateExtents()
                 return True
             except Exception as e:
                 self.error_msg = str(e)
@@ -206,7 +210,13 @@ class Layers(BaseLogicClass, QObject):
                 self.download_finished.emit(False)
                 return
 
-            QgsProject.instance().addMapLayer(self.layer)
+            self.layer.updateFields()
+            self.layer.updateExtents()
+            self.layer.triggerRepaint()
+
+            if not QgsProject.instance().mapLayer(self.layer.id()):
+                QgsProject.instance().addMapLayer(self.layer)
+
             self.layer.beforeCommitChanges.connect(self.parent.update_layer)
             project = QgsProject.instance()
             project_config = project.customVariables()
@@ -229,11 +239,13 @@ class Layers(BaseLogicClass, QObject):
             return
 
         node = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
-        indicators = iface.layerTreeView().indicators(node)
-        if indicators:
-            iface.layerTreeView().removeIndicator(node, indicators[0])
+        if node:
+            for ind in iface.layerTreeView().indicators(node):
+                iface.layerTreeView().removeIndicator(node, ind)
 
-        self.show_success_message(f"{TRANSLATOR.translate_info('load layer success')}: {self.selected_layer_name}")
+            iface.layerTreeView().viewport().update()
+
+        self.show_success_message(f"{TRANSLATOR.translate_info('load layer success')}: {layer.name()}")
 
     def upload_layer_to_api(self, file_path_to_upload: Path) -> None:
         """
@@ -306,7 +318,7 @@ class Layers(BaseLogicClass, QObject):
                     self.file_path_to_upload.unlink()
                 except PermissionError:
                     pass
-                
+
             if not result and self.error_msg:
                 self.parent.show_error_message(self.error_msg)
 
@@ -659,3 +671,25 @@ class Layers(BaseLogicClass, QObject):
         value = data.get("limitUsed")
 
         self.dockwidget.limit_progressbar.setValue(value)
+
+    def reload_all_usemaps_layers(self) -> None:
+        """
+        Pobiera dane dla warstw Usemaps Lite, jeśli użytkownik jest zalogowany
+        """
+        if not self.api.auth_token:
+            return
+
+        if not hasattr(self, 'usemaps_tasks'):
+            self.usemaps_tasks = {}
+
+        for layer, uuid in (
+            (QgsProject.instance().mapLayer(l_id), u_uuid)
+            for l_id, u_uuid in json.loads(QgsProject.instance().customVariables().get("usemaps_lite/id", "{}")).items()
+            if QgsProject.instance().mapLayer(l_id)
+        ):
+            self.usemaps_tasks[layer.id()] = self.LoadLayerToQgisTask(layer.name(), uuid, layer, self)
+            self.usemaps_tasks[layer.id()].download_finished.connect(
+                lambda was_downloaded, l=layer: self.on_load_layer_finished(was_downloaded, l),
+                Qt.QueuedConnection
+            )
+            QgsApplication.taskManager().addTask(self.usemaps_tasks[layer.id()])

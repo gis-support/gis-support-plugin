@@ -34,14 +34,13 @@ class BDOT10kDownloader:
         self.bdot10k_dockwidget._controller = self
 
         iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.bdot10k_dockwidget)
-        self.bdot10k_dockwidget.hide()
 
         self.fill_woj_combobox()
         self.fill_pow_combobox()
 
         self.bdot10k_dockwidget.browseButton.clicked.connect(self.browse_filepath_for_bdot10k)
-        self.bdot10k_dockwidget.wojComboBox.currentTextChanged.connect(self.fill_pow_combobox)
-        self.bdot10k_dockwidget.powComboBox.currentTextChanged.connect(self.get_teryt_pow)
+        self.bdot10k_dockwidget.wojComboBox.currentIndexChanged.connect(self.fill_pow_combobox)
+        self.bdot10k_dockwidget.powComboBox.currentIndexChanged.connect(self.get_teryt_pow)
         self.bdot10k_dockwidget.downloadButton.clicked.connect(self.download_bdot10k)
         self.bdot10k_dockwidget.downloadButton.setEnabled(False)
         self.bdot10k_dockwidget.filepathLine.textChanged.connect(lambda text: self.set_powiat_class_button_state(text, self.bdot10k_dockwidget.downloadButton))
@@ -105,8 +104,8 @@ class BDOT10kDownloader:
         """
         if self.bdot10k_dockwidget is None:
             self.init_bdot10k_dockwidget()
-
-        self.bdot10k_dockwidget.setVisible(not self.bdot10k_dockwidget.isVisible())
+        else:
+            self.bdot10k_dockwidget.setVisible(not self.bdot10k_dockwidget.isVisible())
 
     def fill_woj_combobox(self) -> None:
         """
@@ -118,49 +117,55 @@ class BDOT10kDownloader:
             self.bdot10k_dockwidget.wojComboBox.addItem(item)
         self.teryt_woj = wojewodztwa[0].split("|")[1].strip()
 
-    def fill_pow_combobox(self) -> None:
+    def fill_pow_combobox(self, *args) -> None:
         """
         Uzupelnia combobox z powiatami, na podstawie wybranego województwa.
         Wywoływane po wyborze województwa.
         """
-        current_woj = self.bdot10k_dockwidget.wojComboBox.currentText()
-        self.teryt_woj = current_woj.split("|")[1].strip() if current_woj else ""
-        powiaty = POWIATY.get(Wojewodztwa(current_woj), [])
-        self.bdot10k_dockwidget.powComboBox.clear()
-        for powiat in powiaty:
-            self.bdot10k_dockwidget.powComboBox.addItem(powiat)
-        self.teryt_pow = powiaty[0].split("|")[1].strip()
+        self.teryt_woj = self.bdot10k_dockwidget.wojComboBox.currentText().split("|")[1].strip() if self.bdot10k_dockwidget.wojComboBox.currentText() else ""
 
-    def get_teryt_pow(self) -> None:
+        self.bdot10k_dockwidget.powComboBox.blockSignals(True)
+        self.bdot10k_dockwidget.powComboBox.clear()
+
+        if self.bdot10k_dockwidget.wojComboBox.currentText():
+            self.bdot10k_dockwidget.powComboBox.addItems(
+                (powiat for powiat in POWIATY.get(Wojewodztwa(self.bdot10k_dockwidget.wojComboBox.currentText()), []))
+            )
+
+        self.teryt_pow = self.bdot10k_dockwidget.powComboBox.itemText(0).split("|")[1].strip() if self.bdot10k_dockwidget.powComboBox.count() > 0 else ""
+
+        self.bdot10k_dockwidget.powComboBox.blockSignals(False)
+
+    def get_teryt_pow(self, *args) -> None:
         """
         Zapisuje teryt wybranego powiatu z comboboxa.
         """
-        current_pow = self.bdot10k_dockwidget.powComboBox.currentText()
-        self.teryt_pow = current_pow.split("|")[1].strip() if current_pow else ""
+        self.teryt_pow = self.bdot10k_dockwidget.powComboBox.currentText().split("|")[1].strip() if self.bdot10k_dockwidget.powComboBox.currentText() else ""
 
     def download_bdot10k(self) -> None:
         """
         Uruchamia pobieranie danych BDOT10k.
         """
+        self.teryt_woj = self.bdot10k_dockwidget.wojComboBox.currentText().split("|")[1].strip() if self.bdot10k_dockwidget.wojComboBox.currentText() else ""
+        self.teryt_pow = self.bdot10k_dockwidget.powComboBox.currentText().split("|")[1].strip() if self.bdot10k_dockwidget.powComboBox.currentText() else ""
+
         if self.teryt_woj == "" or self.teryt_pow == "":
             iface.messageBar().pushMessage("Przed pobraniem należy wybrać województwo i powiat",
                                            level=Qgis.MessageLevel.Warning)
             return
 
-        bdot10k_filepath = self.bdot10k_dockwidget.filepathLine.text()
-        if not bdot10k_filepath or bdot10k_filepath == "":
+        if not self.bdot10k_dockwidget.filepathLine.text() or self.bdot10k_dockwidget.filepathLine.text() == "":
             iface.messageBar().pushMessage("Przed pobraniem należy wybrać ścieżkę zapisu danych",
                                            level=Qgis.MessageLevel.Warning)
             return
 
         self.task = BDOT10kDownloadTask("Pobieranie danych BDOT10k", self.teryt_woj,
-                                        self.teryt_pow, bdot10k_filepath)
+                                        self.teryt_pow, self.bdot10k_dockwidget.filepathLine.text())
         self.task.progress_updated.connect(self.update_bdok10k_download_progress)
         self.task.download_finished.connect(self.show_bdot10k_success_message)
         self.task.task_failed.connect(self.handle_task_error)
 
-        manager = QgsApplication.taskManager()
-        manager.addTask(self.task)
+        QgsApplication.taskManager().addTask(self.task)
 
 
     def update_bdok10k_download_progress(self, value: int) -> None:

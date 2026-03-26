@@ -4,7 +4,7 @@ import json
 from qgis.PyQt.QtCore import pyqtSignal, Qt
 from qgis.core import QgsTask, QgsMessageLog, Qgis, QgsWkbTypes, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsProject, QgsGeometry
 from gissupport_plugin.tools.requests import NetworkHandler
-from qgis.PyQt.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtGui import QColor
 from qgis.gui import QgsMapTool, QgsRubberBand
 from qgis.utils import iface
@@ -25,10 +25,9 @@ class BDOT10kDownloadTask(QgsTask):
         super().__init__(description, QgsTask.Flag.CanCancel)
 
     def run(self) -> bool:
-        handler = NetworkHandler()
-        response = handler.get(self.url, True)
+        response = NetworkHandler().get(self.url, True)
 
-        if response.error() != 0:
+        if response.error() != QNetworkReply.NetworkError.NoError:
             self.task_failed.emit("Błąd pobierania danych. Sprawdź swoje połączenie z Internetem oraz czy usługa Geoportal.gov.pl działa.")
             return False
 
@@ -143,10 +142,7 @@ def get_databox_layers():
     return layer_list
 
 def check_geoportal_connection() -> bool:
-    handler = NetworkHandler()
-    url = "https://opendata.geoportal.gov.pl"
-    response = handler.get(url, True)
-    if response.error() != 0:
+    if NetworkHandler().get("https://opendata.geoportal.gov.pl", True).error() != QNetworkReply.NetworkError.NoError:
         raise GeoportalResponseException("Brak odpowiedzi")
     return True
 

@@ -9,44 +9,53 @@
 [general]
 name=Wtyczka GIS Support
 qgisMaximumVersion=4.99
-qgisMinimumVersion=3.0
+qgisMinimumVersion=3.22
 supportsQt6=True
 version=3.0
 author=GIS Support
 email=info@gis-support.pl
 license=GPL-3.0-only
 
-description=GIS Support Plugin: integrates features that facilitate communication with services offered by Polish institutions (eg GUGiK).
-about=Features:
-	* Cadastral parcel search - It allows you to search for current land parcels through the ULDK service launched by GUGiK.
+description=GIS Support Plugin is the essential bridge between QGIS and Polish spatial data infrastructure. It gives you one-click access to services and datasets published by Polish public institutions - without leaving QGIS or hunting for URLs.
+about=What it does:
+	* Cadastral parcel search - find any parcel in Poland by commune, precinct and parcel number using the ULDK service (GUGiK); the parcel boundary is loaded directly onto your map
 
-	* GUGiK NMT - a tool that uses the API GUGiK NMT for altitude data. The tool allows you to know the height above sea level for the place you clicked, add height data for objects from the point layer and create an elevation plot along the drawn line.
+	* Elevation profile - draw a line on the map and instantly generate an elevation chart using the GUGiK NMT API; individual point elevations are also available on click
 
-	* WMS Database - a newer, better version of the old plugin "WMS Database". This is a collection of links to popular nationwide WMS services.
+	* National WMS/WFS catalogue - a curated list of country-wide map services (orthophoto, topographic maps, administrative boundaries and more) ready to add in one click - no need to remember or search for service URLs
 
-	* WMTS quick loading tool - add WMTS from a predefined list (mainly GUGiK services).
+	* WMTS with local tile caching - add tiled map services with configurable on-disk caching so downloaded tiles (e.g. orthophoto) are reused across sessions
 
-	* Mapster archive maps search - display a list of old maps collected on the Mapster website, the range of which intersects with the coordinates of the indicated point.
+	* Data downloads - download PRG administrative boundaries (communes, counties, voivodeships), address points and BDOT10k topographic objects for any area of Poland directly from GUGiK
 
-	* PRG - administrative boundaries - download the boundaries of communes, counties, and voivodships.
+	* Digital Elevation Model - bulk download NMT/NMPT raster data published by GUGiK
 
-	* Connect with GIS.Box - GIS.Box is a web-based GIS system that is used to store, edit, analyze, and visualize spatial data. It perfectly extends the benefits of QGIS to your organization, adding the ability to work "in the cloud".
+	* Historical map search (Mapster) - browse and preview archival maps covering your current map view
 
-description[pl]=Wtyczka GIS Support: zawiera narzędzia, które ułatwiają komunikację z usługami oferowanymi przez polskie instytucje (np. GUGiK).
-about[pl]=Lista narzędzi wtyczki:
-	* Wyszukiwarka działek ewidencyjnych - narzędzie zbudowane na podstawie wtyczki „Wyszukiwarka działek ewidencyjnych (GUGiK ULDK)”. Pozwala na wyszukiwanie aktualnych działek ewidencyjnych poprzez usługę ULDK uruchomioną przez GUGiK.
+	* Usemaps Lite - a built-in cloud workspace for QGIS teams: upload layers to the cloud, share them with colleagues and keep everyone working on the same up-to-date data - no server setup required
 
-	* GUGiK NMT – narzędzie wykorzystujące API NMT GUGiK do danych wysokościowych. Narzędzie pozwala na poznanie wysokości nad poziomem morza dla klikniętego miejsca, dopisanie danych o wysokości dla obiektów z warstwy punktowej oraz stworzenie wykresu wysokościowego wzdłuż narysowanej linii.
+	The plugin is free, requires no API keys and works on Windows, macOS and Linux. Maintained by GIS Support: https://gis-support.pl.
 
-	* Baza WMS - nowsza, lepsza wersja starej wtyczki „Baza WMS”. Jest to zbiór linków do popularnych, ogólnokrajowych usług WMS.
+description[pl]=Wtyczka GIS Support zawiera narzędzia, które ułatwiają komunikację z usługami oferowanymi przez polskie instytucje (np. GUGiK).
+about[pl]=Co potrafi wtyczka: 
 
-	* Narzędzie do szybkiego wczytywania WMTS - dodaj WMTS z predefiniowanej listy (głównie usługi GUGiK).
+    * Wyszukiwarka działek ewidencyjnych – znajdź dowolną działkę w Polsce, wpisując gminę, obręb i numer działki. Dzięki usłudze ULDK (GUGiK) granica działki zostanie od razu załadowana na Twoją mapę.
 
-	* Wyszukiwarka archiwalnych map Mapster - wyświetl listę starych map zgromadzonych w serwisie Mapster, których zasięg przecina się ze współrzędnymi wskazanego punktu.
+    * Profil wysokościowy GUGIK NMT - narysuj linię na mapie i błyskawicznie wygeneruj wykres wysokościowy, korzystając z API NMT (GUGiK). Możesz także sprawdzić wysokość konkretnego punktu po kliknięciu.
 
-	* PRG - granice administracyjne - pobierz granice gmin, powiatów i województw.
+    * Baza krajowych usług WMS/WFS – starannie dobrana lista ogólnopolskich usług mapowych (ortofotomapa, mapy topograficzne, granice administracyjne i inne), które dodasz jednym kliknięciem. Zapomnij o kopiowaniu linków do serwerów.
 
-	* Połącz z GIS.Box - GIS.Box to dostępny przez przeglądarkę System GIS. Doskonale rozszerza korzyści jakie daje Twojej organizacji QGIS, dodając możliwości pracy “w chmurze”.
+    * WMTS z lokalnym buforowaniem (cache) – dodawaj kafelkowe usługi mapowe WMTS z możliwością zapisu danych na dysku. Raz pobrane kafle (np. ortofotomapa) będą dostępne szybciej w kolejnych sesjach.
+
+    * Pobieranie danych – pobieraj granice administracyjne, punkty adresowe (PRG) oraz obiekty topograficzne BDOT10k dla dowolnego obszaru Polski bezpośrednio z zasobów GUGiK.
+
+    * Numeryczny Model Terenu (NMT) – masowe pobieranie danych rastrowych NMT oraz NMPT publikowanych przez GUGiK.
+
+    * Wyszukiwarka map historycznych (Mapster) – przeglądaj i wyświetlaj podgląd archiwalnych map obejmujących aktualny widok Twojej mapy.
+
+    * Usemaps Lite – wbudowane chmurowe środowisko pracy dla zespołów QGIS. Przesyłaj warstwy do chmury, udostępniaj je współpracownikom i pracujcie na tych samych, aktualnych danych bez konieczności konfigurowania własnego serwera.
+
+	Wtyczka jest całkowicie bezpłatna, nie wymaga kluczy API i działa na systemach Windows, macOS oraz Linux. Za jej rozwój i utrzymanie odpowiada zespół GIS Support: https://gis-support.pl.
 
 tracker=https://github.com/gis-support/gis-support-plugin/issues
 repository=https://github.com/gis-support/gis-support-plugin
@@ -63,7 +72,7 @@ changelog=Integracja z usługą Usemaps Lite
 	Poprawiony UX panelu wyszukiwarki działek
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=wms,wmts,wfs,cadastral,cadastre,download,elevation,topography,bdot10k,address,basemap,basemaps,cloud,chart,dem,webservice,catalog,collaboration,sharing
 
 homepage=https://github.com/gis-support/gis-support-plugin
 category=Plugins

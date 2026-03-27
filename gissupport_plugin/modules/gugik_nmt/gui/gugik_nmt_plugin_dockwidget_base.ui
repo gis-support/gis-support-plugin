@@ -66,11 +66,16 @@
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Wskazywanie współrzędnych i wysokości punktu&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-     </widget>
+    <widget class="QLabel" name="label_4">
+  <property name="font">
+   <font>
+    <bold>true</bold>
+   </font>
+  </property>
+  <property name="text">
+   <string>Wskazywanie współrzędnych i wysokości punktu</string>
+  </property>
+ </widget>
     </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
@@ -280,10 +285,15 @@
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Rozszerzenie warstwy punktowej o wysokość punktów&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
+  <property name="font">
+   <font>
+    <bold>true</bold>
+   </font>
+  </property>
+  <property name="text">
+   <string>Rozszerzenie warstwy punktowej o wysokość punktów</string>
+  </property>
+ </widget>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -357,10 +367,15 @@
     </item>
     <item>
      <widget class="QLabel" name="label_7">
-      <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Generowanie profilu podłużnego&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-     </widget>
+  <property name="font">
+   <font>
+    <bold>true</bold>
+   </font>
+  </property>
+  <property name="text">
+   <string>Generowanie profilu podłużnego</string>
+  </property>
+ </widget>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_7">

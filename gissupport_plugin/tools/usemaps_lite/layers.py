@@ -94,7 +94,7 @@ class Layers(BaseLogicClass, QObject):
 
         self.usemaps_tasks[layer.id()].download_finished.connect(
             lambda was_downloaded, l=layer: self.on_load_layer_finished(was_downloaded, l),
-            Qt.QueuedConnection
+            Qt.ConnectionType.QueuedConnection
         )
 
         QgsApplication.taskManager().addTask(self.usemaps_tasks[layer.id()])
@@ -690,6 +690,6 @@ class Layers(BaseLogicClass, QObject):
             self.usemaps_tasks[layer.id()] = self.LoadLayerToQgisTask(layer.name(), uuid, layer, self)
             self.usemaps_tasks[layer.id()].download_finished.connect(
                 lambda was_downloaded, l=layer: self.on_load_layer_finished(was_downloaded, l),
-                Qt.QueuedConnection
+                Qt.ConnectionType.QueuedConnection
             )
             QgsApplication.taskManager().addTask(self.usemaps_tasks[layer.id()])

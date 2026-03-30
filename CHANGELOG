@@ -1,3 +1,11 @@
+3.1
+Dodanie wsparcia dla Qt6 i QGIS 4.0
+Optymalizacja działania algorytmu wyszukiwania działek
+Baza WMS: możliwość dodawania kilku warstw WMS jako jednej warstwy QGIS
+Warstwy Usemaps Lite są wczytywane z usługi przy otwieraniu projektu QGIS
+Poprawiona obsługa pobierania danych BDOT10k dla powiatów
+Dodanie baneru reklamowego Usemaps
+
 3.0
 Integracja z usługą Usemaps Lite
 Usunięcie modułu Usemaps - jest ona dalej dostępna jako osobne rozszerzenie Usemaps

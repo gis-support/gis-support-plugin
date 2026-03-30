@@ -11,7 +11,7 @@ name=Wtyczka GIS Support
 qgisMaximumVersion=4.99
 qgisMinimumVersion=3.22
 supportsQt6=True
-version=3.0
+version=3.1
 author=GIS Support
 email=info@gis-support.pl
 license=GPL-3.0-only
@@ -64,12 +64,12 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=Integracja z usługą Usemaps Lite
-	Usunięcie modułu Usemaps - jest ona dalej dostępna jako osobne rozszerzenie Usemaps
-	Umożliwienie dodania zapisu wyszukiwania działek do wybranej warstwy
-	Zapisywanie wyników pobranych działek na bieżąco do warstwy
-	Przywrócenie wyszukiwania działek bezpośrednio z plików CSV
-	Poprawiony UX panelu wyszukiwarki działek
+changelog=Dodanie wsparcia dla Qt6 i QGIS 4.0
+	Optymalizacja działania algorytmu wyszukiwania działek
+	Baza WMS: możliwość dodawania kilku warstw WMS jako jednej warstwy QGIS
+	Warstwy Usemaps Lite są wczytywane z usługi przy otwieraniu projektu QGIS
+	Poprawiona obsługa pobierania danych BDOT10k dla powiatów
+	Dodanie baneru reklamowego Usemaps
 
 # Tags are comma separated with spaces allowed
 tags=wms,wmts,wfs,cadastral,cadastre,download,elevation,topography,bdot10k,address,basemap,basemaps,cloud,chart,dem,webservice,catalog,collaboration,sharing

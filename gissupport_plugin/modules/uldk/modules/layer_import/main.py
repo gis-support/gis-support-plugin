@@ -36,18 +36,24 @@ def get_obiekty_form(count):
 
 class UI(QtWidgets.QFrame, FORM_CLASS):
 
-    icon_info_path = ':/plugins/plugin/info.png'
-
     def __init__(self, target_layout, parent = None):
         super().__init__(parent)
 
         self.setupUi(self)
 
+        bg_color = self.palette().color(self.backgroundRole())
+        is_dark_theme = bg_color.lightness() < 128
+
+        if is_dark_theme:
+            icon_info_path = ':/plugins/gissupport_plugin/info_white.svg'
+        else:
+            icon_info_path = ':/plugins/gissupport_plugin/info.svg'
+
         target_layout.layout().addWidget(self)
 
         self.layer_select.setFilters(QgsMapLayerProxyModel.Filter.PointLayer | QgsMapLayerProxyModel.Filter.LineLayer | QgsMapLayerProxyModel.Filter.PolygonLayer)
 
-        self.label_info_start.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_start.setPixmap(QPixmap(icon_info_path))
         self.label_info_start.setToolTip((
             "Wyszukiwanie wielu obiektów może być czasochłonne. W tym czasie\n"
             "będziesz mógł korzystać z pozostałych funkcjonalności wtyczki,\n"
@@ -55,7 +61,7 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
             "po zamknięciu wtyczki."))
 
 
-        self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_icon.setPixmap(QPixmap(icon_info_path))
         self.label_info_icon.setToolTip((
             "Narzędzie wyszukuje działki\n"
             "które mają wspólną geometrię z warstwą punktową wczytaną do QGIS."))

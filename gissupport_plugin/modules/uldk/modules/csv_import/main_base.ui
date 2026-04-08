@@ -37,11 +37,11 @@
      <property name="horizontalSpacing">
       <number>8</number>
      </property>
-     <item row="0" column="1">
+     <item row="0" column="1" colspan="3">
       <widget class="QLabel" name="label_info">
        <property name="maximumSize">
         <size>
-         <width>100</width>
+         <width>16777215</width>
          <height>15</height>
         </size>
        </property>
@@ -49,7 +49,7 @@
         <string/>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Jak to działa?&lt;/b&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Z atrybutu (identyfikator działki)&lt;/b&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -254,10 +254,23 @@ wynikowej</string>
       </spacer>
      </item>
      <item row="2" column="3">
-      <widget class="QgsMapLayerComboBox" name="layer_select"/>
+      <widget class="QgsMapLayerComboBox" name="layer_select" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item row="5" column="3">
       <widget class="QLineEdit" name="text_edit_layer_name">
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="placeholderText">
         <string>nowa_warstwa</string>
        </property>
@@ -283,7 +296,14 @@ wynikowej</string>
       </widget>
      </item>
      <item row="3" column="3">
-      <widget class="QgsFieldComboBox" name="combobox_teryt_column"/>
+      <widget class="QgsFieldComboBox" name="combobox_teryt_column">
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item row="9" column="1" colspan="3">
       <widget class="QProgressBar" name="progress_bar">
@@ -295,7 +315,7 @@ wynikowej</string>
        </property>
        <property name="minimumSize">
         <size>
-         <width>350</width>
+         <width>65</width>
          <height>0</height>
         </size>
        </property>
@@ -331,7 +351,7 @@ wynikowej</string>
        </property>
        <property name="minimumSize">
         <size>
-         <width>120</width>
+         <width>65</width>
          <height>0</height>
         </size>
        </property>
@@ -347,7 +367,7 @@ wynikowej</string>
  <customwidgets>
   <customwidget>
    <class>QgsMapLayerComboBox</class>
-   <extends>QComboBox</extends>
+   <extends>QWidget</extends>
    <header>qgsmaplayercombobox.h</header>
   </customwidget>
   <customwidget>

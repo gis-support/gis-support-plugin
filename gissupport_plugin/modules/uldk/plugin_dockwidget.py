@@ -27,8 +27,9 @@ import random
 
 from qgis.PyQt import QtGui, QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal, Qt
-from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsMapLayerProxyModel
+from qgis.gui import QgsMapLayerComboBox
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'plugin_dockwidget_base.ui'))
@@ -72,23 +73,188 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.setupUi(self)
 
         self.ad_generator = usemaps_ads_generator()
+        self._build_save_menu()
 
+        self.dynamic_container.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Expanding
+        )
+
+        pages_gen = self._generate_page(5)
+
+        self.page_search, self.tab_teryt_search_layout = next(pages_gen)
+        self.page_csv, self.tab_import_csv_layout = next(pages_gen)
+        self.page_from_csv, self.tab_from_csv_file_layout = next(pages_gen)
+        self.page_layer, self.tab_import_layer_layout = next(pages_gen)
+        self.page_check, self.tab_check_layer_layout = next(pages_gen)
+
+        self.pages = [
+            self.page_search,
+            self.page_csv,
+            self.page_from_csv,
+            self.page_layer,
+            self.page_check
+        ]
+
+        # Logika otwierania przyciskami
+        self.btn_tab_search.clicked.connect(lambda: self._switch_tool(0))
+        self.btn_tab_search.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_teryt.svg'))
+        self.btn_tab_search.setToolTip(("Wyszukiwanie pojedyncze"))
+
+        self.btn_tab_import_csv.clicked.connect(lambda: self._switch_tool(1))
+        self.btn_tab_import_csv.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_list.svg'))
+        self.btn_tab_import_csv.setToolTip(("Z atrybutu"))
+
+        self.btn_tab_from_csv_file.clicked.connect(lambda: self._switch_tool(2))
+        self.btn_tab_from_csv_file.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_csv.svg'))
+        self.btn_tab_from_csv_file.setToolTip(("Z pliku CSV"))
+
+        self.btn_tab_import_layer.clicked.connect(lambda: self._switch_tool(3))
+        self.btn_tab_import_layer.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_layer.svg'))
+        self.btn_tab_import_layer.setToolTip(("Z warstwy"))
+
+        self.btn_tab_check_layer.clicked.connect(lambda: self._switch_tool(4))
+        self.btn_tab_check_layer.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_check_layer.svg'))
+        self.btn_tab_check_layer.setToolTip(("Sprawdź"))
+
+        self.btn_save_settings.setToolTip(("Ustawienia zapisu"))
+        self.btn_save_settings.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_settings.svg'))
+
+        self.btn_info.clicked.connect(self._show_info_dialog)
+        self.btn_info.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_plugin_info.svg'))
+        self.btn_info.setToolTip(("O wtyczce"))
+
+        self._apply_theme_style()
+
+        # Załadowanie pierwszej zakładki
+        self.btn_tab_search.setChecked(True)
+        self._switch_tool(0)
+
+    def _generate_page(self, count: int):
+        """Generator tworzący kontenery (QWidget) oraz przypięte do nich layouty"""
+        for _ in range(count):
+            page = QtWidgets.QWidget()
+            layout = QtWidgets.QVBoxLayout(page)
+            layout.setContentsMargins(0, 0, 0, 0)
+            yield page, layout
+
+    def _switch_tool(self, index: int) -> None:
+        while self.dynamic_container.layout().count():
+            item = self.dynamic_container.layout().takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+
+        self.dynamic_container.layout().addWidget(self.pages[index], alignment=Qt.AlignmentFlag.AlignTop)
+
+        self.scrollAreaWidgetContents.layout().invalidate()
+        self.scrollAreaWidgetContents.adjustSize()
+
+        # Logika widoczności menu zapisu przy zakładce Sprawdź
+        if index == 4:
+            self.radioTempLayer.setChecked(True)
+            self.radioExistingLayer.setEnabled(False)
+            self.comboLayers.setEnabled(False)
+        else:
+            self.radioExistingLayer.setEnabled(True)
+            self.comboLayers.setEnabled(self.radioExistingLayer.isChecked())
+
+    def _build_save_menu(self) -> None:
+        self._save_menu = QtWidgets.QMenu(self)
+        container = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(container)
+        layout.setContentsMargins(8, 6, 8, 8)
+        layout.setSpacing(6)
+
+        self.radioTempLayer = QtWidgets.QRadioButton(
+            "Zapisz w warstwie tymczasowej", container
+        )
+        self.radioTempLayer.setChecked(True)
+        layout.addWidget(self.radioTempLayer)
+
+        row = QtWidgets.QHBoxLayout()
+        row.setSpacing(4)
+        row.setContentsMargins(0, 0, 0, 0)
+
+        self.radioExistingLayer = QtWidgets.QRadioButton(
+            "Dodaj do istniejącej warstwy", container
+        )
+        row.addWidget(self.radioExistingLayer)
+
+        self.comboLayers = QgsMapLayerComboBox(container)
         self.comboLayers.setFilters(QgsMapLayerProxyModel.Filter.PolygonLayer)
+        self.comboLayers.setEnabled(False)
+        self.comboLayers.setMinimumWidth(130)
+        row.addWidget(self.comboLayers)
+
+        self.labelLayerInfo = QtWidgets.QLabel(container)
+        self.labelLayerInfo.setMaximumSize(15, 15)
+        self.labelLayerInfo.setScaledContents(True)
+        self.labelLayerInfo.setToolTip(
+            "Atrybuty będą dopasowane do kolumn wg nazw, jeśli dana kolumna nie istnieje "
+            "to informacja nie zostanie zapisana:\n"
+            "- wojewodztwo lub woj - województwo\n"
+            "- powiat - powiat\n"
+            "- gmina - gmina\n"
+            "- obreb - obręb ewidencyjny\n"
+            "- arkusz - arkusz mapy\n"
+            "- nr_dzialki - numer działki\n"
+            "- teryt - TERYT\n"
+            "- pow_m2 - powierzchnia"
+        )
+        row.addWidget(self.labelLayerInfo)
+
+        layout.addLayout(row)
+
         self.radioExistingLayer.toggled.connect(self.comboLayers.setEnabled)
 
-        self.radioTempLayer.setChecked(True)
-        self.comboLayers.setEnabled(False)
+        widget_action = QtWidgets.QWidgetAction(self._save_menu)
+        widget_action.setDefaultWidget(container)
+        self._save_menu.addAction(widget_action)
 
-        self.tabs.currentChanged.connect(self._update_layer_selection_ui)
-        self._update_layer_selection_ui(self.tabs.currentIndex())
+        self.btn_save_settings.setMenu(self._save_menu)
+        self.btn_save_settings.setPopupMode(
+            QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup
+        )
+
+    def _apply_theme_style(self) -> None:
+        bg_color = self.palette().color(QtGui.QPalette.ColorRole.Window)
+        is_dark_theme = bg_color.lightness() < 128
+
+        base_style = """
+            QWidget#dynamic_container {
+                background-color: palette(base);
+                border: 1px solid palette(mid);
+                border-radius: 9px;
+                margin-top: 4px;
+            }
+        """
+
+        if is_dark_theme:
+            self.scrollArea.setStyleSheet(base_style + """
+                QLineEdit{
+                    background-color: #383838;
+                    border: 2px solid #383838;
+                    border-radius: 2px;
+                }
+
+                QTableWidget, QProgressBar, QDoubleSpinBox, QgsCheckableComboBox{
+                    background-color: #383838;
+                }
+
+                QPushButton, QComboBox {
+                    color: #eeeeee;
+                }
+            """)
+        else:
+            self.scrollArea.setStyleSheet(base_style)
 
     def showEvent(self, event):
         super(wyszukiwarkaDzialekDockWidget, self).showEvent(event)
         self._setup_usemaps_banner()
 
-    def _setup_usemaps_banner(self):
+    def _setup_usemaps_banner(self) -> None:
         """Konfiguruje banner"""
-        
+
         ad = next(self.ad_generator)
         self.label_usemaps_text.setTextFormat(Qt.TextFormat.RichText)
         self.label_usemaps_text.setText(
@@ -100,16 +266,13 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             f'{ad[2]}</span></a></p></body></html>'
         )
 
-    def _update_layer_selection_ui(self, index: int) -> None:
-        tab_text = self.tabs.tabText(index)
-        restricted_tabs = ["Sprawdź"]
-        if tab_text in restricted_tabs:
-            self.radioTempLayer.setChecked(True)
-            self.radioExistingLayer.setEnabled(False)
-            self.comboLayers.setEnabled(False)
-        else:
-            self.radioExistingLayer.setEnabled(True)
-            self.comboLayers.setEnabled(self.radioExistingLayer.isChecked())
+    def _show_info_dialog(self) -> None:
+        """Wyświetla okno z info o wtyczce"""
+
+        uic.loadUi(
+            os.path.join(os.path.dirname(__file__), 'info_dialog.ui'),
+            QtWidgets.QDialog(self)
+        ).exec()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

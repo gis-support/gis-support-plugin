@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>InfoDialog</class>
+ <widget class="QDialog" name="InfoDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>490</width>
+    <height>490</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>420</width>
+    <height>360</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>O wtyczce - Wyszukiwarka działek ewidencyjnych</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;Wyszukiwarka działek ewidencyjnych&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Narzędzie działa w oparciu o usługę &lt;a href=&quot;https://uldk.gugik.gov.pl/opis.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;ULDK&lt;/span&gt;&lt;/a&gt; od GUGiK.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="logo_label">
+       <property name="maximumSize">
+        <size>
+         <width>65</width>
+         <height>65</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap>:/plugins/gissupport_plugin/gis_support_plugin_icon.png</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>451</width>
+        <height>296</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item alignment="Qt::AlignTop">
+        <widget class="QLabel" name="text_label">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Narzędzie posiada 5 trybów pracy:&lt;/span&gt;&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Wyszukiwanie pojedyncze:&lt;/span&gt; Błyskawiczne wyszukanie i pobranie pojedynczej działki na podstawie jej identyfikatora TERYT.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Z atrybutu (identyfikator działki):&lt;/span&gt; Załaduj warstwę z projektu, wskaż kolumnę z TERYT i uruchom wyszukiwanie.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Z pliku CSV:&lt;/span&gt; Załaduj plik CSV z dysku, wskaż kolumnę z TERYT i uruchom wyszukiwanie.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Z warstwy projektu:&lt;/span&gt; Wyszukuje działki, które mają wspólną geometrię z warstwą punktową wczytaną do QGIS.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Sprawdź:&lt;/span&gt; Sprawdza dopasowanie geometrii warstwy źródłowej do obiektów w ULDK.&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Elastyczny zapis wyników:&lt;br/&gt;&lt;/span&gt;&lt;br/&gt;Pobrane wyniki wyszukiwania nie muszą tworzyć nowych, oddzielnych plików. Możesz zapisać wygenerowaną geometrię jako nową &lt;span style=&quot; font-weight:600;&quot;&gt;warstwę tymczasową&lt;/span&gt; w pamięci QGIS, bądź automatycznie dodać obiekty do &lt;span style=&quot; font-weight:600;&quot;&gt;istniejącej już warstwy&lt;/span&gt; w Twoim projekcie.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::RichText</enum>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>&lt;html&gt;&lt;body&gt;&lt;p&gt;Wtyczka stworzona przez zespół &lt;span style=&quot; font-weight:600;&quot;&gt;GIS Support&lt;/span&gt;.&lt;br/&gt;Więcej informacji znajdziesz na stronie: &lt;a href=&quot;https://gis-support.pl/wtyczka-gis-support/#&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;gis-support.pl&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>InfoDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>InfoDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

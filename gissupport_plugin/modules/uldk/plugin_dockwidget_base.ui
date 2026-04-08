@@ -46,203 +46,33 @@
     </item>
     <item>
      <widget class="Line" name="infoLine">
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QFrame" name="frame_4">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>60</width>
-        <height>0</height>
-       </size>
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="styleSheet">
+       <string notr="true">QWidget#dynamic_container {
+    background-color: palette(base);
+    border: 1px solid palette(mid);
+    border-radius: 6px;
+    margin-top: 4px;
+}</string>
       </property>
       <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+       <enum>QFrame::Plain</enum>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QToolButton" name="btnIdentify">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QFrame" name="frame_5">
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QFormLayout" name="formLayout">
-          <property name="leftMargin">
-           <number>3</number>
-          </property>
-          <item row="0" column="1">
-           <widget class="QLabel" name="label_info_map_point_search">
-            <property name="maximumSize">
-             <size>
-              <width>15</width>
-              <height>15</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string/>
-            </property>
-            <property name="text">
-             <string>i</string>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>20</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>8</pointsize>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Identyfikacja ULDK</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QFrame" name="frame_save_settings">
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
+      <property name="midLineWidth">
+       <number>0</number>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_save">
-       <property name="spacing">
-        <number>4</number>
-       </property>
-       <property name="leftMargin">
-        <number>9</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>9</number>
-       </property>
-       <property name="bottomMargin">
-        <number>5</number>
-       </property>
-       <item>
-        <widget class="QRadioButton" name="radioTempLayer">
-         <property name="text">
-          <string>Zapisz w warstwie tymczasowej</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_existing">
-         <item>
-          <widget class="QRadioButton" name="radioExistingLayer">
-           <property name="text">
-            <string>Dodaj do istniejącej warstwy</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QgsMapLayerComboBox" name="comboLayers" native="true">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelLayerInfo">
-           <property name="maximumSize">
-            <size>
-             <width>15</width>
-             <height>15</height>
-            </size>
-           </property>
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>Atrybuty będą dopasowane do kolumn wg nazw, jeśli dana kolumna nie istnieje to informacja nie zostanie zapisana:
-- wojewodztwo lub woj - województwo
-- powiat - powiat
-- gmina - gmina
-- obreb - obręb ewidencyjny
-- arkusz - arkusz mapy
-- nr_dzialki - numer działki
-- teryt - TERYT
-- pow_m2 - powierzchnia</string>
-           </property>
-           <property name="text">
-            <string>i</string>
-           </property>
-           <property name="scaledContents">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QScrollArea" name="scrollArea">
       <property name="widgetResizable">
        <bool>true</bool>
       </property>
@@ -251,183 +81,324 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>568</width>
-         <height>482</height>
+         <width>570</width>
+         <height>513</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
-         <widget class="QTabWidget" name="tabs">
+         <widget class="QFrame" name="frame_4">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="toolTip">
-           <string/>
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>0</height>
+           </size>
           </property>
-          <property name="toolTipDuration">
-           <number>0</number>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
           </property>
-          <property name="whatsThis">
-           <string/>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
           </property>
-          <property name="currentIndex">
-           <number>0</number>
-          </property>
-          <widget class="QWidget" name="tab_search">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <property name="leftMargin">
+            <number>0</number>
            </property>
-           <attribute name="title">
-            <string>Pojedynczo</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_3">
-            <item>
-             <layout class="QVBoxLayout" name="tab_teryt_search_layout">
-              <property name="spacing">
-               <number>2</number>
-              </property>
-             </layout>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_5">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Expanding</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_import_csv">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+           <property name="topMargin">
+            <number>0</number>
            </property>
-           <attribute name="title">
-            <string>Z listy</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_7">
-            <item>
-             <layout class="QVBoxLayout" name="tab_import_csv_layout">
-              <property name="spacing">
-               <number>2</number>
-              </property>
-             </layout>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_3">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_from_csv_file">
-            <attribute name="title">
-            <string>Z pliku CSV</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_csv_main">
-            <item>
-            <layout class="QVBoxLayout" name="tab_from_csv_file_layout">
-                <property name="spacing">
-                <number>2</number>
-                </property>
-            </layout>
-            </item>
-            <item>
-            <spacer name="verticalSpacer_csv">
-                <property name="orientation">
-                <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                <size>
-                <width>20</width>
-                <height>40</height>
-                </size>
-                </property>
-            </spacer>
-            </item>
-            </layout>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QToolButton" name="btnIdentify">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+             <property name="autoRepeat">
+              <bool>false</bool>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
             </widget>
-          <widget class="QWidget" name="tab_import_layer">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+           </item>
+           <item>
+            <widget class="Line" name="toolLine">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="btn_tab_search">
+             <property name="mouseTracking">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="autoExclusive">
+              <bool>true</bool>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="btn_tab_import_csv">
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="autoExclusive">
+              <bool>true</bool>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="btn_tab_from_csv_file">
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="autoExclusive">
+              <bool>true</bool>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="btn_tab_import_layer">
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="autoExclusive">
+              <bool>true</bool>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="btn_tab_check_layer">
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="autoExclusive">
+              <bool>true</bool>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="toolSaveLine">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="btn_save_settings">
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::MenuButtonPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="btn_info">
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line">
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="frame_save_settings">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_save">
+           <property name="spacing">
+            <number>0</number>
            </property>
-           <attribute name="title">
-            <string>Z warstwy</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-             <layout class="QVBoxLayout" name="tab_import_layer_layout">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QFrame" name="dynamic_container">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <property name="lineWidth">
+              <number>1</number>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_2">
               <property name="spacing">
-               <number>2</number>
+               <number>5</number>
+              </property>
+              <property name="leftMargin">
+               <number>8</number>
+              </property>
+              <property name="topMargin">
+               <number>8</number>
+              </property>
+              <property name="rightMargin">
+               <number>8</number>
+              </property>
+              <property name="bottomMargin">
+               <number>8</number>
               </property>
              </layout>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_check_layer">
-           <attribute name="title">
-            <string>Sprawdź</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_5">
-            <item>
-             <layout class="QVBoxLayout" name="tab_check_layer_layout"/>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_4">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -465,17 +436,17 @@
         <bold>false</bold>
        </font>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
       <property name="wordWrap">
        <bool>true</bool>
-      </property>
-      <property name="alignment">
-       <enum>Qt::AlignCenter</enum>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QLabel" name="label_usemaps_link">
-       <property name="font">
+      <property name="font">
        <font>
         <pointsize>10</pointsize>
        </font>
@@ -483,24 +454,17 @@
       <property name="textFormat">
        <enum>Qt::RichText</enum>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
       <property name="openExternalLinks">
        <bool>true</bool>
-      </property>
-      <property name="alignment">
-       <enum>Qt::AlignCenter</enum>
       </property>
      </widget>
     </item>
    </layout>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QgsMapLayerComboBox</class>
-   <extends>QWidget</extends>
-   <header>qgsmaplayercombobox.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

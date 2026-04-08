@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>601</width>
-    <height>610</height>
+    <width>627</width>
+    <height>389</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -47,7 +47,7 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>350</width>
+         <width>50</width>
          <height>0</height>
         </size>
        </property>
@@ -183,11 +183,11 @@ geometrii w %</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="0" column="1" colspan="3">
       <widget class="QLabel" name="label_info">
        <property name="maximumSize">
         <size>
-         <width>100</width>
+         <width>16777215</width>
          <height>15</height>
         </size>
        </property>
@@ -195,7 +195,7 @@ geometrii w %</string>
         <string/>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Jak to działa?&lt;/b&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Sprawdź aktualność Twoich działek&lt;/b&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -292,10 +292,22 @@ geometrii w %</string>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
+       </property>
       </widget>
      </item>
      <item row="5" column="2">
       <widget class="QDoubleSpinBox" name="input_percent">
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="maximum">
         <double>100.000000000000000</double>
        </property>
@@ -305,7 +317,14 @@ geometrii w %</string>
       </widget>
      </item>
      <item row="2" column="2">
-      <widget class="QgsMapLayerComboBox" name="layer_select"/>
+      <widget class="QgsMapLayerComboBox" name="layer_select" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item row="2" column="1">
       <widget class="QLabel" name="label">
@@ -392,7 +411,7 @@ geometrii w %</string>
  <customwidgets>
   <customwidget>
    <class>QgsMapLayerComboBox</class>
-   <extends>QComboBox</extends>
+   <extends>QWidget</extends>
    <header>qgsmaplayercombobox.h</header>
   </customwidget>
  </customwidgets>

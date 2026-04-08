@@ -20,7 +20,6 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 class UI(QtWidgets.QFrame, FORM_CLASS):
 
-    icon_info_path = ':/plugins/plugin/info.png'
 
     def __init__(self, parent, target_layout):
         super().__init__(parent)
@@ -31,18 +30,26 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
     def initGui(self, target_layout):
         target_layout.layout().addWidget(self)
 
-        self.label_info_start.setPixmap(QPixmap(self.icon_info_path))
+        bg_color = self.palette().color(self.backgroundRole())
+        is_dark_theme = bg_color.lightness() < 128
+
+        if is_dark_theme:
+            icon_info_path = ':/plugins/gissupport_plugin/info_white.svg'
+        else:
+            icon_info_path = ':/plugins/gissupport_plugin/info.svg'
+
+        self.label_info_start.setPixmap(QPixmap(icon_info_path))
         self.label_info_start.setToolTip((
             "Wyszukiwanie wielu obiektów może być czasochłonne. W tym czasie\n"
             "będziesz mógł korzystać z pozostałych funkcjonalności wtyczki,\n"
             "ale mogą one działać wolniej. Wyszukiwanie obiektów działa również\n"
             "po zamknięciu wtyczki."))
-        self.label_info_column.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_column.setPixmap(QPixmap(icon_info_path))
         self.label_info_column.setToolTip((
             "Kolumna zawierająca kody TERYT działek, \n"
             "przykład poprawnego kodu: 141201_1.0001.1867/2"))
 
-        self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_icon.setPixmap(QPixmap(icon_info_path))
         self.label_info_icon.setToolTip((
             "Narzędzie wyszukuje działki na podstawie listy:\n"
             "załaduj warstwę z projektu, wskaż kolumnę z TERYT i uruchom wyszukiwanie."))
@@ -158,16 +165,16 @@ class CSVImport:
         self._toggle_target_input()
 
 
-    def __init_table(self):
+    def __init_table(self) -> None:
         table = self.ui.table_errors
+        table.setMaximumHeight(90)
         table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         table.setColumnCount(2)
         table.setHorizontalHeaderLabels(("TERYT", "Treść błędu"))
         header = table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        teryt_column_size = table.width()/3
-        header.resizeSection(0, 200)
+        header.resizeSection(0, 160)
 
     def _auto_select_teryt_column(self, layer: QgsVectorLayer) -> None:
         """Automatycznie szuka pola TERYT w nowo wybranej warstwie."""

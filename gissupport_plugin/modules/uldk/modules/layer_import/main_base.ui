@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>601</width>
-    <height>627</height>
+    <width>384</width>
+    <height>463</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -139,13 +139,20 @@
       </spacer>
      </item>
      <item row="2" column="2">
-      <widget class="QgsMapLayerComboBox" name="layer_select"/>
+      <widget class="QgsMapLayerComboBox" name="layer_select" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
      </item>
-     <item row="0" column="1">
+     <item row="0" column="1" colspan="2">
       <widget class="QLabel" name="label_info">
        <property name="maximumSize">
         <size>
-         <width>100</width>
+         <width>16777215</width>
          <height>15</height>
         </size>
        </property>
@@ -153,7 +160,7 @@
         <string/>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Jak to działa?&lt;/b&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Z warstwy projektu&lt;/b&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -218,10 +225,16 @@ wynikowej</string>
      <item row="6" column="2">
       <widget class="QLineEdit" name="text_edit_target_layer_name">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -247,14 +260,20 @@ wynikowej</string>
          </property>
         </widget>
        </item>
-       </layout>
+      </layout>
      </item>
      <item row="3" column="1" colspan="2">
       <widget class="QCheckBox" name="checkbox_selected_only">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
          <width>16777215</width>
-         <height>100</height>
+         <height>50</height>
         </size>
        </property>
        <property name="text">
@@ -283,6 +302,12 @@ wynikowej</string>
      </item>
      <item row="5" column="2">
       <widget class="QgsCheckableComboBox" name="combobox_fields_select">
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="defaultText" stdset="0">
         <string>Kliknij strzałkę, aby wybrać</string>
        </property>
@@ -306,14 +331,14 @@ wynikowej</string>
      <item row="9" column="1" colspan="2">
       <widget class="QProgressBar" name="progress_bar">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="minimumSize">
         <size>
-         <width>350</width>
+         <width>65</width>
          <height>0</height>
         </size>
        </property>
@@ -342,7 +367,7 @@ wynikowej</string>
  <customwidgets>
   <customwidget>
    <class>QgsMapLayerComboBox</class>
-   <extends>QComboBox</extends>
+   <extends>QWidget</extends>
    <header>qgsmaplayercombobox.h</header>
   </customwidget>
   <customwidget>

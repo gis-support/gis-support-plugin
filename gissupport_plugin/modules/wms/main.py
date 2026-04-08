@@ -74,7 +74,7 @@ class Main(BaseModule):
 
         #Zarejestrowanie we wtyczce
 
-        self.dlg.lblInfo.setPixmap(QPixmap(':/plugins/plugin/info.png'))
+        self.dlg.lblInfo.setPixmap(QPixmap(':/plugins/gissupport_plugin/info.svg'))
         self.dlg.lblInfo.setToolTip((
             "Brakuje adresu WMS, którego szukasz?\n"
             "Napisz do nas: info@gis-support.pl"))

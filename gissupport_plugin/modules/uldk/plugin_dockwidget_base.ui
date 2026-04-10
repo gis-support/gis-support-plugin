@@ -409,14 +409,14 @@
      <widget class="QLabel" name="label_usemaps_logo">
       <property name="minimumSize">
        <size>
-        <width>170</width>
-        <height>50</height>
+        <width>136</width>
+        <height>40</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>170</width>
-        <height>50</height>
+        <width>136</width>
+        <height>40</height>
        </size>
       </property>
       <property name="pixmap">

@@ -99,11 +99,11 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Logika otwierania przyciskami
         self.btn_tab_search.clicked.connect(lambda: self._switch_tool(0))
         self.btn_tab_search.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_teryt.svg'))
-        self.btn_tab_search.setToolTip(("Wyszukiwanie pojedyncze"))
+        self.btn_tab_search.setToolTip(("Pojedynczo"))
 
         self.btn_tab_import_csv.clicked.connect(lambda: self._switch_tool(1))
         self.btn_tab_import_csv.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_list.svg'))
-        self.btn_tab_import_csv.setToolTip(("Z atrybutu"))
+        self.btn_tab_import_csv.setToolTip(("Z listy"))
 
         self.btn_tab_from_csv_file.clicked.connect(lambda: self._switch_tool(2))
         self.btn_tab_from_csv_file.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_csv.svg'))

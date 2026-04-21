@@ -28,7 +28,6 @@ from qgis.utils import iface
 # Import the code for the DockWidget
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.gugik_nmt.gui.gugik_nmt_plugin_dockwidget import GugikNmtDockWidget
-import os.path
 
 
 class GugikNmt(BaseModule):

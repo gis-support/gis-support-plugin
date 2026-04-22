@@ -75,11 +75,6 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.ad_generator = usemaps_ads_generator()
         self._build_save_menu()
 
-        self.dynamic_container.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Preferred,
-            QtWidgets.QSizePolicy.Policy.Expanding
-        )
-
         pages_gen = self._generate_page(5)
 
         self.page_search, self.tab_teryt_search_layout = next(pages_gen)
@@ -139,15 +134,14 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             yield page, layout
 
     def _switch_tool(self, index: int) -> None:
-        while self.dynamic_container.layout().count():
-            item = self.dynamic_container.layout().takeAt(0)
+        target_layout = self.scrollAreaWidgetContents.layout()
+
+        while target_layout.count():
+            item = target_layout.takeAt(0)
             if item.widget():
                 item.widget().setParent(None)
 
-        self.dynamic_container.layout().addWidget(self.pages[index], alignment=Qt.AlignmentFlag.AlignTop)
-
-        self.scrollAreaWidgetContents.layout().invalidate()
-        self.scrollAreaWidgetContents.adjustSize()
+        target_layout.addWidget(self.pages[index], alignment=Qt.AlignmentFlag.AlignTop)
 
         # Logika widoczności menu zapisu przy zakładce Sprawdź
         if index == 4:
@@ -217,19 +211,17 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         )
 
     def _apply_theme_style(self) -> None:
-        bg_color = self.palette().color(QtGui.QPalette.ColorRole.Window)
-        is_dark_theme = bg_color.lightness() < 128
-
         base_style = """
-            QWidget#dynamic_container {
+            QScrollArea#scrollArea {
                 background-color: palette(base);
-                border: 1px solid palette(mid);
-                border-radius: 9px;
                 margin-top: 4px;
+            }
+            QWidget#scrollAreaWidgetContents {
+                background-color: transparent;
             }
         """
 
-        if is_dark_theme:
+        if self.palette().color(QtGui.QPalette.ColorRole.Window).lightness() < 128:
             self.scrollArea.setStyleSheet(base_style + """
                 QLineEdit{
                     background-color: #383838;

@@ -37,7 +37,7 @@
      <property name="horizontalSpacing">
       <number>8</number>
      </property>
-     <item row="7" column="1">
+     <item row="8" column="1">
       <widget class="QPushButton" name="button_start">
        <property name="enabled">
         <bool>false</bool>
@@ -59,7 +59,7 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
+     <item row="9" column="1">
       <widget class="QPushButton" name="button_cancel">
        <property name="enabled">
         <bool>false</bool>
@@ -106,7 +106,7 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -122,7 +122,7 @@
        </property>
       </spacer>
      </item>
-     <item row="4" column="1">
+     <item row="5" column="1">
       <spacer name="verticalSpacer_4">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -138,7 +138,7 @@
        </property>
       </spacer>
      </item>
-     <item row="2" column="2">
+     <item row="3" column="2">
       <widget class="QgsMapLayerComboBox" name="layer_select" native="true">
        <property name="minimumSize">
         <size>
@@ -170,7 +170,23 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="1" column="1" colspan="2">
+      <widget class="QLabel" name="infoLabel">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Narzędzie działa w oparciu o usługę &lt;a href=&quot;https://uldk.gugik.gov.pl/opis.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;ULDK&lt;/span&gt;&lt;/a&gt; od GUGiK.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::RichText</enum>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
       <widget class="QLabel" name="label_2">
        <property name="maximumSize">
         <size>
@@ -187,7 +203,7 @@ wynikowej</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="label_info_start">
        <property name="maximumSize">
         <size>
@@ -206,7 +222,7 @@ wynikowej</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="6" column="1">
       <widget class="QLabel" name="label_4">
        <property name="maximumSize">
         <size>
@@ -222,7 +238,7 @@ wynikowej</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="2">
+     <item row="7" column="2">
       <widget class="QLineEdit" name="text_edit_target_layer_name">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -238,7 +254,7 @@ wynikowej</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="2" rowspan="2">
+     <item row="8" column="2" rowspan="2">
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <property name="leftMargin">
         <number>15</number>
@@ -262,7 +278,7 @@ wynikowej</string>
        </item>
       </layout>
      </item>
-     <item row="3" column="1" colspan="2">
+     <item row="4" column="1" colspan="2">
       <widget class="QCheckBox" name="checkbox_selected_only">
        <property name="minimumSize">
         <size>
@@ -281,7 +297,7 @@ wynikowej</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <widget class="QLabel" name="label">
        <property name="minimumSize">
         <size>
@@ -300,7 +316,7 @@ wynikowej</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="2">
+     <item row="6" column="2">
       <widget class="QgsCheckableComboBox" name="combobox_fields_select">
        <property name="minimumSize">
         <size>
@@ -328,7 +344,7 @@ wynikowej</string>
        </item>
       </widget>
      </item>
-     <item row="9" column="1" colspan="2">
+     <item row="10" column="1" colspan="2">
       <widget class="QProgressBar" name="progress_bar">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">

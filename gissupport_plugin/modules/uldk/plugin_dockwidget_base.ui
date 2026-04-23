@@ -12,7 +12,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>190</width>
+    <width>200</width>
     <height>0</height>
    </size>
   </property>
@@ -424,14 +424,14 @@
      <widget class="QLabel" name="label_usemaps_logo">
       <property name="minimumSize">
        <size>
-        <width>136</width>
-        <height>40</height>
+        <width>102</width>
+        <height>30</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>136</width>
-        <height>40</height>
+        <width>102</width>
+        <height>30</height>
        </size>
       </property>
       <property name="pixmap">

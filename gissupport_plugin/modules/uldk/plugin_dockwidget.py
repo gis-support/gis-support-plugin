@@ -30,6 +30,7 @@ from qgis.PyQt.QtCore import pyqtSignal, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsMapLayerProxyModel
 from qgis.gui import QgsMapLayerComboBox
+from qgis.utils import iface
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'plugin_dockwidget_base.ui'))
@@ -211,18 +212,32 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         )
 
     def _apply_theme_style(self) -> None:
-        base_style = """
-            QScrollArea#scrollArea {
+        qgis_font = iface.layerTreeView().font()
+        font_family = qgis_font.family()
+        font_size = qgis_font.pointSize()
+        
+        if font_size > 0:
+            font_css = f"font-size: {font_size}pt;"
+        else:
+            font_css = f"font-size: {qgis_font.pixelSize()}px;"
+
+        self.setStyleSheet(f"""
+            QWidget {{
+                font-family: "{font_family}";
+                {font_css}
+            }}
+            QScrollArea#scrollArea {{
                 background-color: palette(base);
                 margin-top: 4px;
-            }
-            QWidget#scrollAreaWidgetContents {
+            }}
+            QWidget#scrollAreaWidgetContents {{
                 background-color: transparent;
-            }
-        """
+            }}
+        """)
+
 
         if self.palette().color(QtGui.QPalette.ColorRole.Window).lightness() < 128:
-            self.scrollArea.setStyleSheet(base_style + """
+            self.scrollArea.setStyleSheet(self.scrollArea.styleSheet() + """
                 QLineEdit{
                     background-color: #383838;
                     border: 2px solid #383838;
@@ -237,8 +252,6 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     color: #eeeeee;
                 }
             """)
-        else:
-            self.scrollArea.setStyleSheet(base_style)
 
     def showEvent(self, event):
         super(wyszukiwarkaDzialekDockWidget, self).showEvent(event)

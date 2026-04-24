@@ -26,7 +26,7 @@ import os
 import random
 
 from qgis.PyQt import QtGui, QtWidgets, uic
-from qgis.PyQt.QtCore import pyqtSignal, Qt
+from qgis.PyQt.QtCore import pyqtSignal, Qt, QSize
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsMapLayerProxyModel
 from qgis.gui import QgsMapLayerComboBox
@@ -92,38 +92,49 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.page_check
         ]
 
-        # Logika otwierania przyciskami
-        self.btn_tab_search.clicked.connect(lambda: self._switch_tool(0))
-        self.btn_tab_search.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_teryt.svg'))
-        self.btn_tab_search.setToolTip(("Pojedynczo"))
+        self.tab_action_group = QtWidgets.QActionGroup(self)
+        for act in (self.action_tab_search, self.action_tab_import_csv, 
+                    self.action_tab_from_csv_file, self.action_tab_import_layer, 
+                    self.action_tab_check_layer):
+            self.tab_action_group.addAction(act)
+        self.tab_action_group.setExclusive(True)
 
-        self.btn_tab_import_csv.clicked.connect(lambda: self._switch_tool(1))
-        self.btn_tab_import_csv.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_list.svg'))
-        self.btn_tab_import_csv.setToolTip(("Z listy"))
+        self.action_tab_search.triggered.connect(lambda: self._switch_tool(0))
+        self.action_tab_search.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_teryt.svg'))
+        self.action_tab_search.setToolTip(("Pojedynczo"))
 
-        self.btn_tab_from_csv_file.clicked.connect(lambda: self._switch_tool(2))
-        self.btn_tab_from_csv_file.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_csv.svg'))
-        self.btn_tab_from_csv_file.setToolTip(("Z pliku CSV"))
+        self.action_tab_import_csv.triggered.connect(lambda: self._switch_tool(1))
+        self.action_tab_import_csv.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_list.svg'))
+        self.action_tab_import_csv.setToolTip(("Z listy"))
 
-        self.btn_tab_import_layer.clicked.connect(lambda: self._switch_tool(3))
-        self.btn_tab_import_layer.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_layer.svg'))
-        self.btn_tab_import_layer.setToolTip(("Z warstwy"))
+        self.action_tab_from_csv_file.triggered.connect(lambda: self._switch_tool(2))
+        self.action_tab_from_csv_file.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_csv.svg'))
+        self.action_tab_from_csv_file.setToolTip(("Z pliku CSV"))
 
-        self.btn_tab_check_layer.clicked.connect(lambda: self._switch_tool(4))
-        self.btn_tab_check_layer.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_check_layer.svg'))
-        self.btn_tab_check_layer.setToolTip(("Sprawdź"))
+        self.action_tab_import_layer.triggered.connect(lambda: self._switch_tool(3))
+        self.action_tab_import_layer.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_layer.svg'))
+        self.action_tab_import_layer.setToolTip(("Z warstwy"))
 
-        self.btn_save_settings.setToolTip(("Ustawienia zapisu"))
-        self.btn_save_settings.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_settings.svg'))
+        self.action_tab_check_layer.triggered.connect(lambda: self._switch_tool(4))
+        self.action_tab_check_layer.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_check_layer.svg'))
+        self.action_tab_check_layer.setToolTip(("Sprawdź"))
 
-        self.btn_info.clicked.connect(self._show_info_dialog)
-        self.btn_info.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_plugin_info.svg'))
-        self.btn_info.setToolTip(("O wtyczce"))
+        self.action_info.triggered.connect(self._show_info_dialog)
+        self.action_info.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_plugin_info.svg'))
+        self.action_info.setToolTip(("O wtyczce"))
+
+        self.action_settings.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_settings.svg'))
+        self.action_settings.setToolTip("Ustawienia zapisu")
+        self.action_settings.setMenu(self._save_menu)
+        
+        settings_button = self.main_toolbar.widgetForAction(self.action_settings)
+        if settings_button:
+            settings_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
 
         self._apply_theme_style()
 
         # Załadowanie pierwszej zakładki
-        self.btn_tab_search.setChecked(True)
+        self.action_tab_search.setChecked(True)
         self._switch_tool(0)
 
     def _generate_page(self, count: int):
@@ -202,14 +213,9 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.radioExistingLayer.toggled.connect(self.comboLayers.setEnabled)
 
-        widget_action = QtWidgets.QWidgetAction(self._save_menu)
-        widget_action.setDefaultWidget(container)
-        self._save_menu.addAction(widget_action)
-
-        self.btn_save_settings.setMenu(self._save_menu)
-        self.btn_save_settings.setPopupMode(
-            QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup
-        )
+        self._save_widget_action = QtWidgets.QWidgetAction(self._save_menu)
+        self._save_widget_action.setDefaultWidget(container)
+        self._save_menu.addAction(self._save_widget_action)
 
     def _apply_theme_style(self) -> None:
         qgis_font = iface.layerTreeView().font()
@@ -228,13 +234,16 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             }}
             QScrollArea#scrollArea {{
                 background-color: palette(base);
-                margin-top: 4px;
+                border: 1px solid #b4b4b4;
+                margin-top: 0px;
             }}
             QWidget#scrollAreaWidgetContents {{
                 background-color: transparent;
             }}
+            QTableWidget{{
+                border: 1px solid #b4b4b4;
+            }}
         """)
-
 
         if self.palette().color(QtGui.QPalette.ColorRole.Window).lightness() < 128:
             self.scrollArea.setStyleSheet(self.scrollArea.styleSheet() + """
@@ -243,11 +252,12 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     border: 2px solid #383838;
                     border-radius: 2px;
                 }
-
                 QTableWidget, QProgressBar, QDoubleSpinBox, QgsCheckableComboBox{
                     background-color: #383838;
                 }
-
+                QTableWidget, QScrollArea#scrollArea{
+                    border: 1px solid #000000;
+                }
                 QPushButton, QComboBox {
                     color: #eeeeee;
                 }
@@ -256,6 +266,7 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def showEvent(self, event):
         super(wyszukiwarkaDzialekDockWidget, self).showEvent(event)
         self._setup_usemaps_banner()
+        self.main_toolbar.setIconSize(QSize(20, 20))
 
     def _setup_usemaps_banner(self) -> None:
         """Konfiguruje banner"""
@@ -263,10 +274,11 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         ad = next(self.ad_generator)
         self.label_usemaps_text.setTextFormat(Qt.TextFormat.RichText)
         self.label_usemaps_text.setText(
-            f'<html><body><p align="center">{ad[0]}</p></body></html>'
+            f'<html><body><p align="center" style="font-weight: normal; margin: 0px;">{ad[0]}</p></body></html>'
         )
+        self.label_usemaps_link.setWordWrap(True)
         self.label_usemaps_link.setText(
-            f'<html><body><p align="center" style="font-size:10pt;">'
+            f'<html><body><p align="center">'
             f'<a href="{ad[1]}"><span style="text-decoration: underline; color:#0000ff;">'
             f'{ad[2]}</span></a></p></body></html>'
         )

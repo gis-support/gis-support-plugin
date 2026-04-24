@@ -71,7 +71,9 @@ class Main(BaseModule):
         self.module_map_point_search.setAction( self.identify_action )
         self.parent.toolbar.addSeparator()
 
-        self.dockwidget.btnIdentify.setDefaultAction(self.identify_action)
+        actions = self.dockwidget.main_toolbar.actions()
+        self.dockwidget.main_toolbar.insertAction(actions[1], self.identify_action)
+        self.dockwidget.main_toolbar.removeAction(self.dockwidget.action_identify)
 
         self.dockwidget.hide()
 

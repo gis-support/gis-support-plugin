@@ -64,7 +64,7 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
         self.label_info_icon.setPixmap(QPixmap(icon_info_path))
         self.label_info_icon.setToolTip((
             "Narzędzie wyszukuje działki\n"
-            "które mają wspólną geometrię z warstwą punktową wczytaną do QGIS."))
+            "które mają wspólną geometrię z warstwą wczytaną do QGIS."))
 
 class LayerImport:
 

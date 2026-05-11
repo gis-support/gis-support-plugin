@@ -273,12 +273,14 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         ad = next(self.ad_generator)
         self.label_usemaps_text.setTextFormat(Qt.TextFormat.RichText)
+        self.label_usemaps_text.setStyleSheet("margin-bottom: 4px;")
         self.label_usemaps_text.setText(
             f'<html><body><p align="center" style="font-weight: normal; margin: 0px;">{ad[0]}</p></body></html>'
         )
         self.label_usemaps_link.setWordWrap(True)
+        self.label_usemaps_link.setStyleSheet("margin-bottom: 4px;")
         self.label_usemaps_link.setText(
-            f'<html><body><p align="center">'
+            f'<html><body><p align="center" style="margin: 0px;">'
             f'<a href="{ad[1]}"><span style="text-decoration: underline; color:#0000ff;">'
             f'{ad[2]}</span></a></p></body></html>'
         )

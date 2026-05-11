@@ -58,6 +58,7 @@ class GpkgHandler:
         options = QgsVectorFileWriter.SaveVectorOptions()
         options.driverName = "GPKG"
         options.fileEncoding = "UTF-8"
+        options.overrideGeometryType = QgsWkbTypes.dropM(QgsWkbTypes.dropZ(source_layer.wkbType()))
 
         transform_context = QgsProject.instance().transformContext()
 
@@ -86,12 +87,13 @@ class GpkgHandler:
             temp_layer.commitChanges()
 
         temp_path = os.path.join(tempfile.gettempdir(), f"{''.join(c for c in layer.name() if c.isalnum() or c in (' ', '_', '-')).strip()}.gpkg")
-
+        options = QgsVectorFileWriter.SaveVectorOptions()
+        options.overrideGeometryType = QgsWkbTypes.dropM(QgsWkbTypes.dropZ(temp_layer.wkbType()))
         if QgsVectorFileWriter.writeAsVectorFormatV3(
             temp_layer,
             temp_path,
             QgsProject.instance().transformContext(),
-            QgsVectorFileWriter.SaveVectorOptions()
+            options
         )[0] == QgsVectorFileWriter.WriterError.NoError:
             return temp_path
 

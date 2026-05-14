@@ -33,31 +33,38 @@ CRS_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
 class UI(QtWidgets.QFrame, FORM_CLASS):
 
-    icon_info_path = ':/plugins/plugin/info.png'
 
     def __init__(self, target_layout, parent = None):
         super().__init__(parent)
 
         self.setupUi(self)
 
+        bg_color = self.palette().color(self.backgroundRole())
+        is_dark_theme = bg_color.lightness() < 128
+
+        if is_dark_theme:
+            icon_info_path = ':/plugins/gissupport_plugin/info_white.svg'
+        else:
+            icon_info_path = ':/plugins/gissupport_plugin/info.svg'
+
         target_layout.layout().addWidget(self)
 
         self.layer_select.setFilters(QgsMapLayerProxyModel.Filter.PolygonLayer)
 
-        self.label_info_start.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_start.setPixmap(QPixmap(icon_info_path))
         self.label_info_start.setToolTip((
             "Sprawdzanie wielu obiektów może być czasochłonne. W tym czasie\n"
             "będziesz mógł korzystać z pozostałych funkcjonalności wtyczki,\n"
             "ale mogą one działać wolniej. Sprawdzanie obiektów działa również\n"
             "po zamknięciu wtyczki."))
 
-        self.label_info_percent.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_percent.setPixmap(QPixmap(icon_info_path))
         self.label_info_percent.setToolTip((
             "Narzędzie porównuje pole powierzchni działek.\n"
             "Parametr dokładności określa dopuszczalny % różnicy\n"
             "np. parametr 1% ignoruje różnicę powierzchni mniejszą niż 1%"))
 
-        self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_icon.setPixmap(QPixmap(icon_info_path))
         self.label_info_icon.setToolTip((
             "Narzędzie sprawdza dopasowanie geometrii warstwy źródłowej do obiektów w ULDK."))
 

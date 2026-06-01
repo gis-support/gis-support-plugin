@@ -60,3 +60,7 @@ class MapsterModule( BaseModule ):
     def on_map_tool_changed(self, tool):
         if self.dockwidget.searchButton.isChecked() and tool != self.point_tool:
             self.dockwidget.searchButton.setChecked(False)
+
+    def unload(self):
+        iface.removeDockWidget(self.dockwidget)
+        self.dockwidget.deleteLater()

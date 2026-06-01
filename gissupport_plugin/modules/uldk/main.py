@@ -85,6 +85,7 @@ class Main(BaseModule):
     def unload(self):
         """ Wyłączenie modułu """
         iface.removeDockWidget(self.dockwidget)
+        self.dockwidget.deleteLater()
 
     def toggle_map_point_search_tool(self, checked):
         """

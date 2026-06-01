@@ -127,3 +127,7 @@ class GISBox(BaseModule, Logger):
             self.dockwidget.vectorTab.setEnabled(True)
             self.autoDigitizationWidget.getOptions()
             return
+
+    def unload(self):
+        iface.removeDockWidget(self.dockwidget)
+        self.dockwidget.deleteLater()

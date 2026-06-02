@@ -96,6 +96,11 @@ class NMPTdownloader:
         
         self.nmpt_dockwidget.setVisible(not self.nmpt_dockwidget.isVisible())
 
+    def unload(self):
+        if self.nmpt_dockwidget is not None:
+            iface.removeDockWidget(self.nmpt_dockwidget)
+            self.nmpt_dockwidget.deleteLater()
+
     @update_download_button_state_dec
     def data_radiobutton_state(self, button):
 

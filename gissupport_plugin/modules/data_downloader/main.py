@@ -84,9 +84,6 @@ class DataDownloaderModule(BaseModule, PRGDownloader, PRGAddressDownloader, BDOT
         self.toolButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
 
     def unload(self):
-        dockwidgets = ['prg_dockwidget', 'prg_address_dockwidget', 'bdot10k_dockwidget', 'nmpt_dockwidget']
-        for widget_name in dockwidgets:
-            widget = getattr(self, widget_name, None)
-            if widget is not None:
-                iface.removeDockWidget(widget)
-                widget.deleteLater()
+        for cls in self.__class__.__bases__:
+            if hasattr(cls, 'unload'):
+                cls.unload(self)

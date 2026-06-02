@@ -38,6 +38,11 @@ class PRGDownloader:
             self.init_prg_dockwidget()
         self.prg_dockwidget.setVisible(not self.prg_dockwidget.isVisible())
 
+    def unload(self):
+        if self.prg_dockwidget is not None:
+            iface.removeDockWidget(self.prg_dockwidget)
+            self.prg_dockwidget.deleteLater()
+
     def filter_name_combobox(self, text: str):
         model = self.prg_dockwidget.entity_name_combobox.model()
         view = self.prg_dockwidget.entity_name_combobox.view()

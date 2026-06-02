@@ -53,3 +53,4 @@ class GugikNmt(BaseModule):
     def unload(self):
         """ Wyłączenie modułu """
         iface.removeDockWidget(self.dockwidget)
+        self.dockwidget.deleteLater()

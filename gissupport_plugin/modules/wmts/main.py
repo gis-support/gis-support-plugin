@@ -81,3 +81,7 @@ class WMTSCacheModule(BaseModule):
         
     def dialogAccepted(self):
         self.settings.setValue('/qgis/defaultTileExpiry', self.dockwidget.sbCacheExpiration.value())
+
+    def unload(self):
+        iface.removeDockWidget(self.dockwidget)
+        self.dockwidget.deleteLater()

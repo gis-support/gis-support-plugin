@@ -7,9 +7,40 @@ from qgis.PyQt.QtCore import QCoreApplication, QUrl
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 
 from urllib.parse import urlencode
+import ssl
+from urllib.request import Request, urlopen
 
 from gissupport_plugin.tools.gisbox_connection import GISBOX_CONNECTION
 
+
+class LegacyQNetworkReplyMock:
+    def __init__(self, data: bytes, err: str = ""):
+        self._d = data
+        self._err = err
+        
+    def error(self):
+        return QNetworkReply.NetworkError.NoError if not self._err else QNetworkReply.NetworkError.UnknownNetworkError
+    
+    def header(self, _):
+        return len(self._d)
+    
+    def readAll(self):
+        class ByteArrayMock:
+            def data(slf): return self._d
+        return ByteArrayMock()
+
+def legacy_network_get(url: str):
+    
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    ctx.options |= 0x4
+    try:
+        req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        res = urlopen(req, context=ctx, timeout=15)
+        return LegacyQNetworkReplyMock(res.read())
+    except Exception as e:
+        return LegacyQNetworkReplyMock(b'', str(e))
 
 class NetworkHandler(QObject):
     downloadProgress: pyqtSignal = pyqtSignal(int)
@@ -45,6 +76,9 @@ class NetworkHandler(QObject):
         """Wykonuje żądanie GET do podanego URL"""
         self.result = None
         self.error_occurred = False
+
+        if "geoportal" in url or "gugik.gov.pl" in url:
+            return legacy_network_get(url)
 
         def try_request(url, retry_callback=None):
             request = QNetworkRequest(QUrl(url))

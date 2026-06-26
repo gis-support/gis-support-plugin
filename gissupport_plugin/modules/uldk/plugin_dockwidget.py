@@ -25,9 +25,8 @@
 import os
 import random
 
-from qgis.PyQt import QtGui, QtWidgets, uic
+from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal, Qt
-from qgis.PyQt.QtGui import QPixmap
 from qgis.core import QgsMapLayerProxyModel
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -88,7 +87,7 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
     def _setup_usemaps_banner(self):
         """Konfiguruje banner"""
-        
+
         ad = next(self.ad_generator)
         self.label_usemaps_text.setTextFormat(Qt.TextFormat.RichText)
         self.label_usemaps_text.setText(

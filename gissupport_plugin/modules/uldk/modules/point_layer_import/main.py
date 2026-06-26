@@ -1,11 +1,9 @@
 import os
 
-from qgis.PyQt import QtGui, QtWidgets, uic
-from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal
-from qgis.PyQt.QtGui import QKeySequence, QPixmap
-from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-                       QgsCoordinateTransformContext, QgsMapLayerProxyModel,
-                       QgsProject)
+from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt.QtCore import QThread
+from qgis.PyQt.QtGui import QPixmap
+from qgis.core import QgsCoordinateReferenceSystem, QgsMapLayerProxyModel, QgsProject
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 
@@ -36,13 +34,13 @@ def get_obiekty_form(count):
 
 class UI(QtWidgets.QFrame, FORM_CLASS):
 
-    icon_info_path = ':/plugins/plugin/info.png'
+    icon_info_path = ':/plugins/gissupport_plugin/info.png'
 
     def __init__(self, target_layout, parent = None):
         super().__init__(parent)
 
         self.setupUi(self)
-        
+
         target_layout.layout().addWidget(self)
 
         self.layer_select.setFilters(QgsMapLayerProxyModel.Filter.PointLayer)
@@ -56,7 +54,7 @@ class UI(QtWidgets.QFrame, FORM_CLASS):
 
         self.frame_how_it_works.setToolTip((
             "Narzędzie wyszukuje działki\n"
-            "które mają wspólną geometrię z warstwą punktową wczytaną do QGIS."))   
+            "które mają wspólną geometrię z warstwą punktową wczytaną do QGIS."))
         self.label_info_icon.setPixmap(QPixmap(self.icon_info_path))
 
 class PointLayerImport:
@@ -66,10 +64,10 @@ class PointLayerImport:
         self.canvas = iface.mapCanvas()
         self.ui = UI(target_layout)
         self.__init_ui()
-        
+
     def search(self):
         layer = self.source_layer
-        
+
         target_layer_name = self.ui.text_edit_target_layer_name.text()
 
         selected_only = bool(self.ui.checkbox_selected_only.checkState())
@@ -97,7 +95,7 @@ class PointLayerImport:
 
 
         self.ui.label_status.setText(f"Trwa wyszukiwanie {count} obiektów...")
-    
+
     def __init_ui(self):
         self.ui.button_start.clicked.connect(self.search)
         self.ui.button_cancel.clicked.connect(self.__stop)
@@ -127,7 +125,7 @@ class PointLayerImport:
             self.source_layer = None
             self.ui.text_edit_target_layer_name.setText("")
             self.ui.checkbox_selected_only.setText("Tylko zaznaczone obiekty [0]")
-    
+
     def __on_layer_features_selection_changed(self, selected_features):
         if not self.source_layer:
             selected_features = []
@@ -165,7 +163,7 @@ class PointLayerImport:
 
         iface.messageBar().pushWidget(QgsMessageBarItem("Wtyczka GIS Support",
             f"Wyszukiwarka działek z warstwy: zakończono wyszukiwanie. Zapisano {self.saved_count} {get_obiekty_form(self.saved_count)} do warstwy <b>{self.ui.text_edit_target_layer_name.text()}</b>"))
-        
+
     def __handle_interrupted(self, layer_found, layer_not_found):
         self.__cleanup_after_search()
 
@@ -173,12 +171,12 @@ class PointLayerImport:
             QgsProject.instance().addMapLayer(layer_found)
         if layer_not_found.dataProvider().featureCount():
             QgsProject.instance().addMapLayer(layer_not_found)
-        
+
     def __cleanup_after_search(self):
         self.__set_controls_enabled(True)
         self.ui.button_cancel.setText("Anuluj")
-        self.ui.button_cancel.setEnabled(False)   
-        self.ui.progress_bar.setValue(0)  
+        self.ui.button_cancel.setEnabled(False)
+        self.ui.progress_bar.setValue(0)
 
     def __cleanup_before_search(self):
         self.__set_controls_enabled(False)

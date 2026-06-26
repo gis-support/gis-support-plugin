@@ -6,7 +6,7 @@ from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.utils import iface
 from qgis.core import QgsMapLayerProxyModel
 
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+from gissupport_plugin.modules.usemaps_lite.tools.translations import TRANSLATOR
 
 class DropFrame(QFrame):
     """

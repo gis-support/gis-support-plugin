@@ -1,7 +1,7 @@
 from os.path import expanduser
 
-from qgis.core import (Qgis, QgsApplication, QgsGeometry, QgsMapLayerProxyModel,
-                       QgsCoordinateReferenceSystem, QgsProject, QgsCoordinateTransform, QgsRasterLayer,
+from qgis.core import (Qgis, QgsApplication, QgsGeometry, QgsCoordinateReferenceSystem,
+                       QgsProject, QgsCoordinateTransform, QgsRasterLayer,
                        QgsDistanceArea, QgsUnitTypes, QgsCoordinateTransformContext, QgsRectangle)
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
@@ -9,7 +9,6 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QFileDialog
 
 from gissupport_plugin.modules.data_downloader.nmpt.nmpt_dockwidget import NMPTdockWidget
-from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool
 from gissupport_plugin.modules.data_downloader.nmpt.utils import NMPTdownloadTask
 
 def update_download_button_state_dec(func):
@@ -93,7 +92,7 @@ class NMPTdownloader:
 
         if self.nmpt_dockwidget is None:
             self.init_nmpt_dockwidget()
-        
+
         self.nmpt_dockwidget.setVisible(not self.nmpt_dockwidget.isVisible())
 
     @update_download_button_state_dec
@@ -217,7 +216,7 @@ class NMPTdownloader:
         self.select_features_rectangle_tool.reset()
         self.select_features_freehand_tool.reset()
         self.select_features_tool.reset()
-    
+
 
     def browse_filepath_for_nmpt(self):
 

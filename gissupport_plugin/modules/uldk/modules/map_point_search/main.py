@@ -1,7 +1,5 @@
-from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal
-from qgis.PyQt.QtGui import QCursor
-from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-                       QgsCoordinateTransformContext, QgsFeature, QgsPoint)
+from qgis.PyQt.QtCore import Qt, QThread
+from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsCoordinateTransformContext
 from qgis.gui import QgsMapToolEmitPoint
 from qgis.utils import iface
 
@@ -10,8 +8,6 @@ from ...uldk.api import ULDKSearchLogger, ULDKSearchPoint, ULDKSearchPointWorker
 CRS_2180 = QgsCoordinateReferenceSystem.fromEpsgId(2180)
 
 class MapPointSearch(QgsMapToolEmitPoint):
-
-    icon_path = ':/plugins/plugin/intersect.png'
 
     def __init__(self, parent, result_collector):
         self.parent = parent
@@ -29,7 +25,7 @@ class MapPointSearch(QgsMapToolEmitPoint):
 
         canvas_crs = self.canvas.mapSettings().destinationCrs()
         if canvas_crs != CRS_2180:
-            transformation = QgsCoordinateTransform(canvas_crs, CRS_2180, QgsCoordinateTransformContext()) 
+            transformation = QgsCoordinateTransform(canvas_crs, CRS_2180, QgsCoordinateTransformContext())
             point = transformation.transform(point)
 
         x = point.x()
@@ -92,5 +88,4 @@ class MapPointSearch(QgsMapToolEmitPoint):
         else:
             self.canvas.setMapTool(self)
 
-    def get_icon(self):
-        return self.icon_path
+

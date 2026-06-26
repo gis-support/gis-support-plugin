@@ -5,10 +5,10 @@ from typing import Tuple
 from qgis.PyQt.QtCore import QObject, Qt
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem, QColor
 
-from gissupport_plugin.tools.usemaps_lite.requests import API_CLIENT
-from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
-from gissupport_plugin.tools.usemaps_lite.metadata import ORGANIZATION_METADATA
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+from gissupport_plugin.modules.usemaps_lite.tools.requests import API_CLIENT
+from gissupport_plugin.modules.usemaps_lite.tools.user_mapper import USER_MAPPER
+from gissupport_plugin.modules.usemaps_lite.tools.metadata import ORGANIZATION_METADATA
+from gissupport_plugin.modules.usemaps_lite.tools.translations import TRANSLATOR
 
 class Event(Enum):
     STATUS = 'status'
@@ -161,7 +161,7 @@ class EventHandler(QObject):
         item = QStandardItem(message_text)
         background_color = self._get_event_background_color(event_type_enum)
 
-        item.setData(event_type_enum, Qt.ItemDataRole.UserRole + 1) 
+        item.setData(event_type_enum, Qt.ItemDataRole.UserRole + 1)
         item.setData(alignment, Qt.ItemDataRole.UserRole + 2)
         item.setToolTip(full_date_str)
 

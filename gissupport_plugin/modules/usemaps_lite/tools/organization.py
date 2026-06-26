@@ -5,11 +5,11 @@ from qgis.PyQt.QtGui import QIcon, QStandardItem
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QMessageBox, QHeaderView
 
-from gissupport_plugin.tools.usemaps_lite.base_logic_class import BaseLogicClass
-from gissupport_plugin.tools.usemaps_lite.event_handler import Event
-from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
-from gissupport_plugin.tools.usemaps_lite.metadata import ORGANIZATION_METADATA
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+from gissupport_plugin.modules.usemaps_lite.tools.base_logic_class import BaseLogicClass
+from gissupport_plugin.modules.usemaps_lite.tools.event_handler import Event
+from gissupport_plugin.modules.usemaps_lite.tools.user_mapper import USER_MAPPER
+from gissupport_plugin.modules.usemaps_lite.tools.metadata import ORGANIZATION_METADATA
+from gissupport_plugin.modules.usemaps_lite.tools.translations import TRANSLATOR
 from gissupport_plugin.modules.usemaps_lite.ui.invite_user import InviteUserDialog
 
 
@@ -24,7 +24,7 @@ class Organization(BaseLogicClass):
         super().__init__(dockwidget)
 
         self.invite_user_dialog = InviteUserDialog()
-        
+
         self.event_handler.register_event_handler(Event.INVITED_USER, self.handle_invited_user_event)
         self.event_handler.register_event_handler(Event.VERIFIED_USER, self.handle_verified_user_event)
         self.event_handler.register_event_handler(Event.DELETED_USER, self.handle_deleted_user_event)
@@ -45,7 +45,7 @@ class Organization(BaseLogicClass):
         self.invite_user_dialog.invite_user_button.clicked.connect(self.invite_user)
 
         self.dockwidget.invite_user_button.clicked.connect(self.invite_user_dialog.show)
-        
+
         self.dockwidget.add_comment_button.clicked.connect(self.post_comment)
         self.dockwidget.comment_lineedit.returnPressed.connect(self.post_comment)
         self.dockwidget.comment_lineedit.textChanged.connect(self.check_comment)
@@ -60,20 +60,20 @@ class Organization(BaseLogicClass):
             enable_button = False
 
         self.dockwidget.add_comment_button.setEnabled(enable_button)
-        
+
     def post_comment(self) -> None:
         """
         Wykonuje request dodania komentarza
         """
 
         comment = self.dockwidget.comment_lineedit.text()
-        
+
         self.api.post(
             "org/comments",
             {"comment": comment},
             callback=self.handle_comment_response
         )
-    
+
     def handle_comment_response(self, response: Dict[str, Any]) -> None:
         """
         Obsługuje odpowiedź po próbie dodania komentarza.
@@ -140,7 +140,7 @@ class Organization(BaseLogicClass):
                 {"email": user_email},
                 callback=self.handle_delete_user_response
             )
-        
+
     def handle_delete_user_response(self, response: Dict[str, Any]) -> None:
         """
         Obsługuje odpowiedź po próbie usunięcia członka organizacji
@@ -188,7 +188,7 @@ class Organization(BaseLogicClass):
     def handle_verified_user_event(self, event_data: Dict[str, Any]) -> None:
         """
         Obsługuje przychodzące zdarzenie weryfikacji nowego członka organizacji.
-        """        
+        """
 
         data = event_data.get("data")
         email = data.get("email")
@@ -243,10 +243,10 @@ class Organization(BaseLogicClass):
         Włącza/wyłącza przycisk zapraszania współpracowników, w zaleznosci od osiągnięcia
         limitu współpracowników w organizacji
         """
-        
+
         num_of_users_limit = ORGANIZATION_METADATA.get_num_of_users_limit()
         num_of_users_added = self.dockwidget.users_tableview_model.rowCount()
-        
+
         self.dockwidget.invite_user_button.setEnabled(num_of_users_added < num_of_users_limit)
 
     def handle_online_user_event(self, event_data: Dict[str, Any]) -> None:
@@ -266,7 +266,7 @@ class Organization(BaseLogicClass):
                 icon_item.setIcon(icon)
                 self.dockwidget.users_tableview_model.setItem(user_row, 2, icon_item)
 
-                
+
         self.show_info_message(f"{online_user_email} {TRANSLATOR.translate_info('is online')}")
 
 

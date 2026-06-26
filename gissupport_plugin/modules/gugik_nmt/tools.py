@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QInputDialog, QTableWidgetItem
 from qgis.PyQt.QtGui import QCursor, QPixmap, QColor
-from qgis.core import (QgsMapLayer, QgsWkbTypes, QgsGeometry, QgsProject, Qgis, QgsDistanceArea,
-    QgsCoordinateTransformContext, QgsUnitTypes, QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-    QgsTask, QgsApplication)
+from qgis.core import (QgsWkbTypes, QgsGeometry, QgsProject, Qgis, QgsDistanceArea,
+                       QgsCoordinateTransformContext, QgsUnitTypes, QgsTask, QgsApplication)
 from qgis.gui import QgsRubberBand, QgsMapTool
 from qgis.utils import iface
 
@@ -16,13 +15,13 @@ class IdentifyTool(QgsMapTool):
         canvas = iface.mapCanvas()
         super(IdentifyTool, self).__init__(canvas)
         self.parent = parent
-        
+
         #Konfiguracja narzędzia
         set_cursor(self)
         self.tempGeom = QgsRubberBand(canvas, QgsWkbTypes.GeometryType.PointGeometry)
         self.tempGeom.setColor(QColor('red'))
         self.tempGeom.setWidth(5)
-        
+
     def canvasMoveEvent(self, e):
         """ Przeliczanie współrzędnych dla miejsca kursora """
         project_crs = QgsProject.instance().crs().authid()
@@ -49,12 +48,12 @@ class IdentifyTool(QgsMapTool):
             self.parent.dbsHeight.setValue(float(height))
             self.tempGeom.addPoint(e.mapPoint())
             self.parent.savedFeats.append({
-                'geometry':geom, 
+                'geometry':geom,
                 'height':height
                 })
 
     def keyPressEvent(self, e):
-        """ 
+        """
         Usuwanie ostatniego dodanego punktu/segmentu lub
         czyszczenie całości
         """
@@ -71,7 +70,7 @@ class IdentifyTool(QgsMapTool):
         """ Czyszczenie narzędzia """
         self.tempGeom.reset(QgsWkbTypes.GeometryType.PointGeometry)
         self.parent.savedFeats = []
-    
+
     def deactivate(self):
         """ Reagowanie zmiany aktywności narzędzia """
         self.tempGeom.reset(QgsWkbTypes.GeometryType.PointGeometry)
@@ -83,7 +82,7 @@ class ProfileTool(QgsMapTool):
     def __init__(self, parent):
         canvas = iface.mapCanvas()
         super(ProfileTool, self).__init__(canvas)
-        
+
         set_cursor(self)
         self.editing = False
         self.parent = parent
@@ -98,12 +97,12 @@ class ProfileTool(QgsMapTool):
         self.tempLine.setLineStyle(Qt.PenStyle.DotLine)
 
     def keyPressEvent(self, e):
-        """ 
+        """
         Usuwanie ostatniego dodanego punktu/segmentu lub
         czyszczenie całości
         """
         if e.key() == Qt.Key.Key_Delete:
-            pointsCount = self.tempLine.numberOfVertices() 
+            pointsCount = self.tempLine.numberOfVertices()
             if pointsCount > 2 and self.editing:
                 self.tempGeom.removePoint(pointsCount-2)
                 self.tempLine.removePoint(pointsCount-2)
@@ -112,7 +111,7 @@ class ProfileTool(QgsMapTool):
                 if self.tempGeom.numberOfVertices() == 1:
                     self.tempGeom.reset(QgsWkbTypes.GeometryType.LineGeometry)
                     self.tempLine.reset(QgsWkbTypes.GeometryType.LineGeometry)
-                    self.parent.dsbLineLength.setValue(0)           
+                    self.parent.dsbLineLength.setValue(0)
             else:
                 self.reset()
         elif e.key() == Qt.Key.Key_Escape:
@@ -150,7 +149,7 @@ class ProfileTool(QgsMapTool):
             geometry = self.tempGeom.asGeometry()
             errors = geometry.validateGeometry()
             if errors:
-            #Niepoprawna geometria                    
+            #Niepoprawna geometria
                 for error in errors:
                     if self.tempGeom.numberOfVertices() > 2:
                         self.parent.on_message.emit('Niepoprawna geometria', Qgis.MessageLevel.Critical, 4)
@@ -165,7 +164,7 @@ class ProfileTool(QgsMapTool):
             self.reset()
             return
         geom = self.parent.transformGeometry(
-            self.tempGeom.asGeometry(), 
+            self.tempGeom.asGeometry(),
             current_crs=QgsProject.instance().crs().authid(),
             )
         meters_len = geom.length()
@@ -200,7 +199,7 @@ class ProfileTool(QgsMapTool):
         for r in response:
             _, height = r.rsplit(' ', 1)
             heights.append(height)
-        if heights and intervals:   
+        if heights and intervals:
             self.fillTable(heights, intervals)
         self.parent.on_message.emit('Pomyślnie wygenerowano profil', Qgis.MessageLevel.Success, 4)
         self.task = None
@@ -223,7 +222,7 @@ class ProfileTool(QgsMapTool):
         length = distance_area.measureLength(geometry)
         result = distance_area.convertLengthMeasurement(length, QgsUnitTypes.DistanceUnit.DistanceMeters)
         return result
-        
+
     def reset(self):
         """ Czyszczenie narzędzia """
         self.tempLine.reset(QgsWkbTypes.GeometryType.LineGeometry)
@@ -234,7 +233,7 @@ class ProfileTool(QgsMapTool):
     def deactivate(self):
         """ Reagowanie zmiany aktywności narzędzia """
         self.reset()
-        self.parent.dsbLineLength.setEnabled(False) 
+        self.parent.dsbLineLength.setEnabled(False)
         self.button().setChecked(False)
 
 

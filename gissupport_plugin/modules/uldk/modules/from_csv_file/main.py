@@ -18,7 +18,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 class UI(QtWidgets.QFrame, FORM_CLASS):
 
-    icon_info_path = ':/plugins/plugin/info.png'
+    icon_info_path = ':/plugins/gissupport_plugin/info.png'
 
     def __init__(self, parent, target_layout):
         super().__init__(parent)

@@ -14,16 +14,6 @@
         <file>kursy.svg</file>
         <file>usemaps_banner.svg</file>
 <file>data_downloader/dane_do_pobrania.svg</file>
-<file>gis_box/connected.svg</file>
-<file>gis_box/connection.svg</file>
-<file>gis_box/dodaj_warstwy.svg</file>
-<file>gis_box/refresh.svg</file>
-<file>gis_box/digitization.svg</file>
-<file>gis_box/connected.png</file>
-<file>gis_box/disconnected.png</file>
-<file>gis_box/widget_settings.svg</file>
-<file>gis_box/widget_connect.svg</file>
-<file>gis_box/widget_disconnect.svg</file>
 <file>usemaps_lite/usemaps_lite.svg</file>
     </qresource>
 </RCC>

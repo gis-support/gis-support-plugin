@@ -23,7 +23,8 @@ class Main(BaseModule):
         super().__init__(parent)
 
         self.canvas = iface.mapCanvas()
-        self.dlg = BazaWMSDialog()
+        self.dlg = BazaWMSDialog(iface.mainWindow())
+        self.dlg.setWindowFlags(self.dlg.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
         self.curServiceData = None
         self.layerType = None
 
@@ -74,7 +75,7 @@ class Main(BaseModule):
 
         #Zarejestrowanie we wtyczce
 
-        self.dlg.lblInfo.setPixmap(QPixmap(':/plugins/plugin/info.png'))
+        self.dlg.lblInfo.setPixmap(QPixmap(':/plugins/gissupport_plugin/info.png'))
         self.dlg.lblInfo.setToolTip((
             "Brakuje adresu WMS, którego szukasz?\n"
             "Napisz do nas: info@gis-support.pl"))

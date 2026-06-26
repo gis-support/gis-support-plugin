@@ -23,7 +23,7 @@
 """
 import os.path
 
-from qgis.PyQt.QtCore import (QCoreApplication, Qt, QUrl)
+from qgis.PyQt.QtCore import QCoreApplication, QUrl
 from qgis.PyQt.QtGui import QDesktopServices, QIcon
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtGui import QAction
@@ -33,7 +33,6 @@ from importlib import util
 
 from gissupport_plugin.modules.base import BaseModule
 from .resources import resources
-from .tools.gisbox_connection import GISBOX_CONNECTION
 
 PLUGIN_NAME = "Wtyczka GIS Support"
 
@@ -87,7 +86,7 @@ class GISSupportPlugin:
             self.iface.addPluginToMenu(
                 self.menu,
                 action)
-        
+
         if add_to_topmenu:
             self.topMenu.addAction(action)
 
@@ -148,7 +147,7 @@ class GISSupportPlugin:
             parent=self.iface.mainWindow(),
             add_to_toolbar=True
         )
-        
+
         self.initModules(["usemaps_lite"])
 
         self.add_action(
@@ -176,7 +175,6 @@ class GISSupportPlugin:
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-        GISBOX_CONNECTION.disconnect()
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.menu,

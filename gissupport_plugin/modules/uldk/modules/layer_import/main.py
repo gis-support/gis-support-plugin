@@ -36,7 +36,7 @@ def get_obiekty_form(count):
 
 class UI(QtWidgets.QFrame, FORM_CLASS):
 
-    icon_info_path = ':/plugins/plugin/info.png'
+    icon_info_path = ':/plugins/gissupport_plugin/info.png'
 
     def __init__(self, target_layout, parent = None):
         super().__init__(parent)

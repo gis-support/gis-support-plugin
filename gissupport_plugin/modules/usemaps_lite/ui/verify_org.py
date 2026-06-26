@@ -5,7 +5,7 @@ from qgis.PyQt.QtWidgets import QDialog
 from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
 
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+from gissupport_plugin.modules.usemaps_lite.tools.translations import TRANSLATOR
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'verify_org.ui'))

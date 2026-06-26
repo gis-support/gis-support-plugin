@@ -1,5 +1,3 @@
-import json
-
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QFileDialog
 from qgis.gui import QgsMessageBarItem

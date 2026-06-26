@@ -1,7 +1,7 @@
 from qgis.PyQt.QtCore import QObject, QThread, QVariant, pyqtSignal, pyqtSlot
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsField, QgsGeometry,
-                       QgsPoint, QgsVectorLayer, QgsFeature)
+                       QgsVectorLayer, QgsFeature)
 
 from ...uldk.api import ULDKSearchPoint, ULDKSearchLogger, ULDKPoint
 
@@ -33,7 +33,7 @@ def uldk_response_to_qgs_feature(response_row, additional_attributes = []):
         response_row.split("|")
 
     sheet = get_sheet(teryt)
-    
+
     ewkt = geom_wkt.split(";")
     if len(ewkt) == 2:
         geom_wkt = ewkt[1]
@@ -59,7 +59,7 @@ class PointLayerImportWorker(QObject):
     finished = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
     interrupted = pyqtSignal(QgsVectorLayer, QgsVectorLayer)
     progressed = pyqtSignal(bool, int, bool)
-    
+
     def __init__(self, source_layer, selected_only, layer_name, additional_output_fields = []):
         super().__init__()
         self.source_layer = source_layer
@@ -81,7 +81,7 @@ class PointLayerImportWorker(QObject):
 
         self.layer_found.startEditing()
         self.layer_found.dataProvider().addAttributes(fields)
-        
+
         self.layer_not_found.startEditing()
         self.layer_not_found.dataProvider().addAttributes([
             QgsField("tresc_bledu", QVariant.String),
@@ -138,10 +138,10 @@ class PointLayerImportWorker(QObject):
                 not_found_feature = self.__make_not_found_feature(source_feature.geometry(), e)
                 self.layer_not_found.dataProvider().addFeature(not_found_feature)
                 self.progressed.emit(False, 0, False)
-            
+
         self.__commit()
         self.finished.emit(self.layer_found, self.layer_not_found)
-        
+
     def __make_not_found_feature(self, geometry, e):
         error_message = str(e)
         feature = QgsFeature()

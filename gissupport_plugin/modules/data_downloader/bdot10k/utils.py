@@ -2,7 +2,8 @@ from io import BytesIO
 import json
 
 from qgis.PyQt.QtCore import pyqtSignal, Qt
-from qgis.core import QgsTask, QgsMessageLog, Qgis, QgsWkbTypes, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsProject, QgsGeometry
+from qgis.core import (QgsTask, QgsMessageLog, Qgis, QgsWkbTypes, QgsCoordinateTransform,
+                       QgsCoordinateReferenceSystem, QgsProject, QgsGeometry)
 from gissupport_plugin.tools.requests import NetworkHandler
 from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtGui import QColor

@@ -27,7 +27,7 @@ class WMTSCacheModule(BaseModule):
         )
         self.settings = QSettings()
 
-        self.dockwidget.lbInfoCacheExpiration.setPixmap(QPixmap(':/plugins/plugin/info.png'))
+        self.dockwidget.lbInfoCacheExpiration.setPixmap(QPixmap(':/plugins/gissupport_plugin/info.png'))
         self.dockwidget.lbInfoCacheExpiration.setToolTip('Maksymalnie 720 godz. (30 dni)')
         self.dockwidget.saveButton.clicked.connect(self.dialogAccepted)
 

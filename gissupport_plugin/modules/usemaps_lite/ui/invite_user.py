@@ -5,8 +5,8 @@ from qgis.PyQt.QtWidgets import QDialog
 from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
 
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
-from gissupport_plugin.tools.usemaps_lite.validators import validate_email
+from gissupport_plugin.modules.usemaps_lite.tools.translations import TRANSLATOR
+from gissupport_plugin.modules.usemaps_lite.tools.validators import validate_email
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'invite_user.ui'))
@@ -37,5 +37,5 @@ class InviteUserDialog(QDialog, FORM_CLASS):
         self.cancel_button.setText(TRANSLATOR.translate_ui("cancel"))
 
     def toggle_invite_user_button(self, email: str):
-        
+
         self.invite_user_button.setEnabled(validate_email(email))

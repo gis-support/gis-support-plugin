@@ -2,7 +2,7 @@ import os
 from itertools import chain
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal, QObject
+from qgis.PyQt.QtCore import Qt, QThread, QObject
 from qgis.PyQt.QtGui import QKeySequence, QPixmap
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
@@ -17,7 +17,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 class UI(QtWidgets.QFrame, FORM_CLASS):
 
-    icon_info_path = ':/plugins/plugin/info.png'
+    icon_info_path = ':/plugins/gissupport_plugin/info.png'
 
     def __init__(self, target_layout, parent = None):
         super().__init__(parent)
@@ -72,8 +72,8 @@ class TerytSearch(QObject):
         self.uldk_search_worker = ULDKSearchWorker(self.uldk_search, teryts)
         self.thread = QThread()
         self.uldk_search_worker.moveToThread(self.thread)
-        
-        
+
+
         if self.ui.checkbox_precinct_unknown.isChecked():
             self.ui.progress_bar_precinct_unknown.setValue(0)
             self.uldk_search_worker.finished.connect(self.__handle_finished_precinct_unknown)
@@ -153,7 +153,7 @@ class TerytSearch(QObject):
             self.ui.combobox_province.clear()
             self.ui.combobox_province.addItems([""] + provinces)
             self.ui.combobox_province.blockSignals(False)
-    
+
     def fill_combobox_county(self, province_teryt):
         counties = self.get_administratives("powiat", province_teryt) if province_teryt else []
         self.ui.combobox_county.blockSignals(True)

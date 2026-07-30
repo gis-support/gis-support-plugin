@@ -40,7 +40,7 @@ from qgis.PyQt.QtCore import pyqtSignal, QVariant
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import (QgsMapLayerProxyModel, QgsField, Qgis, QgsTask, QgsApplication,
     QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsVectorLayer,
-    QgsFeature, QgsWkbTypes, QgsGeometry, QgsExpression, QgsFeatureRequest)
+    QgsFeature, QgsExpression, QgsFeatureRequest)
 from qgis.utils import iface
 
 from ..tools import IdentifyTool, ProfileTool
@@ -152,39 +152,51 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         self.points_coords = [f.split('%20')[::-1] for f in feats_meta]
         if isinstance(feats_meta, dict):
             feats_meta = list(feats_meta.keys())
-        if len(feats_meta) <= 200:
-            response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(feats_meta))
-            if 'error' in response:
-                self.on_message.emit(response['error'], Qgis.MessageLevel.Critical, 5)
-                return
+
+        responses = []
+        for chunk in [feats_meta[i:i + 50] for i in range(0, len(feats_meta), 50)]:
+            response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(chunk))
+            if self._is_response_scrambled(response):
+                for f in chunk:
+                    y, x = f.split('%20')
+                    resp = self.createRequest(f'?request=GetHbyXY&x={y}&y={x}')
+                    if 'error' not in resp:
+                        responses.append(f"{f.replace('%20', ' ', 1)} {resp['data']}")
             else:
-                return response['data']
+                responses.append(response['data'])
+        return ','.join(responses)
 
-        else:
-            chunks = [feats_meta[i:i + 200] for i in range(0, len(feats_meta), 200)]
-            responses = []
-            for chunk in chunks:
-                response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(chunk))
-                if 'error' in response:
-                    self.on_message.emit(response['error'], Qgis.MessageLevel.Critical, 5)
-                    return
-                else:
-                    responses.append(response['data'])
+    def _is_response_scrambled(self, response):
+        if 'error' in response:
+            return True
+        for r in response['data'].split(','):
+            if not r.strip():
+                continue
+            try:
+                _, height = r.replace(' ', '%20', 1).split(' ')
+                if float(height) in (0.0, -1.0):
+                    return True
+            except ValueError:
+                return True
+        return False
 
-            responses = ','.join(responses)
-            return responses
+    @staticmethod
+    def _normalize_crs(crs):
+        """ Normalizuje CRS z formatu URN do EPSG """
+        if crs.startswith('urn:ogc:def:crs:EPSG:'):
+            return 'EPSG:' + crs.split(':')[-1]
+        return crs
 
     def transformGeometry(self, geometry, current_crs, dest_crs='EPSG:2180', multi=False):
         """ Transformacja geometrii """
-        if current_crs != dest_crs:
-            ct = QgsCoordinateTransform(
+        if self._normalize_crs(current_crs) != self._normalize_crs(dest_crs):
+            geometry.transform(QgsCoordinateTransform(
                 QgsCoordinateReferenceSystem(current_crs),
                 QgsCoordinateReferenceSystem(dest_crs),
                 QgsProject().instance()
-                )
-            geometry.transform(ct)
+            ))
         if multi:
-            point = geometry.asGeometryCollection()[0].asPoint()
+            point = geometry.asGeometryCollection()[0].asPoint() if geometry.isMultipart() else geometry.asPoint()
             return f'{point.y()}%20{point.x()}'
         return geometry
 
@@ -224,9 +236,12 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
     def addHeightToFields(self, task: QgsTask, data):
         """ Dodawanie wysokości dla punktów """
         layer = self.cbLayers.currentLayer()
-        layer_crs = layer.crs().authid()
-        feats_meta = {self.transformGeometry(feat.geometry(), layer_crs, multi=True):feat.id()
-            for feat in data.get('feats')}
+
+        feats_meta = {}
+        for feat in data.get('feats'):
+            coords = self.transformGeometry(feat.geometry(), layer.crs().authid(), multi=True)
+            feats_meta.setdefault(coords, []).append(feat.id())
+
         if not feats_meta:
             return
         field_id = data.get('field_id')
@@ -234,10 +249,16 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         response = self.getPointsHeights(feats_meta).split(',')
         to_change = {}
         for r in response:
-            coords, height = r.replace(' ', '%20', 1).split(' ')
+            try:
+                coords, height = r.replace(' ', '%20', 1).split(' ')
+            except ValueError:
+                continue
             if field.type() in [QVariant.LongLong, QVariant.Int]:
                 height = int(float(height))
-            to_change[feats_meta.get(coords)] = {field_id:height}
+            elif field.type() == QVariant.Double:
+                height = float(height)
+            for feat_id in feats_meta.get(coords, []):
+                to_change[feat_id] = {field_id:height}
         layer.dataProvider().changeAttributeValues(to_change)
         self.on_message.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}', Qgis.MessageLevel.Success, 4)
         del self.task2
@@ -303,7 +324,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
                         dist, val, round(float(x)), round(float(y))
                     ])
             writer.writerows(to_write)
-        self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.MessageLevel.Success, 4)   
+        self.on_message.emit(f'Wygenerowano plik csv w miejscu: {path}', Qgis.MessageLevel.Success, 4)
 
     def generatePlot(self):
         """ Wyświetlenie profilu podłużnego """
@@ -336,5 +357,5 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
     def createRequest(self, parameters):
         """ Tworzy request. W przypadku braku odpowiedzi przez proxy wysyłane jest zapytanie bezpośrednio do GUGIK """
         handler = NetworkHandler()
-        
+
         return handler.get(self.GUGIK_URL + parameters)

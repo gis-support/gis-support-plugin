@@ -23,6 +23,7 @@
 """
 
 import os, csv
+from urllib.parse import urlencode, quote
 from qgis.core import Qgis
 from gissupport_plugin.tools.requests import NetworkHandler
 #Nie każdy instalator QGIS ma wbudowanego matplotliba, a bibliotek zewnętrznych nie można instalować
@@ -56,6 +57,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
     on_message = pyqtSignal(str, object, int)
 
     GUGIK_URL = 'https://services.gugik.gov.pl/nmt/'
+    CHUNK_SIZE = 200
 
     def __init__(self, parent=None):
         """Constructor."""
@@ -135,50 +137,67 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         # http://services.gugik.gov.pl/nmt/?request=GetHbyXY&x=486617&y=637928
         project_crs = QgsProject.instance().crs().authid()
         point = self.transformGeometry(geom, project_crs).asPoint()
-        x, y = point.y(), point.x()
-        response = self.createRequest(f'?request=GetHbyXY&x={x}&y={y}')
+        response = self.createRequest('GetHbyXY', {'x': point.y(), 'y': point.x()})
         if 'error' in response:
             self.on_message.emit(response['error'], Qgis.MessageLevel.Critical, 5)
             return
-        else:
-            return response['data']
+        return response['data']
 
-    def getPointsHeights(self, feats_meta):
+    def getPointsHeights(self, points):
         """
         Pobieranie wysokości dla większej ilości punktów. Jeśli ich liczba > 200 -
         lista zostaje podzielona na mniejsze częśći i dopiero dla tych części wysyłane są
-        requesty do api
+        requesty do api. Zwraca listę krotek (X, Y, H)
         """
-        self.points_coords = [f.split('%20')[::-1] for f in feats_meta]
-        if isinstance(feats_meta, dict):
-            feats_meta = list(feats_meta.keys())
+        points = list(points)
+        self.points_coords = [(y, x) for x, y in points]
 
-        responses = []
-        for chunk in [feats_meta[i:i + 50] for i in range(0, len(feats_meta), 50)]:
-            response = self.createRequest('?request=GetHByPointList&list=%s'%','.join(chunk))
-            if self._is_response_scrambled(response):
-                for f in chunk:
-                    y, x = f.split('%20')
-                    resp = self.createRequest(f'?request=GetHbyXY&x={y}&y={x}')
-                    if 'error' not in resp:
-                        responses.append(f"{f.replace('%20', ' ', 1)} {resp['data']}")
-            else:
-                responses.append(response['data'])
-        return ','.join(responses)
+        heights = []
+        for i in range(0, len(points), self.CHUNK_SIZE):
+            heights.extend(self.getChunkHeights(points[i:i + self.CHUNK_SIZE]))
+        return heights
 
-    def _is_response_scrambled(self, response):
+    def getChunkHeights(self, points, retry=True):
+        """
+        Pobranie wysokości dla części punktów. Przy błędzie zapytania oraz dla
+        wartości 0 i -1 wysokość pobierana jest osobno
+        """
+        coords = ','.join([f'{x} {y}' for x, y in points])
+        response = self.createRequest('GetHByPointList', {'list': coords})
         if 'error' in response:
-            return True
-        for r in response['data'].split(','):
-            if not r.strip():
+            return self.getSeparateHeights(points)
+
+        heights = []
+        invalid_points = []
+        for record in response['data'].split(','):
+            values = record.split()
+            if len(values) != 3:
                 continue
-            try:
-                _, height = r.replace(' ', '%20', 1).split(' ')
-                if float(height) in (0.0, -1.0):
-                    return True
-            except ValueError:
-                return True
-        return False
+            x, y, height = (float(value) for value in values)
+            if height in (0.0, -1.0):
+                invalid_points.append((x, y))
+                continue
+            heights.append((x, y, height))
+
+        #Serwis potrafi zwrócić zera dla całej listy - ponawiamy ją zbiorczo
+        if retry and len(invalid_points) == len(points):
+            return self.getChunkHeights(points, retry=False)
+
+        heights.extend(self.getSeparateHeights(invalid_points))
+        return heights
+
+    def getSeparateHeights(self, points):
+        """ Pobranie wysokości osobno dla każdego punktu """
+        heights = []
+        for x, y in points:
+            response = self.createRequest('GetHbyXY', {'x': x, 'y': y})
+            if 'error' in response:
+                #Ponowienie po błędzie serwisu
+                response = self.createRequest('GetHbyXY', {'x': x, 'y': y})
+            if 'error' in response:
+                continue
+            heights.append((x, y, float(response['data'])))
+        return heights
 
     @staticmethod
     def _normalize_crs(crs):
@@ -197,7 +216,7 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             ))
         if multi:
             point = geometry.asGeometryCollection()[0].asPoint() if geometry.isMultipart() else geometry.asPoint()
-            return f'{point.y()}%20{point.x()}'
+            return (point.y(), point.x())
         return geometry
 
     def createNewField(self, layer):
@@ -246,19 +265,13 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
             return
         field_id = data.get('field_id')
         field = layer.dataProvider().fields().field(field_id)
-        response = self.getPointsHeights(feats_meta).split(',')
+        is_integer_field = field.type() in (QVariant.LongLong, QVariant.Int)
+
         to_change = {}
-        for r in response:
-            try:
-                coords, height = r.replace(' ', '%20', 1).split(' ')
-            except ValueError:
-                continue
-            if field.type() in [QVariant.LongLong, QVariant.Int]:
-                height = int(float(height))
-            elif field.type() == QVariant.Double:
-                height = float(height)
-            for feat_id in feats_meta.get(coords, []):
-                to_change[feat_id] = {field_id:height}
+        for x, y, height in self.getPointsHeights(feats_meta):
+            value = int(height) if is_integer_field else height
+            for feat_id in feats_meta.get((x, y), []):
+                to_change[feat_id] = {field_id: value}
         layer.dataProvider().changeAttributeValues(to_change)
         self.on_message.emit(f'Pomyślnie dodano pole z wysokościa do warstwy: {layer.name()}', Qgis.MessageLevel.Success, 4)
         del self.task2
@@ -354,8 +367,9 @@ class GugikNmtDockWidget(QDockWidget, FORM_CLASS):
         if tool == self.profileTool:
             self.dsbLineLength.setEnabled(True)
 
-    def createRequest(self, parameters):
+    def createRequest(self, request, params=None):
         """ Tworzy request. W przypadku braku odpowiedzi przez proxy wysyłane jest zapytanie bezpośrednio do GUGIK """
         handler = NetworkHandler()
+        query = urlencode({'request': request, **(params or {})}, safe=',', quote_via=quote)
 
-        return handler.get(self.GUGIK_URL + parameters)
+        return handler.get(f'{self.GUGIK_URL}?{query}')

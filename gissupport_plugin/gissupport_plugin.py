@@ -87,7 +87,7 @@ class GISSupportPlugin:
             self.iface.addPluginToMenu(
                 self.menu,
                 action)
-        
+
         if add_to_topmenu:
             self.topMenu.addAction(action)
 
@@ -144,11 +144,11 @@ class GISSupportPlugin:
             text="Szkolenia GIS Support",
             add_to_menu=False,
             add_to_topmenu=True,
-            callback=lambda: self.open_url("https://gis-support.pl/szkolenia-gis?source=gissupport-plugin"),
+            callback=lambda: self.open_url("https://gis-support.pl/szkolenia-gis/?utm_source=gissupport_plugin_courses"),
             parent=self.iface.mainWindow(),
             add_to_toolbar=True
         )
-        
+
         self.initModules(["usemaps_lite"])
 
         self.add_action(

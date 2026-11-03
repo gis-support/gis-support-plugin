@@ -27,7 +27,7 @@ class WMTSCacheModule(BaseModule):
         )
         self.settings = QSettings()
 
-        self.dockwidget.lbInfoCacheExpiration.setPixmap(QPixmap(':/plugins/plugin/info.png'))
+        self.dockwidget.lbInfoCacheExpiration.setPixmap(QPixmap(':/plugins/gissupport_plugin/info.svg'))
         self.dockwidget.lbInfoCacheExpiration.setToolTip('Maksymalnie 720 godz. (30 dni)')
         self.dockwidget.saveButton.clicked.connect(self.dialogAccepted)
 
@@ -42,7 +42,7 @@ class WMTSCacheModule(BaseModule):
                 service_item = QStandardItem(service['name'])
                 service_item.setData(service)
                 self.list_model.appendRow(service_item)
-            
+
         self.dockwidget.listView.setModel(self.list_model)
         self.dockwidget.listView.doubleClicked.connect(self.addToProject)
         self.dockwidget.listView.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -54,7 +54,7 @@ class WMTSCacheModule(BaseModule):
         service_data = self.list_model.itemFromIndex(index).data()
         project_crs = iface.mapCanvas().mapSettings().destinationCrs().authid()
         crs = project_crs if project_crs in service_data['supported_crs'] else 'EPSG:2180'
-        
+
         wmts_url = (
             "contextualWMSLegend=0&crs={}&dpiMode=0&"
             "featureCount=10&format={}&layers={}&"
@@ -66,7 +66,7 @@ class WMTSCacheModule(BaseModule):
                 service_data['url']+'?service%3DWMTS%26request%3DgetCapabilities'
             )
         )
-        
+
         layer = QgsRasterLayer(wmts_url, service_data['name'], 'wms')
         if layer.isValid():
             root = QgsProject.instance().layerTreeRoot()
@@ -78,6 +78,6 @@ class WMTSCacheModule(BaseModule):
                 f'Nie udało się wczytać warstwy {service_data["name"]}',
                 level=Qgis.MessageLevel.Warning
             )
-        
+
     def dialogAccepted(self):
         self.settings.setValue('/qgis/defaultTileExpiry', self.dockwidget.sbCacheExpiration.value())

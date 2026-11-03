@@ -65,30 +65,20 @@ class ULDKSearch:
     @sleep_and_retry
     @RateLimitDecorator(calls = 5, period = 3)
     def search(self):
-        handler = NetworkHandler()
-
-        content = handler.get(str(self.url))
+        content = NetworkHandler().get(str(self.url))
 
         if "error" in content:
-            self.url = URL(self.gugik_url, **url.params)
-            content = handler.get(str(self.url))
+            self.url = URL(self.gugik_url, **self.url.params)
+            content = NetworkHandler().get(str(self.url))
             if "error" in content:
-                if 'msg' in content:
-                    raise RequestException(content["msg"])
-                raise RequestException("Brak odpowiedzi")
+                raise RequestException(content.get('msg', "Brak odpowiedzi"))
 
-        content = content["data"]
+        lines = content["data"].strip().split("\n")
 
-        content_lines = content.split("\n")
-        status = content_lines[0]
+        if lines[0] != "0":
+            raise RequestException(lines[0])
 
-        if status != "0":
-            raise RequestException(status)
-
-        content_lines = content_lines[1:]
-        if content.endswith("\n"):
-            content_lines = content_lines[:-1]
-        return content_lines
+        return lines[1:]
 
 class ULDKSearchLogger(ULDKSearch):
 

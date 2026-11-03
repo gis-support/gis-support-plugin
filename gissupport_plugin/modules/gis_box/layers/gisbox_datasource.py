@@ -138,8 +138,8 @@ class GisboxFeatureLayer(QObject, Logger):
     def checkLayer(self, state):
         try:
             self.parent.setChecked(state)
-        except:
-            pass
+        except Exception as e:
+            self.log(e)
 
     def zoomToExtent(self, layer):
         """ Przybiżenie do warstwy z innym układem współrzędnych """
@@ -226,7 +226,7 @@ class GisboxFeatureLayer(QObject, Logger):
         layer.setName(toc_name)
         layer.reload()
         layer.triggerRepaint()
-        
+
         self.deleteTemporaryIcons(layer)
         return layer
 
@@ -259,7 +259,7 @@ class GisboxFeatureLayer(QObject, Logger):
         QgsApplication.taskManager().addTask(self.task)
         self.message(
             f'Pomyślnie wczytano dane warstwy: {self.layers[0].name()}, czas: {time.time() - self.time}', level=Qgis.MessageLevel.Success, duration=5)
-    
+
     def onReload(self, data: dict):
         self._reload_layer_metadata()
         GISBOX_CONNECTION.get(
@@ -415,7 +415,7 @@ class GisboxFeatureLayer(QObject, Logger):
 
     def getFeaturesDbIds(self, qgis_ids, layer):
         return [f[self.datasource.id_column_name] for f in layer.dataProvider().getFeatures( QgsFeatureRequest().setFilterFids( qgis_ids ))]
-        
+
     def manageFeatures(self):
         layer = self.sender()
         edit_buffer = layer.editBuffer()
@@ -442,16 +442,16 @@ class GisboxFeatureLayer(QObject, Logger):
             f"/api/dataio/data_sources/{self.datasource_name}/features/edit?layer_id={self.id}",
             {"data": payload}, callback=self.afterModify, sync=True
         )
-    
+
     def afterModify(self, data: dict):
         if data.get("error"):
             self.message(data.get("error_message"), level=Qgis.MessageLevel.Critical)
             return
-        
-        self.message(f'Pomyślnie zmodyfikowano dane warstwy: {self.layers[0].name()}', 
+
+        self.message(f'Pomyślnie zmodyfikowano dane warstwy: {self.layers[0].name()}',
                         level=Qgis.MessageLevel.Success, duration=5)
         self.on_reload.emit(True)
-        
+
     def addFeatures(self, edit_buffer):
         """ Dodanie nowych obiektów do warstwy użytkownika """
         added_features = edit_buffer.addedFeatures().values()
@@ -537,7 +537,7 @@ class GisboxFeatureLayer(QObject, Logger):
                 })
 
         return features
-    
+
     def sanetize_data_type(self, value: Any) -> Any:
         if isinstance(value, QDateTime):
             value = value.toString('yyyy-MM-dd hh:mm:ss')

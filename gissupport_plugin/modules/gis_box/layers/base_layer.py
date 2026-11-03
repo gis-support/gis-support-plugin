@@ -81,8 +81,8 @@ class BaseLayer(QObject, Logger):
     def checkLayer(self, state):
         try:
             self.parent.setChecked(state)
-        except:
-            pass
+        except Exception as e:
+            self.log(e)
 
     def zoomToExtent(self, layer):
         """ Przybiżenie do warstwy z innym układem współrzędnych """

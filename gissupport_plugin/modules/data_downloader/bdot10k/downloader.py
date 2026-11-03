@@ -107,6 +107,11 @@ class BDOT10kDownloader:
         else:
             self.bdot10k_dockwidget.setVisible(not self.bdot10k_dockwidget.isVisible())
 
+    def unload(self):
+        if self.bdot10k_dockwidget is not None:
+            iface.removeDockWidget(self.bdot10k_dockwidget)
+            self.bdot10k_dockwidget.deleteLater()
+
     def fill_woj_combobox(self) -> None:
         """
         Uzupełnia combobox z województwami. Wywoływane raz, przy starcie pluginu.

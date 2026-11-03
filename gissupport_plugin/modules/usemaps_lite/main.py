@@ -1,5 +1,6 @@
 from gissupport_plugin.modules.base import BaseModule
 from gissupport_plugin.modules.usemaps_lite.ui.dockwidget import UsemapsLiteDockwidget
+from qgis.utils import iface
 
 class UsemapsLite(BaseModule):
     """
@@ -24,4 +25,6 @@ class UsemapsLite(BaseModule):
     
     def unload(self):
         self.dockwidget.layers.connect_layersremoved_signal(False)
+        iface.removeDockWidget(self.dockwidget)
+        self.dockwidget.deleteLater()
 

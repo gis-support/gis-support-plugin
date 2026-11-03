@@ -23,7 +23,7 @@ class Main(BaseModule):
         super().__init__(parent)
 
         self.canvas = iface.mapCanvas()
-        self.dlg = BazaWMSDialog()
+        self.dlg = BazaWMSDialog(iface.mainWindow())
         self.curServiceData = None
         self.layerType = None
 
@@ -82,14 +82,21 @@ class Main(BaseModule):
         self.parent.add_action(
             ":/plugins/gissupport_plugin/wms/wms.svg",
             self.module_name,
-            callback = self.dlg.show,
+            callback = self.toggle_dialog,
             checkable = False,
             parent = iface.mainWindow(),
             add_to_topmenu=True
         )
 
+    def toggle_dialog(self):
+        if self.dlg.isVisible():
+            self.dlg.hide()
+        else:
+            self.dlg.show()
+
     def unload(self):
         """ Wyłączenie modułu """
+        self.dlg.hide()
         del self.dlg
 
     def updateServicesList(self):

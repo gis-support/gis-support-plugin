@@ -24,7 +24,6 @@ class Main(BaseModule):
 
         self.canvas = iface.mapCanvas()
         self.dlg = BazaWMSDialog(iface.mainWindow())
-        self.dlg.setWindowFlags(self.dlg.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
         self.curServiceData = None
         self.layerType = None
 
@@ -75,7 +74,7 @@ class Main(BaseModule):
 
         #Zarejestrowanie we wtyczce
 
-        self.dlg.lblInfo.setPixmap(QPixmap(':/plugins/gissupport_plugin/info.png'))
+        self.dlg.lblInfo.setPixmap(QPixmap(':/plugins/gissupport_plugin/info.svg'))
         self.dlg.lblInfo.setToolTip((
             "Brakuje adresu WMS, którego szukasz?\n"
             "Napisz do nas: info@gis-support.pl"))
@@ -83,14 +82,21 @@ class Main(BaseModule):
         self.parent.add_action(
             ":/plugins/gissupport_plugin/wms/wms.svg",
             self.module_name,
-            callback = self.dlg.show,
+            callback = self.toggle_dialog,
             checkable = False,
             parent = iface.mainWindow(),
             add_to_topmenu=True
         )
 
+    def toggle_dialog(self):
+        if self.dlg.isVisible():
+            self.dlg.hide()
+        else:
+            self.dlg.show()
+
     def unload(self):
         """ Wyłączenie modułu """
+        self.dlg.hide()
         del self.dlg
 
     def updateServicesList(self):

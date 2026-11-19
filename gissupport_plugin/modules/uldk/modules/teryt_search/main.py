@@ -17,24 +17,35 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 class UI(QtWidgets.QFrame, FORM_CLASS):
 
-    icon_info_path = ':/plugins/gissupport_plugin/info.png'
 
     def __init__(self, target_layout, parent = None):
         super().__init__(parent)
 
         self.setupUi(self)
 
-        self.label_info_full_id.setPixmap(QPixmap(self.icon_info_path))
+        bg_color = self.palette().color(self.backgroundRole())
+        is_dark_theme = bg_color.lightness() < 128
+
+        if is_dark_theme:
+            icon_info_path = ':/plugins/gissupport_plugin/info_white.svg'
+        else:
+            icon_info_path = ':/plugins/gissupport_plugin/info.svg'
+
+        self.label_info_full_id.setPixmap(QPixmap(icon_info_path))
         self.label_info_full_id.setToolTip(("Możesz pominąć wypełnianie powyższych pól\n"
             "i ręcznie wpisać kod TERYT działki."))
-        self.label_info_sheet.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_sheet.setPixmap(QPixmap(icon_info_path))
         self.label_info_sheet.setToolTip(("W bazie danych może istnieć kilka działek o takim samym kodzie TERYT,\n"
             "każda na innym arkuszu.\n"
             "W takiej sytuacji możesz wybrać z tej listy działkę której szukasz."))
-        self.label_info_precinct_unknown.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_precinct_unknown.setPixmap(QPixmap(icon_info_path))
         self.label_info_precinct_unknown.setToolTip(("Wyszukanie zostaną działki na terenie całej gminy, co może być czasochłonne."))
-        self.label_info_parcel_id.setPixmap(QPixmap(self.icon_info_path))
+        self.label_info_parcel_id.setPixmap(QPixmap(icon_info_path))
         self.label_info_parcel_id.setToolTip("Numer działki można podać z numerem arkusza mapy ewidencyjnej np. AR_1.2")
+        self.label_info_icon.setPixmap(QPixmap(icon_info_path))
+        self.label_info_icon.setToolTip((
+            "Narzędzie pozwala na błyskawiczne wyszukanie i pobranie\n"
+            "pojedynczej działki na podstawie jej identyfikatora TERYT."))
         self.progress_bar_precinct_unknown.hide()
         target_layout.layout().addWidget(self)
 

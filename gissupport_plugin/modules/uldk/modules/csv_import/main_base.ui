@@ -37,11 +37,11 @@
      <property name="horizontalSpacing">
       <number>8</number>
      </property>
-     <item row="0" column="1">
+     <item row="0" column="1" colspan="3">
       <widget class="QLabel" name="label_info">
        <property name="maximumSize">
         <size>
-         <width>100</width>
+         <width>16777215</width>
          <height>15</height>
         </size>
        </property>
@@ -49,12 +49,26 @@
         <string/>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Jak to działa?&lt;/b&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Z listy&lt;/b&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
        </property>
        <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Nazwa warstwy
+wynikowej</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="wordWrap">
         <bool>true</bool>
        </property>
       </widget>
@@ -78,115 +92,51 @@
        </property>
       </widget>
      </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="label_info_start">
+     <item row="1" column="1" colspan="3">
+      <widget class="QLabel" name="infoLabel">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Narzędzie działa w oparciu o usługę &lt;a href=&quot;https://uldk.gugik.gov.pl/opis.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;ULDK&lt;/span&gt;&lt;/a&gt; od GUGiK.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::RichText</enum>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label">
+       <property name="maximumSize">
+        <size>
+         <width>125</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Warstwa z projektu</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_info_column">
        <property name="maximumSize">
         <size>
          <width>15</width>
          <height>15</height>
         </size>
        </property>
-       <property name="toolTip">
-        <string/>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
        </property>
        <property name="text">
         <string>i</string>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <widget class="QPushButton" name="button_start">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>120</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Start</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Preferred</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>10</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLabel" name="label_2">
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Kolumna TERYT</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Nazwa warstwy
-wynikowej</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="1">
-      <widget class="QPushButton" name="button_cancel">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>120</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>120</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Anuluj</string>
        </property>
       </widget>
      </item>
@@ -224,16 +174,51 @@ wynikowej</string>
        </item>
       </layout>
      </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label">
-       <property name="maximumSize">
+     <item row="9" column="1" colspan="3">
+      <widget class="QProgressBar" name="progress_bar">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
         <size>
-         <width>125</width>
-         <height>16777215</height>
+         <width>65</width>
+         <height>0</height>
         </size>
        </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3">
+      <widget class="QgsFieldComboBox" name="combobox_teryt_column">
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_info_start">
+       <property name="maximumSize">
+        <size>
+         <width>15</width>
+         <height>15</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string/>
+       </property>
        <property name="text">
-        <string>Warstwa z projektu</string>
+        <string>i</string>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -254,39 +239,20 @@ wynikowej</string>
       </spacer>
      </item>
      <item row="2" column="3">
-      <widget class="QgsMapLayerComboBox" name="layer_select"/>
-     </item>
-     <item row="5" column="3">
-      <widget class="QLineEdit" name="text_edit_layer_name">
-       <property name="placeholderText">
-        <string>nowa_warstwa</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_info_column">
-       <property name="maximumSize">
+      <widget class="QgsMapLayerComboBox" name="layer_select">
+       <property name="minimumSize">
         <size>
-         <width>15</width>
-         <height>15</height>
+         <width>65</width>
+         <height>0</height>
         </size>
        </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
-       </property>
-       <property name="text">
-        <string>i</string>
-       </property>
-       <property name="scaledContents">
-        <bool>true</bool>
-       </property>
       </widget>
      </item>
-     <item row="3" column="3">
-      <widget class="QgsFieldComboBox" name="combobox_teryt_column"/>
-     </item>
-     <item row="9" column="1" colspan="3">
-      <widget class="QProgressBar" name="progress_bar">
+     <item row="8" column="1">
+      <widget class="QPushButton" name="button_cancel">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -295,12 +261,66 @@ wynikowej</string>
        </property>
        <property name="minimumSize">
         <size>
-         <width>350</width>
+         <width>120</width>
          <height>0</height>
         </size>
        </property>
-       <property name="value">
-        <number>0</number>
+       <property name="maximumSize">
+        <size>
+         <width>120</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Anuluj</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QPushButton" name="button_start">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Start</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_2">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Kolumna TERYT</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="3">
+      <widget class="QLineEdit" name="text_edit_layer_name">
+       <property name="minimumSize">
+        <size>
+         <width>65</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>nowa_warstwa</string>
        </property>
       </widget>
      </item>
@@ -331,7 +351,7 @@ wynikowej</string>
        </property>
        <property name="minimumSize">
         <size>
-         <width>120</width>
+         <width>65</width>
          <height>0</height>
         </size>
        </property>
@@ -346,14 +366,14 @@ wynikowej</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QgsMapLayerComboBox</class>
-   <extends>QComboBox</extends>
-   <header>qgsmaplayercombobox.h</header>
-  </customwidget>
-  <customwidget>
    <class>QgsFieldComboBox</class>
    <extends>QComboBox</extends>
    <header>qgsfieldcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QgsMapLayerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>qgsmaplayercombobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

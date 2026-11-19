@@ -48,13 +48,6 @@ class Main(BaseModule):
             self.dockwidget.tab_check_layer_layout,
             collector)
 
-        icon_info_path = ':/plugins/gissupport_plugin/info.png'
-        self.dockwidget.label_info_map_point_search.setPixmap(QPixmap(icon_info_path))
-        self.dockwidget.label_info_map_point_search.setToolTip((
-            "Wybierz narzędzie i kliknij na mapę.\n"
-            "Narzędzie wyszuka działkę, w której zawierają się współrzędne kliknięcia."))
-
-        self.dockwidget.labelLayerInfo.setPixmap(QPixmap(icon_info_path))
         #Zarejestrowanie we wtyczce
 
         iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dockwidget)
@@ -77,13 +70,16 @@ class Main(BaseModule):
         self.module_map_point_search.setAction( self.identify_action )
         self.parent.toolbar.addSeparator()
 
-        self.dockwidget.btnIdentify.setDefaultAction(self.identify_action)
+        actions = self.dockwidget.main_toolbar.actions()
+        self.dockwidget.main_toolbar.insertAction(actions[1], self.identify_action)
+        self.dockwidget.main_toolbar.removeAction(self.dockwidget.action_identify)
 
         self.dockwidget.hide()
 
     def unload(self):
         """ Wyłączenie modułu """
         iface.removeDockWidget(self.dockwidget)
+        self.dockwidget.deleteLater()
 
     def toggle_map_point_search_tool(self, checked):
         """

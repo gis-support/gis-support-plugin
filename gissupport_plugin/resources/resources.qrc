@@ -1,8 +1,17 @@
 <RCC>
     <qresource prefix="/plugins/gissupport_plugin" >
         <file>gissupport_logo.jpg</file>
-        <file>info.png</file>
+        <file>info.svg</file>
+        <file>info_white.svg</file>
+        <file>gis_support_plugin_icon.png</file>
         <file>uldk/uldk.svg</file>
+        <file>uldk/uldk_teryt.svg</file>
+        <file>uldk/uldk_settings.svg</file>
+        <file>uldk/uldk_plugin_info.svg</file>
+        <file>uldk/uldk_from_list.svg</file>
+        <file>uldk/uldk_from_layer.svg</file>
+        <file>uldk/uldk_from_csv.svg</file>
+        <file>uldk/uldk_check_layer.svg</file>
         <file>uldk/uldk_identify.svg</file>
         <file>wms/wms.svg</file>
         <file>gissupport_small.jpg</file>

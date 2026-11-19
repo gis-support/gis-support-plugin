@@ -82,3 +82,8 @@ class DataDownloaderModule(BaseModule, PRGDownloader, PRGAddressDownloader, BDOT
 
         self.toolButton = self.parent.toolbar.widgetForAction(self.download_action)
         self.toolButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+
+    def unload(self):
+        for cls in self.__class__.__bases__:
+            if hasattr(cls, 'unload'):
+                cls.unload(self)

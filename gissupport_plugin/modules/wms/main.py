@@ -211,7 +211,7 @@ class Main(BaseModule):
                 iface.messageBar().pushMessage(
                     'Baza krajowych usług WMS',
                     'Nie udało się wczytać złożonej warstwy: {}'.format(wmsLayer.error().message()),
-                    level=Qgis.Warning
+                    level=Qgis.MessageLevel.Warning
                 )
 
         elif self.layerType == 'WFS':

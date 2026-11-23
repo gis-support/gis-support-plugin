@@ -4,7 +4,7 @@ import os
 from typing import Dict, Any
 import itertools
 
-from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QgsIconUtils, QgsProject
+from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QgsIconUtils, QgsProject, QgsWkbTypes
 
 
 class GpkgHandler:

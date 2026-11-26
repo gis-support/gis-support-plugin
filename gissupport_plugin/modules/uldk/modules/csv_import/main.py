@@ -3,7 +3,7 @@ import os
 from collections import defaultdict
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.PyQt.QtCore import QThread, QVariant
+from qgis.PyQt.QtCore import QThread
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QHeaderView, QTableWidget, QTableWidgetItem, QFileDialog
 from qgis.gui import QgsMessageBarItem

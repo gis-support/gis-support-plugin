@@ -1,9 +1,6 @@
 from enum import Enum
-import requests
 
-from qgis.core import QgsGeometry, QgsFeature, QgsTask, QgsCoordinateReferenceSystem, QgsVectorLayer, QgsProject, \
-    QgsMessageLog, Qgis
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.core import QgsGeometry, QgsFeature, QgsTask, QgsVectorLayer, QgsMessageLog, Qgis
 
 from gissupport_plugin.tools.requests import NetworkHandler
 
@@ -49,7 +46,7 @@ class PRGDownloadTask(QgsTask):
 
     def run(self):
         parameters = self._get_parameters()
-        
+
         handler = NetworkHandler()
         response = handler.get(self.url, params=parameters)
 

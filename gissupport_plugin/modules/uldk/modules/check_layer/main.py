@@ -5,7 +5,7 @@ from qgis.PyQt.QtCore import QThread, QVariant
 from qgis.PyQt.QtGui import QPixmap
 from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsCoordinateTransformContext, QgsMapLayerProxyModel,
-                       QgsProject, QgsVectorLayer, QgsField, QgsFeature, NULL, QgsMessageLog, Qgis)
+                       QgsProject, QgsVectorLayer, QgsField, QgsFeature, QgsMessageLog, Qgis)
 from qgis.utils import iface
 
 from gissupport_plugin.modules.uldk.uldk.api import ULDKPoint, ULDKSearchLogger, ULDKSearchPoint, ULDKSearchPointWorker

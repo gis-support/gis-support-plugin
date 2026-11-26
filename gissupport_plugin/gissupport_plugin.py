@@ -23,7 +23,7 @@
 """
 import os.path
 
-from qgis.PyQt.QtCore import (QCoreApplication, Qt, QUrl)
+from qgis.PyQt.QtCore import QCoreApplication, QUrl
 from qgis.PyQt.QtGui import QDesktopServices, QIcon
 from qgis.PyQt.QtWidgets import QDockWidget
 from pathlib import Path
@@ -37,7 +37,6 @@ except ImportError:
 
 from gissupport_plugin.modules.base import BaseModule
 from .resources import resources
-from .tools.gisbox_connection import GISBOX_CONNECTION
 
 PLUGIN_NAME = "Wtyczka GIS Support"
 
@@ -180,7 +179,6 @@ class GISSupportPlugin:
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-        GISBOX_CONNECTION.disconnect()
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.menu,

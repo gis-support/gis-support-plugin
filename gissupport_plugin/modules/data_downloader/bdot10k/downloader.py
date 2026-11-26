@@ -1,18 +1,16 @@
-from typing import List, Union
 from os.path import expanduser
 
-from qgis._core import QgsCoordinateReferenceSystem
-from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsMapLayerProxyModel, QgsGeometry, QgsWkbTypes, QgsMessageLog
-from qgis.gui import QgsMessageBarItem, QgsMapTool
+from qgis.core import Qgis, QgsApplication, QgsVectorLayer, QgsProject, QgsGeometry, QgsWkbTypes, QgsMessageLog
+from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QFileDialog, QPushButton
 
 from gissupport_plugin.modules.data_downloader.bdot10k.bdot10k_dockwidget import BDOT10kDockWidget
-from gissupport_plugin.modules.data_downloader.bdot10k.utils import BDOT10kDownloadTask, DrawPolygon, \
-    get_databox_layers, BDOT10kDataBoxDownloadTask, convert_multi_polygon_to_polygon, transform_geometry_to_2180, \
-    BDOT10kClassDownloadTask, DataboxResponseException, check_geoportal_connection, GeoportalResponseException
-from gissupport_plugin.modules.gis_box.modules.auto_digitization.tools import SelectRectangleTool
+from gissupport_plugin.modules.data_downloader.bdot10k.utils import (BDOT10kDownloadTask, get_databox_layers,
+                                                                     BDOT10kDataBoxDownloadTask,transform_geometry_to_2180,
+                                                                     BDOT10kClassDownloadTask, DataboxResponseException,
+                                                                     check_geoportal_connection, GeoportalResponseException)
 from gissupport_plugin.tools.teryt import Wojewodztwa, POWIATY
 
 class BDOT10kDownloader:

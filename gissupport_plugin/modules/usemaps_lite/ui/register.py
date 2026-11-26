@@ -5,8 +5,8 @@ from qgis.PyQt.QtWidgets import QDialog
 from qgis.utils import iface
 from qgis.PyQt.QtCore import Qt
 
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
-from gissupport_plugin.tools.usemaps_lite.validators import validate_email
+from gissupport_plugin.modules.usemaps_lite.tools.translations import TRANSLATOR
+from gissupport_plugin.modules.usemaps_lite.tools.validators import validate_email
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'register.ui'))
@@ -30,7 +30,7 @@ class RegisterDialog(QDialog, FORM_CLASS):
         self.reg_pwd_again_line.textChanged.connect(self.handle_register_button)
 
         self.terms_checkbox.stateChanged.connect(self.handle_register_button)
-        
+
         self.reg_register_button.setEnabled(False)
 
     def showEvent(self, event):

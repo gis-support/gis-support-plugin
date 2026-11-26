@@ -2,7 +2,7 @@ import os
 from itertools import chain
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal, QObject
+from qgis.PyQt.QtCore import Qt, QThread, QObject
 from qgis.PyQt.QtGui import QKeySequence, QPixmap
 from qgis.gui import QgsMessageBarItem
 from qgis.utils import iface

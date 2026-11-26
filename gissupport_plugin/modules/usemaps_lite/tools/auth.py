@@ -5,10 +5,10 @@ from qgis.PyQt.QtGui import QIcon, QStandardItem
 from qgis.PyQt.QtCore import Qt
 from qgis.core import QgsSettings
 
-from gissupport_plugin.tools.usemaps_lite.base_logic_class import BaseLogicClass
-from gissupport_plugin.tools.usemaps_lite.event_handler import Event
-from gissupport_plugin.tools.usemaps_lite.metadata import ORGANIZATION_METADATA
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+from gissupport_plugin.modules.usemaps_lite.tools.base_logic_class import BaseLogicClass
+from gissupport_plugin.modules.usemaps_lite.tools.event_handler import Event
+from gissupport_plugin.modules.usemaps_lite.tools.metadata import ORGANIZATION_METADATA
+from gissupport_plugin.modules.usemaps_lite.tools.translations import TRANSLATOR
 from gissupport_plugin.modules.usemaps_lite.ui.login import LoginDialog
 from gissupport_plugin.modules.usemaps_lite.ui.register import RegisterDialog
 from gissupport_plugin.modules.usemaps_lite.ui.verify_org import VerifyOrgDialog

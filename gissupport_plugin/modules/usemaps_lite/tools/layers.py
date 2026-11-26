@@ -17,19 +17,18 @@ from qgis.core import (
     QgsFields,
     NULL,
     QgsFeatureRequest,
-    QgsEditorWidgetSetup,
     QgsTask,
     QgsApplication,
     Qgis,
     QgsGeometry
 )
 
-from gissupport_plugin.tools.usemaps_lite.base_logic_class import BaseLogicClass
-from gissupport_plugin.tools.usemaps_lite.event_handler import Event
-from gissupport_plugin.tools.usemaps_lite.gpkg_handler import GpkgHandler
-from gissupport_plugin.tools.usemaps_lite.user_mapper import USER_MAPPER
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
-from gissupport_plugin.tools.usemaps_lite.metadata import ORGANIZATION_METADATA
+from gissupport_plugin.modules.usemaps_lite.tools.base_logic_class import BaseLogicClass
+from gissupport_plugin.modules.usemaps_lite.tools.event_handler import Event
+from gissupport_plugin.modules.usemaps_lite.tools.gpkg_handler import GpkgHandler
+from gissupport_plugin.modules.usemaps_lite.tools.user_mapper import USER_MAPPER
+from gissupport_plugin.modules.usemaps_lite.tools.translations import TRANSLATOR
+from gissupport_plugin.modules.usemaps_lite.tools.metadata import ORGANIZATION_METADATA
 from gissupport_plugin.modules.usemaps_lite.ui.import_layer import ImportLayerDialog
 
 

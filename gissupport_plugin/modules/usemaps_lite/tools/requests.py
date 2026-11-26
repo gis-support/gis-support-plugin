@@ -4,12 +4,12 @@ import os
 from typing import Union
 
 from qgis.core import QgsNetworkAccessManager
-from qgis.PyQt.QtCore import QObject, QUrl, QByteArray, pyqtSignal, QTimer, QCoreApplication
+from qgis.PyQt.QtCore import QObject, QUrl, QByteArray, pyqtSignal, QTimer
 from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtNetwork import QHttpMultiPart, QHttpPart
 from qgis.PyQt.QtCore import QFile, QIODevice, QEventLoop
 
-from gissupport_plugin.tools.usemaps_lite.translations import TRANSLATOR
+from gissupport_plugin.modules.usemaps_lite.tools.translations import TRANSLATOR
 
 class ApiClient(QObject):
     """

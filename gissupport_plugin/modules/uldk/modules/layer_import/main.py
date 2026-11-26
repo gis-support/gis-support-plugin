@@ -77,6 +77,18 @@ class LayerImport:
     def search(self) -> None:
         layer = self.source_layer
 
+        if layer is None or sip.isdeleted(layer):
+              # Warstwa źródłowa została usunięta - synchronizacja UI z aktualnym stanem
+              self.source_layer = None
+              self.__on_layer_changed(self.ui.layer_select.currentLayer())
+              layer = self.source_layer
+              if layer is None:
+                  iface.messageBar().pushWarning(
+                      "Wtyczka GIS Support",
+                      "Warstwa źródłowa została usunięta. Wybierz warstwę ponownie."
+                  )
+                  return
+                
         target_layer_name = self.ui.text_edit_target_layer_name.text()
 
         selected_only = bool(self.ui.checkbox_selected_only.isChecked())
@@ -189,7 +201,7 @@ class LayerImport:
 
     def __update_start_button_state(self, *args) -> None:
         """Aktualizuje dostępność przycisku Start na podstawie liczby obiektów."""
-        if self.source_layer:
+        if self.source_layer and not sip.isdeleted(self.source_layer):
             count = self.source_layer.featureCount()
             self.ui.button_start.setEnabled(count > 0)
         else:
@@ -202,6 +214,8 @@ class LayerImport:
 
     def __fill_combobox_fields_select(self):
         self.ui.combobox_fields_select.clear()
+        if not self.source_layer or sip.isdeleted(self.source_layer):
+              return
         fields = self.source_layer.dataProvider().fields()
         self.ui.combobox_fields_select.addItems(map(lambda x: x.name(), fields))
 

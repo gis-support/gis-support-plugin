@@ -183,7 +183,7 @@ class ProfileTool(QgsMapTool):
         intervals = []
         for i in range(int(num_points)+1):
             pt = geom.interpolate(float(max_interval)).asPoint()
-            points_on_line.append(f'{pt.y()}%20{pt.x()}')
+            points_on_line.append((pt.y(), pt.x()))
             intervals.append(max_interval)
             max_interval += interval
         data = {'points':points_on_line, 'intervals':intervals}
@@ -193,12 +193,18 @@ class ProfileTool(QgsMapTool):
     def generateProfileFromPoints(self, task: QgsTask, data):
         """ Pobranie wysokości dla punktów na linii """
         points_on_line = data.get('points')
-        intervals = data.get('intervals')
-        response = self.parent.getPointsHeights(points_on_line).split(',')
+        heights_by_point = {}
+        for x, y, height in self.parent.getPointsHeights(points_on_line):
+            heights_by_point[(x, y)] = height
+
         heights = []
-        for r in response:
-            _, height = r.rsplit(' ', 1)
-            heights.append(height)
+        intervals = []
+        for point, interval in zip(points_on_line, data.get('intervals')):
+            if point not in heights_by_point:
+                continue
+            heights.append(str(heights_by_point[point]))
+            intervals.append(interval)
+
         if heights and intervals:
             self.fillTable(heights, intervals)
         self.parent.on_message.emit('Pomyślnie wygenerowano profil', Qgis.MessageLevel.Success, 4)

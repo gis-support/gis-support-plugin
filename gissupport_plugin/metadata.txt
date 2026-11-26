@@ -1,7 +1,7 @@
-# This file contains metadata for your plugin. Since 
-# version 2.0 of QGIS this is the proper way to supply 
-# information about a plugin. The old method of 
-# embedding metadata in __init__.py will 
+# This file contains metadata for your plugin. Since
+# version 2.0 of QGIS this is the proper way to supply
+# information about a plugin. The old method of
+# embedding metadata in __init__.py will
 # is no longer supported since version 2.0.
 
 # This file should be included when you package your plugin.# Mandatory items:
@@ -11,7 +11,7 @@ name=Wtyczka GIS Support
 qgisMaximumVersion=4.99
 qgisMinimumVersion=3.22
 supportsQt6=True
-version=3.2
+version=3.3
 author=GIS Support
 email=info@gis-support.pl
 license=GPL-3.0-only
@@ -37,7 +37,7 @@ about=What it does:
 	The plugin is free, requires no API keys and works on Windows, macOS and Linux. Maintained by GIS Support: https://gis-support.pl.
 
 description[pl]=Wtyczka GIS Support zawiera narzędzia, które ułatwiają komunikację z usługami oferowanymi przez polskie instytucje (np. GUGiK).
-about[pl]=Co potrafi wtyczka: 
+about[pl]=Co potrafi wtyczka:
 
     * Wyszukiwarka działek ewidencyjnych – znajdź dowolną działkę w Polsce, wpisując gminę, obręb i numer działki. Dzięki usłudze ULDK (GUGiK) granica działki zostanie od razu załadowana na Twoją mapę.
 
@@ -64,7 +64,9 @@ repository=https://github.com/gis-support/gis-support-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=Poprawa błędu po zmianach w usłudze ULDK
+changelog=Reorganizacja panelu wyszukiwarki działek
+	Poprawiona obsługa QGIS 4 i Qt6
+	Naprawione drobne błędy
 
 # Tags are comma separated with spaces allowed
 tags=wms,wmts,wfs,cadastral,cadastre,download,elevation,topography,bdot10k,address,basemap,basemaps,cloud,chart,dem,webservice,catalog,collaboration,sharing

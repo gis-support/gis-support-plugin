@@ -1,5 +1,3 @@
-import json
-
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QFileDialog
 from qgis.gui import QgsMessageBarItem
@@ -63,6 +61,11 @@ class PRGAddressDownloader:
         if self.prg_address_dockwidget is None:
             self.init_prg_address_dockwidget()
         self.prg_address_dockwidget.setVisible(not self.prg_address_dockwidget.isVisible())
+
+    def unload(self):
+        if self.prg_address_dockwidget is not None:
+            iface.removeDockWidget(self.prg_address_dockwidget)
+            self.prg_address_dockwidget.deleteLater()
 
 
     ### POBIERANIE DLA WYBRANEGO POWIATU

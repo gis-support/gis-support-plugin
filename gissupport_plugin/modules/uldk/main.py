@@ -1,6 +1,6 @@
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import *
-from qgis.core import *
+from qgis.PyQt.QtGui import QPixmap
+from qgis.core import QgsProject
 from qgis.utils import iface
 
 from gissupport_plugin.modules.base import BaseModule
@@ -11,7 +11,6 @@ from gissupport_plugin.modules.uldk.modules.layer_import.main import LayerImport
 from gissupport_plugin.modules.uldk.modules.teryt_search.main import TerytSearch
 from gissupport_plugin.modules.uldk.modules.from_csv_file.main import FromCSVFile
 from gissupport_plugin.modules.uldk.plugin_dockwidget import wyszukiwarkaDzialekDockWidget
-from gissupport_plugin.modules.uldk.resources import resources
 from gissupport_plugin.modules.uldk.uldk.resultcollector import ResultCollectorSingle
 
 class Main(BaseModule):
@@ -49,13 +48,6 @@ class Main(BaseModule):
             self.dockwidget.tab_check_layer_layout,
             collector)
 
-        icon_info_path = ':/plugins/plugin/info.png'
-        self.dockwidget.label_info_map_point_search.setPixmap(QPixmap(icon_info_path))
-        self.dockwidget.label_info_map_point_search.setToolTip((
-            "Wybierz narzędzie i kliknij na mapę.\n"
-            "Narzędzie wyszuka działkę, w której zawierają się współrzędne kliknięcia."))
-
-        self.dockwidget.labelLayerInfo.setPixmap(QPixmap(icon_info_path))
         #Zarejestrowanie we wtyczce
 
         iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dockwidget)
@@ -78,13 +70,16 @@ class Main(BaseModule):
         self.module_map_point_search.setAction( self.identify_action )
         self.parent.toolbar.addSeparator()
 
-        self.dockwidget.btnIdentify.setDefaultAction(self.identify_action)
+        actions = self.dockwidget.main_toolbar.actions()
+        self.dockwidget.main_toolbar.insertAction(actions[1], self.identify_action)
+        self.dockwidget.main_toolbar.removeAction(self.dockwidget.action_identify)
 
         self.dockwidget.hide()
 
     def unload(self):
         """ Wyłączenie modułu """
         iface.removeDockWidget(self.dockwidget)
+        self.dockwidget.deleteLater()
 
     def toggle_map_point_search_tool(self, checked):
         """

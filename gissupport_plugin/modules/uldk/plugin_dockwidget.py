@@ -26,9 +26,11 @@ import os
 import random
 
 from qgis.PyQt import QtGui, QtWidgets, uic
-from qgis.PyQt.QtCore import pyqtSignal, Qt
-from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtCore import pyqtSignal, Qt, QSize
+from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsMapLayerProxyModel
+from qgis.gui import QgsMapLayerComboBox
+from qgis.utils import iface
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'plugin_dockwidget_base.ui'))
@@ -72,44 +74,224 @@ class wyszukiwarkaDzialekDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.setupUi(self)
 
         self.ad_generator = usemaps_ads_generator()
+        self._build_save_menu()
 
-        self.comboLayers.setFilters(QgsMapLayerProxyModel.Filter.PolygonLayer)
-        self.radioExistingLayer.toggled.connect(self.comboLayers.setEnabled)
+        pages_gen = self._generate_page(5)
 
-        self.radioTempLayer.setChecked(True)
-        self.comboLayers.setEnabled(False)
+        self.page_search, self.tab_teryt_search_layout = next(pages_gen)
+        self.page_csv, self.tab_import_csv_layout = next(pages_gen)
+        self.page_from_csv, self.tab_from_csv_file_layout = next(pages_gen)
+        self.page_layer, self.tab_import_layer_layout = next(pages_gen)
+        self.page_check, self.tab_check_layer_layout = next(pages_gen)
 
-        self.tabs.currentChanged.connect(self._update_layer_selection_ui)
-        self._update_layer_selection_ui(self.tabs.currentIndex())
+        self.pages = [
+            self.page_search,
+            self.page_csv,
+            self.page_from_csv,
+            self.page_layer,
+            self.page_check
+        ]
 
-    def showEvent(self, event):
-        super(wyszukiwarkaDzialekDockWidget, self).showEvent(event)
-        self._setup_usemaps_banner()
+        self.tab_action_group = QtWidgets.QActionGroup(self)
+        for act in (self.action_tab_search, self.action_tab_import_csv, 
+                    self.action_tab_from_csv_file, self.action_tab_import_layer, 
+                    self.action_tab_check_layer):
+            self.tab_action_group.addAction(act)
+        self.tab_action_group.setExclusive(True)
 
-    def _setup_usemaps_banner(self):
-        """Konfiguruje banner"""
+        self.action_tab_search.triggered.connect(lambda: self._switch_tool(0))
+        self.action_tab_search.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_teryt.svg'))
+        self.action_tab_search.setToolTip(("Pojedynczo"))
+
+        self.action_tab_import_csv.triggered.connect(lambda: self._switch_tool(1))
+        self.action_tab_import_csv.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_list.svg'))
+        self.action_tab_import_csv.setToolTip(("Z listy"))
+
+        self.action_tab_from_csv_file.triggered.connect(lambda: self._switch_tool(2))
+        self.action_tab_from_csv_file.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_csv.svg'))
+        self.action_tab_from_csv_file.setToolTip(("Z pliku CSV"))
+
+        self.action_tab_import_layer.triggered.connect(lambda: self._switch_tool(3))
+        self.action_tab_import_layer.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_from_layer.svg'))
+        self.action_tab_import_layer.setToolTip(("Z warstwy"))
+
+        self.action_tab_check_layer.triggered.connect(lambda: self._switch_tool(4))
+        self.action_tab_check_layer.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_check_layer.svg'))
+        self.action_tab_check_layer.setToolTip(("Sprawdź"))
+
+        self.action_info.triggered.connect(self._show_info_dialog)
+        self.action_info.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_plugin_info.svg'))
+        self.action_info.setToolTip(("O wtyczce"))
+
+        self.action_settings.setIcon(QIcon(':/plugins/gissupport_plugin/uldk/uldk_settings.svg'))
+        self.action_settings.setToolTip("Ustawienia zapisu")
+        self.action_settings.setMenu(self._save_menu)
         
-        ad = next(self.ad_generator)
-        self.label_usemaps_text.setTextFormat(Qt.TextFormat.RichText)
-        self.label_usemaps_text.setText(
-            f'<html><body><p align="center">{ad[0]}</p></body></html>'
-        )
-        self.label_usemaps_link.setText(
-            f'<html><body><p align="center" style="font-size:10pt;">'
-            f'<a href="{ad[1]}"><span style="text-decoration: underline; color:#0000ff;">'
-            f'{ad[2]}</span></a></p></body></html>'
-        )
+        settings_button = self.main_toolbar.widgetForAction(self.action_settings)
+        if settings_button:
+            settings_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
 
-    def _update_layer_selection_ui(self, index: int) -> None:
-        tab_text = self.tabs.tabText(index)
-        restricted_tabs = ["Sprawdź"]
-        if tab_text in restricted_tabs:
+        self._apply_theme_style()
+
+        # Załadowanie pierwszej zakładki
+        self.action_tab_search.setChecked(True)
+        self._switch_tool(0)
+
+    def _generate_page(self, count: int):
+        """Generator tworzący kontenery (QWidget) oraz przypięte do nich layouty"""
+        for _ in range(count):
+            page = QtWidgets.QWidget()
+            layout = QtWidgets.QVBoxLayout(page)
+            layout.setContentsMargins(0, 0, 0, 0)
+            yield page, layout
+
+    def _switch_tool(self, index: int) -> None:
+        target_layout = self.scrollAreaWidgetContents.layout()
+
+        while target_layout.count():
+            item = target_layout.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+
+        target_layout.addWidget(self.pages[index], alignment=Qt.AlignmentFlag.AlignTop)
+
+        # Logika widoczności menu zapisu przy zakładce Sprawdź
+        if index == 4:
             self.radioTempLayer.setChecked(True)
             self.radioExistingLayer.setEnabled(False)
             self.comboLayers.setEnabled(False)
         else:
             self.radioExistingLayer.setEnabled(True)
             self.comboLayers.setEnabled(self.radioExistingLayer.isChecked())
+
+    def _build_save_menu(self) -> None:
+        self._save_menu = QtWidgets.QMenu(self)
+        container = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(container)
+        layout.setContentsMargins(8, 6, 8, 8)
+        layout.setSpacing(6)
+
+        self.radioTempLayer = QtWidgets.QRadioButton(
+            "Zapisz w warstwie tymczasowej", container
+        )
+        self.radioTempLayer.setChecked(True)
+        layout.addWidget(self.radioTempLayer)
+
+        row = QtWidgets.QHBoxLayout()
+        row.setSpacing(4)
+        row.setContentsMargins(0, 0, 0, 0)
+
+        self.radioExistingLayer = QtWidgets.QRadioButton(
+            "Dodaj do istniejącej warstwy", container
+        )
+        row.addWidget(self.radioExistingLayer)
+
+        self.comboLayers = QgsMapLayerComboBox(container)
+        self.comboLayers.setFilters(QgsMapLayerProxyModel.Filter.PolygonLayer)
+        self.comboLayers.setEnabled(False)
+        self.comboLayers.setMinimumWidth(130)
+        row.addWidget(self.comboLayers)
+
+        self.labelLayerInfo = QtWidgets.QLabel(container)
+        self.labelLayerInfo.setMaximumSize(15, 15)
+        self.labelLayerInfo.setScaledContents(True)
+        self.labelLayerInfo.setToolTip(
+            "Atrybuty będą dopasowane do kolumn wg nazw, jeśli dana kolumna nie istnieje "
+            "to informacja nie zostanie zapisana:\n"
+            "- wojewodztwo lub woj - województwo\n"
+            "- powiat - powiat\n"
+            "- gmina - gmina\n"
+            "- obreb - obręb ewidencyjny\n"
+            "- arkusz - arkusz mapy\n"
+            "- nr_dzialki - numer działki\n"
+            "- teryt - TERYT\n"
+            "- pow_m2 - powierzchnia"
+        )
+        row.addWidget(self.labelLayerInfo)
+
+        layout.addLayout(row)
+
+        self.radioExistingLayer.toggled.connect(self.comboLayers.setEnabled)
+
+        self._save_widget_action = QtWidgets.QWidgetAction(self._save_menu)
+        self._save_widget_action.setDefaultWidget(container)
+        self._save_menu.addAction(self._save_widget_action)
+
+    def _apply_theme_style(self) -> None:
+        qgis_font = iface.layerTreeView().font()
+        font_family = qgis_font.family()
+        font_size = qgis_font.pointSize()
+        
+        if font_size > 0:
+            font_css = f"font-size: {font_size}pt;"
+        else:
+            font_css = f"font-size: {qgis_font.pixelSize()}px;"
+
+        self.setStyleSheet(f"""
+            QWidget {{
+                font-family: "{font_family}";
+                {font_css}
+            }}
+            QScrollArea#scrollArea {{
+                background-color: palette(base);
+                border: 1px solid #b4b4b4;
+                margin-top: 0px;
+            }}
+            QWidget#scrollAreaWidgetContents {{
+                background-color: transparent;
+            }}
+            QTableWidget{{
+                border: 1px solid #b4b4b4;
+            }}
+        """)
+
+        if self.palette().color(QtGui.QPalette.ColorRole.Window).lightness() < 128:
+            self.scrollArea.setStyleSheet(self.scrollArea.styleSheet() + """
+                QLineEdit{
+                    background-color: #383838;
+                    border: 2px solid #383838;
+                    border-radius: 2px;
+                }
+                QTableWidget, QProgressBar, QDoubleSpinBox, QgsCheckableComboBox{
+                    background-color: #383838;
+                }
+                QTableWidget, QScrollArea#scrollArea{
+                    border: 1px solid #000000;
+                }
+                QPushButton, QComboBox {
+                    color: #eeeeee;
+                }
+            """)
+
+    def showEvent(self, event):
+        super(wyszukiwarkaDzialekDockWidget, self).showEvent(event)
+        self._setup_usemaps_banner()
+        self.main_toolbar.setIconSize(QSize(20, 20))
+
+    def _setup_usemaps_banner(self) -> None:
+        """Konfiguruje banner"""
+
+        ad = next(self.ad_generator)
+        self.label_usemaps_text.setTextFormat(Qt.TextFormat.RichText)
+        self.label_usemaps_text.setStyleSheet("margin-bottom: 4px;")
+        self.label_usemaps_text.setText(
+            f'<html><body><p align="center" style="font-weight: normal; margin: 0px;">{ad[0]}</p></body></html>'
+        )
+        self.label_usemaps_link.setWordWrap(True)
+        self.label_usemaps_link.setStyleSheet("margin-bottom: 4px;")
+        self.label_usemaps_link.setText(
+            f'<html><body><p align="center" style="margin: 0px;">'
+            f'<a href="{ad[1]}"><span style="text-decoration: underline; color:#0000ff;">'
+            f'{ad[2]}</span></a></p></body></html>'
+        )
+
+    def _show_info_dialog(self) -> None:
+        """Wyświetla okno z info o wtyczce"""
+
+        uic.loadUi(
+            os.path.join(os.path.dirname(__file__), 'info_dialog.ui'),
+            QtWidgets.QDialog(self)
+        ).exec()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
